@@ -6,6 +6,7 @@ class DashboardMobileScreen extends GetView<DashboardController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       bottomNavigationBar: BottomWidget(
         index: controller.selectedCarIndex.value,
       ),
@@ -28,22 +29,12 @@ class DashboardMobileScreen extends GetView<DashboardController> {
         controller.clearData();
         controller.getDashboardInfo();
       },
-      child: Stack(
+      child: ListView(
         children: [
-          Positioned.fill(
-            child: Image.asset(
-              'assets/background/background.jpg',
-              fit: BoxFit.cover,
-            ),
-          ),
-          ListView(
-            children: [
-              SelectTypeBox(),
-              TimeDateBox(),
-              FindCarButton(),
-              CarCarouselSlider(),
-            ],
-          ),
+          SelectTypeBox(),
+          TimeDateBox(),
+          FindCarButton(),
+          CarCarouselSlider(),
         ],
       ),
     );

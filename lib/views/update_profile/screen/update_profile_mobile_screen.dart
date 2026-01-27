@@ -8,18 +8,18 @@ class UpdateProfileMobileScreen extends GetView<UpdateProfileController> {
     print(LocalStorage.userCountryCode);
     print('----------------------------------------------------------');
     print(controller.countrySelectMethod);
-    return Scaffold(
-      bottomNavigationBar: controller.isUpdateLoading
-          ? Loader()
-          : (controller.isLoading ? null : _buttonWidget(context)),
-      appBar: CustomAppBar(
-        centerTitle: false,
-        action: [
-          DeleteButton(),
-        ],
-        Strings.editProfile,
+    return Obx(
+      () => Scaffold(
+        bottomNavigationBar: controller.isUpdateLoading
+            ? Loader()
+            : (controller.isLoading ? null : _buttonWidget(context)),
+        appBar: CustomAppBar(
+          centerTitle: false,
+          action: [DeleteButton()],
+          Strings.editProfile,
+        ),
+        body: controller.isLoading ? Loader() : _bodyWidget(context),
       ),
-      body: controller.isLoading ? Loader() : _bodyWidget(context),
     );
   }
 
@@ -29,10 +29,7 @@ class UpdateProfileMobileScreen extends GetView<UpdateProfileController> {
         padding: EdgeInsets.symmetric(
           horizontal: Dimensions.defaultHorizontalSize,
         ),
-        children: [
-          ProfileImagePicker(),
-          ProfileInputWidget(),
-        ],
+        children: [ProfileImagePicker(), ProfileInputWidget()],
       ),
     );
   }
@@ -40,8 +37,9 @@ class UpdateProfileMobileScreen extends GetView<UpdateProfileController> {
   _buttonWidget(BuildContext context) {
     return Padding(
       padding: EdgeInsets.symmetric(
-          horizontal: Dimensions.defaultHorizontalSize,
-          vertical: Dimensions.verticalSize),
+        horizontal: Dimensions.defaultHorizontalSize,
+        vertical: Dimensions.verticalSize,
+      ),
       child: Obx(
         () => PrimaryButton(
           title: Strings.update,

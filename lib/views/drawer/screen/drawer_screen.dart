@@ -1,5 +1,4 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:dynamic_languages/dynamic_languages.dart';
 import 'package:flutter/material.dart';
 import '../../../base/utils/basic_import.dart';
 import '../../../routes/routes.dart';

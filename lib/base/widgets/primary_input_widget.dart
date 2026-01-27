@@ -1,4 +1,3 @@
-import 'package:dynamic_languages/dynamic_languages.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -121,11 +120,9 @@ class _PrimaryInputWidgetState extends State<PrimaryInputWidget> {
 
   _buildDecoration() {
     return InputDecoration(
-      hintText: DynamicLanguage.isLoading
-          ? ''
-          : widget.skipEnterText
-              ? DynamicLanguage.key(widget.hintText)
-              : "${DynamicLanguage.key(Strings.enter)} ${DynamicLanguage.key(widget.hintText)}",
+      hintText: widget.skipEnterText
+          ? widget.hintText.tr
+          : '${Strings.enter.tr} ${widget.hintText.tr}',
       hintStyle: CustomStyle.bodyMedium.copyWith(
         fontWeight: FontWeight.w400,
         color: Colors.grey,

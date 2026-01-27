@@ -6,9 +6,7 @@ class RegisterMobileScreen extends GetView<RegisterController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Obx(
-      () => controller.isCountryLoading ? Loader() : _bodyWidget(context),
-    ));
+        body: _bodyWidget(context));
   }
 
   _bodyWidget(BuildContext context) {

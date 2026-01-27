@@ -42,7 +42,8 @@ class UpdateProfileController extends GetxController {
   }
 
   void _updateFormValidity() {
-    isFormValid.value = firstNameController.text.isNotEmpty &&
+    isFormValid.value =
+        firstNameController.text.isNotEmpty &&
         lastNameController.text.isNotEmpty;
   }
 
@@ -70,18 +71,21 @@ class UpdateProfileController extends GetxController {
   void _setProfileData() {
     var userInfo = _profileInfoModel.data.userInfo;
     var imagePaths = _profileInfoModel.data.imagePaths;
-    firstNameController.text = userInfo.firstname;
-    lastNameController.text = userInfo.lastname;
-    zipCodeController.text = userInfo.postalCode;
-    addressController.text = userInfo.address;
-    cityController.text = userInfo.city;
+    firstNameController.text = userInfo.firstname ?? '';
+    lastNameController.text = userInfo.lastname ?? '';
+    zipCodeController.text = userInfo.postalCode ?? '';
+    addressController.text = userInfo.address ?? '';
+    cityController.text = userInfo.city ?? '';
     mobileController.text = userInfo.mobile ?? '';
-    stateController.text = userInfo.state;
-    countrySelectMethod.value = userInfo.country;
-    userCity.value = userInfo.city;
+    stateController.text = userInfo.state ?? '';
+    countrySelectMethod.value = userInfo.country ?? '';
+    userCity.value = userInfo.city ?? '';
     mobileCode.value = userInfo.mobileCode ?? '';
-    LocalStorage.save(email: userInfo.email);
-    if (userInfo.image != '') {
+
+    // Save email and mobile to LocalStorage for auto-fill in booking
+    LocalStorage.save(email: userInfo.email ?? '', number: userInfo.mobile ?? '');
+
+    if (userInfo.image != null && userInfo.image != '') {
       userImage.value =
           "${imagePaths.baseUrl}/${imagePaths.pathLocation}/${userInfo.image}";
 

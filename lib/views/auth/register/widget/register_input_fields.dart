@@ -29,17 +29,11 @@ class RegisterInputFields extends GetView<RegisterController> {
           ],
         ),
         Sizes.height.v10,
-        CountryDropDown(
-          label: Strings.Country,
-          itemsList: controller.countryList,
-          selectMethod: RxString(DynamicLanguage.key(Strings.selectCountry)),
-          onChanged: (v) {
-            controller.selectedCountry.value = v!.name;
-            controller.mobileCode.value = v.mobileCode;
-            LocalStorage.save(userCountryCode: v.mobileCode);
-            print('--------------------------------');
-            print(LocalStorage.userCountryCode);
-          },
+        PrimaryInputWidget(
+          label: Strings.Phone,
+          controller: controller.phoneController,
+          hintText: Strings.Phone,
+          textInputType: TextInputType.phone,
         ),
         Sizes.height.v10,
         PrimaryInputWidget(

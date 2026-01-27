@@ -66,7 +66,7 @@ class CarCarouselSlider extends GetView<DashboardController> {
                         ),
                         Flexible(
                           child: _section(Strings.totalSeat,
-                              '${car.seat} ${DynamicLanguage.key(Strings.seat)}'),
+                              '${car.seat} ${Strings.seat.tr}'),
                         ),
                         Flexible(
                           child: _section(
@@ -76,7 +76,7 @@ class CarCarouselSlider extends GetView<DashboardController> {
                         ),
                         Flexible(
                           child: _section(Strings.experience,
-                              '${car.experience} ${DynamicLanguage.key(Strings.year)}'),
+                              '${car.experience} ${Strings.year.tr}'),
                         ),
                       ],
                     ),

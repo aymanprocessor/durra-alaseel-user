@@ -3,7 +3,10 @@ part of '../screen/preview_screen.dart';
 class PaymentManualField extends StatelessWidget {
   PaymentManualField({super.key});
 
-  final controller = Get.put(PreviewController());
+  final PreviewController controller =
+      Get.isRegistered<PreviewController>()
+          ? Get.find<PreviewController>()
+          : Get.put(PreviewController());
 
   @override
   Widget build(BuildContext context) {

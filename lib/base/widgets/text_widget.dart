@@ -6,8 +6,10 @@ import '../themes/model.dart';
 import '../themes/token.dart';
 import '../utils/custom_style.dart';
 
-import 'package:dynamic_languages/dynamic_languages.dart';
-
+/// A text widget with built-in localization support.
+///
+/// Set [translate] to `true` (default) for translation keys (e.g., Strings.login).
+/// Set [translate] to `false` for dynamic/API content that shouldn't be translated.
 class TextWidget extends StatelessWidget {
   const TextWidget(
     this.text, {
@@ -24,6 +26,7 @@ class TextWidget extends StatelessWidget {
     this.onTap,
     this.colorShade = ColorShade.full,
     this.typographyStyle = TypographyStyle.titleMedium,
+    this.translate = true,
   });
 
   final String text;
@@ -39,44 +42,57 @@ class TextWidget extends StatelessWidget {
   final TypographyStyle typographyStyle;
   final ColorShade colorShade;
   final VoidCallback? onTap;
+
+  /// Whether to translate the text using the localization system.
+  /// Set to `false` for dynamic content (API responses, user input, dates, numbers).
+  final bool translate;
+
   static const paddingValue = EdgeInsets.all(0.0);
+
+  /// Get the display text - translated if [translate] is true, otherwise raw text.
+  String get _displayText => translate ? text.tr : text;
 
   @override
   Widget build(BuildContext context) {
-    return Obx(
-      () => InkWell(
+    final Widget textWidget = Text(
+      _displayText,
+      style: style != null
+          ? style!.copyWith(
+              color: color ?? _color(colorShade),
+              fontSize: fontSize,
+              fontWeight: fontWeight,
+            )
+          : _style(typographyStyle).copyWith(
+              color: color ?? _color(colorShade),
+              fontSize: fontSize,
+              fontWeight: fontWeight,
+            ),
+      textAlign: textAlign,
+      overflow: textOverflow,
+      maxLines: maxLines,
+      textScaler: TextScaler.linear(ScreenUtil().textScaleFactor),
+    );
+
+    final Widget paddedWidget = padding == paddingValue
+        ? textWidget
+        : Padding(padding: padding, child: textWidget);
+
+    final Widget opacityWidget = opacity == 1.0
+        ? paddedWidget
+        : Opacity(opacity: opacity, child: paddedWidget);
+
+    if (onTap != null) {
+      return InkWell(
         onTap: onTap,
         splashColor: Colors.transparent,
         focusColor: Colors.transparent,
         hoverColor: Colors.transparent,
         highlightColor: Colors.transparent,
-        child: Opacity(
-          opacity: opacity,
-          child: Padding(
-            padding: padding,
-            child: Text(
-              DynamicLanguage.isLoading ? "" : DynamicLanguage.key(text),
-              style: style != null
-                  ? style!.copyWith(
-                      color: color ?? _color(colorShade),
-                      fontSize: fontSize,
-                      fontWeight: fontWeight,
-                    )
-                  : style ??
-                      _style(typographyStyle).copyWith(
-                        color: color ?? _color(colorShade),
-                        fontSize: fontSize,
-                        fontWeight: fontWeight,
-                      ),
-              textAlign: textAlign,
-              overflow: textOverflow,
-              maxLines: maxLines,
-              textScaler: TextScaler.linear(ScreenUtil().textScaleFactor),
-            ),
-          ),
-        ),
-      ),
-    );
+        child: opacityWidget,
+      );
+    }
+
+    return opacityWidget;
   }
 }
 

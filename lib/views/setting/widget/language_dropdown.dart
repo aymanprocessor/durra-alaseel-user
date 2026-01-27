@@ -1,7 +1,7 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
-import 'package:dynamic_languages/dynamic_languages.dart';
 import 'package:flutter/material.dart';
 import '../../../../base/utils/basic_import.dart';
+import '../../../languages/locale_service.dart';
 
 class ChangeLanguageWidget extends StatelessWidget {
   const ChangeLanguageWidget({super.key});
@@ -9,7 +9,7 @@ class ChangeLanguageWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(
-          () => Directionality(
+      () => Directionality(
         textDirection: TextDirection.ltr,
         child: Container(
           height: MediaQuery.of(context).size.height * 0.05 > 36
@@ -36,18 +36,23 @@ class ChangeLanguageWidget extends StatelessWidget {
               decoration: BoxDecoration(color: CustomColor.background),
               maxHeight: MediaQuery.sizeOf(context).height * .25,
             ),
-            value: DynamicLanguage.selectedLanguage.value,
+            value: LocaleService.to.currentLanguageCode,
             underline: SizedBox.shrink(),
-            onChanged: (newValue) => DynamicLanguage.changeLanguage(newValue!),
-            items: DynamicLanguage.languages
+            onChanged: (newValue) {
+              if (newValue != null) {
+                LocaleService.to.changeLanguage(newValue);
+              }
+            },
+            items: LocaleService.to.languages
                 .map((language) => DropdownMenuItem(
-              value: language.code,
-              child: TextWidget(
-                language.name,
-                color: CustomColor.blackColor,
-                fontSize: Dimensions.titleMedium * 0.75,
-              ),
-            ))
+                      value: language.code,
+                      child: TextWidget(
+                        language.nativeName,
+                        translate: false,
+                        color: CustomColor.blackColor,
+                        fontSize: Dimensions.titleMedium * 0.75,
+                      ),
+                    ))
                 .toList(),
           ),
         ),

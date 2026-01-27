@@ -69,6 +69,32 @@ class SelectTypeBox extends GetView<DashboardController> {
                 print(v.carTypeId);
               },
             ),
+          ),
+          // Branch Dropdown - Always visible
+          CustomDropDown<Branch>(
+            labelSpacing: Sizes.height.v5,
+            label: 'Select Branch',
+            labelFontSize: Dimensions.titleSmall * 0.8,
+            hintFontSize: Dimensions.titleSmall * 0.8,
+            inputBoxHeight: Dimensions.inputBoxHeight * 0.695,
+            fieldPadding: EdgeInsets.symmetric(
+              horizontal: Dimensions.horizontalSize * 0.7,
+              vertical: Dimensions.verticalSize * 0.37,
+            ),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(Dimensions.radius * 1.2),
+              color: CustomColor.background,
+            ),
+            itemsList: controller.branchList,
+            selectMethod: RxString('Select Branch (Optional)'),
+            onChanged: (v) {
+              if (v != null) {
+                controller.selectedBranch.value = v;
+                controller.branchId.value = v.id;
+                controller.selectBranchName.value = v.name;
+                print('Selected Branch ID: ${v.id}');
+              }
+            },
           )
         ],
       ),

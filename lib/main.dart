@@ -1,12 +1,13 @@
 import 'package:carbo/views/dashboard/controller/dashboard_controller.dart';
-import 'package:dynamic_languages/dynamic_languages.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'base/api/endpoint/api_endpoint.dart';
 import 'base/maintenance/maintenance_dialog.dart';
 import 'base/utils/basic_import.dart';
 import 'initializer.dart';
+import 'languages/app_translations.dart';
+import 'languages/locale_service.dart';
 import 'routes/routes.dart';
 
 void main() async {
@@ -41,25 +42,29 @@ class MyApp extends StatelessWidget {
         darkTheme: Themes.dark,
         getPages: Routes.list,
         themeMode: ThemeMode.light,
-        initialBinding: BindingsBuilder(
-          () async {
-            Get.put(SystemMaintenanceController());
-             DynamicLanguage.init(url: ApiConfig.languageUrl);
-            Get.lazyPut(
-              () => DashboardController(),
-            );
-          },
-        ),
+        // Localization configuration
+        translations: AppTranslations(),
+        locale: LocaleService.to.currentLocale,
+        fallbackLocale: const Locale('en'),
+        supportedLocales: LanguageConfig.supportedLocales,
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        initialBinding: BindingsBuilder(() {
+          Get.put(SystemMaintenanceController());
+          Get.put(DashboardController());
+        }),
         builder: (context, widget) {
           ScreenUtil.init(context);
           return Obx(
             () => MediaQuery(
-              data: MediaQuery.of(context)
-                  .copyWith(textScaler: TextScaler.linear(1.0)),
+              data: MediaQuery.of(
+                context,
+              ).copyWith(textScaler: TextScaler.linear(1.0)),
               child: Directionality(
-                textDirection: DynamicLanguage.isLoading
-                    ? TextDirection.ltr
-                    : DynamicLanguage.languageDirection,
+                textDirection: LocaleService.to.textDirection,
                 child: widget!,
               ),
             ),

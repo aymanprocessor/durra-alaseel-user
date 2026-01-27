@@ -8,6 +8,8 @@ class OthersWidgets extends StatelessWidget {
     return Column(
       children: [
         Sizes.height.v20,
+        _itemCard(Icons.person_outline, Strings.myProfile,
+            () => Get.toNamed(Routes.update_profileScreen)),
         _itemCard(Icons.lock_open_outlined, Strings.changePassword,
             () => Get.toNamed(Routes.change_passwordScreen)),
         _itemCard(
@@ -27,13 +29,12 @@ class OthersWidgets extends StatelessWidget {
         ),
         _itemCard(
           Icons.headphones,
-
-          DynamicLanguage.isLoading ? "" : DynamicLanguage.key(Strings.contactUs,),
+          Strings.contactUs,
           () => Get.to(() => WebViewScreen(title: Strings.contactUs)),
         ),
         _itemCard(
           Icons.privacy_tip_outlined,
-          DynamicLanguage.isLoading ? "" : DynamicLanguage.key(Strings.privacyPolicy,),
+          Strings.privacyPolicy,
           () => Get.to(() => WebViewScreen(title: Strings.privacyPolicy)),
         ),
         _itemCard(

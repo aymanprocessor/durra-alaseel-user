@@ -21,6 +21,7 @@ Map<String, String> basicHeaderInfo() {
 
 Future<Map<String, String>> bearerHeaderInfo() async {
   String accessToken = LocalStorage.token;
+  print('🔐 Auth Token in Request: $accessToken');
 
   return {
     HttpHeaders.acceptHeader: "application/json",
@@ -48,13 +49,17 @@ class ApiMethod {
     log.i(
         '|📍📍📍|----------------- [[ GET ]] method details ended -----------------|📍📍📍|');
 
-    try {
-      final response = await http
+    Future<http.Response> doGet() async {
+      return http
           .get(
             Uri.parse(url),
             headers: isBasic ? basicHeaderInfo() : await bearerHeaderInfo(),
           )
           .timeout(Duration(seconds: duration));
+    }
+
+    try {
+      final response = await doGet();
 
       log.i(
           '|📒📒📒|-----------------[[ GET ]] method response start -----------------|📒📒📒|');
@@ -83,19 +88,42 @@ class ApiMethod {
       _maintenanceCheck(isMaintenance, response.body);
 
       if (response.statusCode == code) {
-        return jsonDecode(response.body);
+        try {
+          // Fix malformed JSON from backend
+          String sanitizedBody = response.body
+              // Fix "nul" instead of "null"
+              .replaceAll(':nul,', ':null,')
+              .replaceAll(':nul}', ':null}')
+              .replaceAll(':nul]', ':null]')
+              // Fix missing comma between quoted strings
+              .replaceAll(RegExp(r'"\s*"'), '","');
+          
+          return jsonDecode(sanitizedBody);
+        } catch (e) {
+          log.e('🐞🐞🐞 JSON Decode Error 🐞🐞🐞');
+          log.e('Response length: ${response.body.length}');
+          log.e('Error: $e');
+          if (showErrorMessage) {
+            CustomSnackBar.error('Failed to process server response');
+          }
+          return null;
+        }
       } else {
         log.e('🐞🐞🐞 Error Alert On Status Code 🐞🐞🐞');
 
-        log.e(
-            'unknown error hitted in status code${jsonDecode(response.body)}');
+        try {
+          log.e(
+              'unknown error hitted in status code${jsonDecode(response.body)}');
 
-        ErrorResponse res = ErrorResponse.fromJson(jsonDecode(response.body));
-        if (isMaintenance) {
-        } else {
-          if (showErrorMessage) {
-            CustomSnackBar.error(res.message.error.join(''));
+          ErrorResponse res = ErrorResponse.fromJson(jsonDecode(response.body));
+          if (isMaintenance) {
+          } else {
+            if (showErrorMessage) {
+              CustomSnackBar.error(res.message.error.join(''));
+            }
           }
+        } catch (e) {
+          log.e('Failed to parse error response: $e');
         }
 
         return null;
@@ -122,6 +150,35 @@ class ApiMethod {
       log.e(err.toString());
 
       log.e(stackrace.toString());
+
+      // Transient server/proxy resets sometimes happen mid-response.
+      // Retry once to reduce flakiness for idempotent GET requests.
+      if (err.toString().toLowerCase().contains('connection closed while receiving data')) {
+        try {
+          await Future<void>.delayed(const Duration(milliseconds: 300));
+          final retryResponse = await doGet();
+          if (retryResponse.statusCode == code) {
+            try {
+              String sanitizedBody = retryResponse.body
+                  .replaceAll(':nul,', ':null,')
+                  .replaceAll(':nul}', ':null}')
+                  .replaceAll(':nul]', ':null]')
+                  .replaceAll(RegExp(r'"\s*"'), '","');
+              return jsonDecode(sanitizedBody);
+            } catch (e) {
+              log.e('🐞🐞🐞 JSON Decode Error (retry) 🐞🐞🐞');
+              log.e('Response length: ${retryResponse.body.length}');
+              log.e('Error: $e');
+              if (showErrorMessage) {
+                CustomSnackBar.error('Failed to process server response');
+              }
+              return null;
+            }
+          }
+        } catch (_) {
+          // ignore retry errors; fall through
+        }
+      }
 
       return null;
     } catch (e) {
@@ -193,20 +250,34 @@ class ApiMethod {
       }
 
       if (response.statusCode == code) {
-        return jsonDecode(response.body);
+        try {
+          return jsonDecode(response.body);
+        } catch (e) {
+          log.e('🐞🐞🐞 JSON Decode Error 🐞🐞🐞');
+          log.e('Response length: ${response.body.length}');
+          log.e('Error: $e');
+          if (showErrorMessage) {
+            CustomSnackBar.error('Failed to process server response');
+          }
+          return null;
+        }
       } else {
         log.e('🐞🐞🐞 Error Alert On Status Code 🐞🐞🐞');
 
-        log.e(
-            'unknown error hitted in status code ${jsonDecode(response.body)}');
+        try {
+          log.e(
+              'unknown error hitted in status code ${jsonDecode(response.body)}');
 
-        ErrorResponse res = ErrorResponse.fromJson(jsonDecode(response.body));
+          ErrorResponse res = ErrorResponse.fromJson(jsonDecode(response.body));
 
-        if (isMaintenance) {
-        } else {
-          if (showErrorMessage) {
-            CustomSnackBar.error(res.message.error.join(''));
+          if (isMaintenance) {
+          } else {
+            if (showErrorMessage) {
+              CustomSnackBar.error(res.message.error.join(''));
+            }
           }
+        } catch (e) {
+          log.e('Failed to parse error response: $e');
         }
 
         return null;
@@ -289,16 +360,28 @@ class ApiMethod {
       _maintenanceCheck(isMaintenance, jsonData);
 
       if (response.statusCode == code) {
-        return jsonDecode(jsonData.body) as Map<String, dynamic>;
+        try {
+          return jsonDecode(jsonData.body) as Map<String, dynamic>;
+        } catch (e) {
+          log.e('🐞🐞🐞 JSON Decode Error 🐞🐞🐞');
+          log.e('Response length: ${jsonData.body.length}');
+          log.e('Error: $e');
+          CustomSnackBar.error('Failed to process server response');
+          return null;
+        }
       } else {
         log.e('🐞🐞🐞 Error Alert On Status Code 🐞🐞🐞');
 
-        log.e(
-            'unknown error hitted in status code ${jsonDecode(jsonData.body)}');
+        try {
+          log.e(
+              'unknown error hitted in status code ${jsonDecode(jsonData.body)}');
 
-        ErrorResponse res = ErrorResponse.fromJson(jsonDecode(jsonData.body));
+          ErrorResponse res = ErrorResponse.fromJson(jsonDecode(jsonData.body));
 
-        if (!isMaintenance) CustomSnackBar.error(res.message.error.toString());
+          if (!isMaintenance) CustomSnackBar.error(res.message.error.toString());
+        } catch (e) {
+          log.e('Failed to parse error response: $e');
+        }
 
         return null;
       }
@@ -399,16 +482,28 @@ class ApiMethod {
       _maintenanceCheck(isMaintenance, jsonData);
 
       if (response.statusCode == code) {
-        return jsonDecode(jsonData.body) as Map<String, dynamic>;
+        try {
+          return jsonDecode(jsonData.body) as Map<String, dynamic>;
+        } catch (e) {
+          log.e('🐞🐞🐞 JSON Decode Error 🐞🐞🐞');
+          log.e('Response length: ${jsonData.body.length}');
+          log.e('Error: $e');
+          CustomSnackBar.error('Failed to process server response');
+          return null;
+        }
       } else {
         log.e('🐞🐞🐞 Error Alert On Status Code 🐞🐞🐞');
 
-        log.e(
-            'unknown error hitted in status code ${jsonDecode(jsonData.body)}');
+        try {
+          log.e(
+              'unknown error hitted in status code ${jsonDecode(jsonData.body)}');
 
-        ErrorResponse res = ErrorResponse.fromJson(jsonDecode(jsonData.body));
+          ErrorResponse res = ErrorResponse.fromJson(jsonDecode(jsonData.body));
 
-        if (!isMaintenance) CustomSnackBar.error(res.message.error.toString());
+          if (!isMaintenance) CustomSnackBar.error(res.message.error.toString());
+        } catch (e) {
+          log.e('Failed to parse error response: $e');
+        }
 
         return null;
       }

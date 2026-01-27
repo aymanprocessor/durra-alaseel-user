@@ -51,6 +51,8 @@ class AuthServices {
       onSuccess: (value) {
         _logInModel = value!;
         var data = _logInModel.data;
+        print('🔐 Login Token: ${data.token}');
+        print('🔑 Authorization Token: ${data.authorization.token}');
         LocalStorage.save(
           token: data.token,
           temporaryToken: data.authorization.token,
@@ -103,7 +105,7 @@ class AuthServices {
     required String lastName,
     required String email,
     required String password,
-    required String country,
+    required String phone,
     required RxBool isLoading,
   }) async {
     Map<String, dynamic> inputBody = {
@@ -111,7 +113,7 @@ class AuthServices {
       'lastname': lastName,
       'email': email,
       'password': password,
-      'country': country,
+      'phone': phone,
       'agree': 'on',
     };
     return RequestProcess().request<RegisterModel>(

@@ -98,6 +98,7 @@ class Strings {
   static const String resetPasswordDes = "appLResetPasswordDes";
   static const String Country = "appLCountry";
   static const String selectArea = "appLSelectArea";
+  static const String myProfile = "appLMyProfile";
   static const String SelectADate = "appLSelectADate";
   static const String SelectType = "appLSelectType";
   static const String Phone = "appLPhone";
@@ -149,5 +150,34 @@ class Strings {
   static const String expirationDate = "appLExpirationDate";
   static const String debitCardPayment = "appLDebitCardPayment";
   static const String paymentSuccessful = "appLPaymentSuccessful";
+
+  // Cars List
+  static const String availableCars = "appLAvailableCars";
+  static const String pricePerDay = "appLPricePerDay";
+  static const String sortByPrice = "appLSortByPrice";
+  static const String priceHighToLow = "appLPriceHighToLow";
+  static const String priceLowToHigh = "appLPriceLowToHigh";
+  static const String carType = "appLCarType";
+  static const String allTypes = "appLAllTypes";
+  static const String allModels = "appLAllModels";
+  static const String noCarsAvailable = "appLNoCarsAvailable";
+  static const String filterBy = "appLFilterBy";
+  static const String clearFilters = "appLClearFilters";
+  static const String seats = "appLSeats";
+  
+  // Booking - Rental Days and Location
+  static const String rentalDays = "appLRentalDays";
+  static const String rentalFees = "appLRentalFees";
+  static const String tax = "appLTax";
+  static const String enterRentalDays = "appLEnterRentalDays";
+  static const String selectPickupLocation = "appLSelectPickupLocation";
+  static const String pickupFromBranch = "appLPickupFromBranch";
+  static const String selectLocationOnMap = "appLSelectLocationOnMap";
+  static const String changePickupLocation = "appLChangePickupLocation";
+  static const String selectedLocation = "appLSelectedLocation";
+  static const String confirmLocation = "appLConfirmLocation";
+  static const String searchLocation = "appLSearchLocation";
+  static const String loadingAddress = "appLLoadingAddress";
+  static const String locationNotFound = "appLLocationNotFound";
   
 }

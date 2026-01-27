@@ -37,7 +37,7 @@ class ExpandedCardInfo extends GetView<HistoryController> {
           ),
           _previewHistoryCard(Strings.PickUpTime, info.pickupTime),
           _previewHistoryCard(Strings.totalAmount,
-              "${info.amount} ${BasicServices.baseCurCode}"),
+              "${info.amount ?? 0} ${BasicServices.baseCurCode}"),
           if(info.message.isNotEmpty) Padding(
              padding: EdgeInsets.symmetric(vertical: Dimensions.verticalSize * 0.25),
             child: Row(

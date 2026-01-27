@@ -1,7 +1,49 @@
 import '../../../base/widgets/custom_drop_down.dart';
 
+String _asString(dynamic value, {String fallback = ''}) {
+  if (value == null) return fallback;
+  if (value is String) return value;
+  return value.toString();
+}
+
+int _asInt(dynamic value, {int fallback = 0}) {
+  if (value == null) return fallback;
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  if (value is String) {
+    final parsed = int.tryParse(value);
+    if (parsed != null) return parsed;
+    final parsedDouble = double.tryParse(value);
+    if (parsedDouble != null) return parsedDouble.toInt();
+  }
+  return fallback;
+}
+
+double _asDouble(dynamic value, {double fallback = 0.0}) {
+  if (value == null) return fallback;
+  if (value is double) return value;
+  if (value is num) return value.toDouble();
+  if (value is String) {
+    final parsed = double.tryParse(value);
+    if (parsed != null) return parsed;
+  }
+  return fallback;
+}
+
+bool _asBool(dynamic value, {bool fallback = false}) {
+  if (value == null) return fallback;
+  if (value is bool) return value;
+  if (value is num) return value != 0;
+  if (value is String) {
+    final normalized = value.trim().toLowerCase();
+    if (normalized == 'true' || normalized == '1' || normalized == 'yes') return true;
+    if (normalized == 'false' || normalized == '0' || normalized == 'no') return false;
+  }
+  return fallback;
+}
+
 class BookingPreviewModel {
-  Message message;
+  List<String> message;
   Data data;
   String type;
 
@@ -11,157 +53,448 @@ class BookingPreviewModel {
     required this.type,
   });
 
-  factory BookingPreviewModel.fromJson(Map<String, dynamic> json) => BookingPreviewModel(
-    message: Message.fromJson(json["message"]),
-    data: Data.fromJson(json["data"]),
-    type: json["type"],
-  );
+  factory BookingPreviewModel.fromJson(Map<String, dynamic> json) {
+    try {
+      print('🔍 Parsing BookingPreviewModel - Full JSON keys: ${json.keys.toList()}');
+      print('  - message type: ${json["message"].runtimeType}');
+      print('  - message value: ${json["message"]}');
+      
+      // Handle message field - can be List or single String
+      List<String> messages = [];
+      if (json["message"] is List) {
+        messages = List<String>.from(json["message"]);
+      } else if (json["message"] is String) {
+        messages = [json["message"]];
+      } else if (json["message"] is Map) {
+        // If it's a Map, extract values as list
+        messages = (json["message"] as Map).values.map((e) => e.toString()).toList();
+      }
+      
+      return BookingPreviewModel(
+        message: messages,
+        data: Data.fromJson((json["data"] as Map?)?.cast<String, dynamic>() ?? const {}),
+        type: _asString(json["type"], fallback: ''),
+      );
+    } catch (e, stackTrace) {
+      print('❌ Error parsing BookingPreviewModel: $e');
+      print('📋 JSON data: $json');
+      print('📍 Stack trace: $stackTrace');
+      rethrow;
+    }
+  }
 
   Map<String, dynamic> toJson() => {
-    "message": message.toJson(),
+    "message": message,
     "data": data.toJson(),
     "type": type,
   };
 }
 
 class Data {
-  String token;
+  String? token;
   BookingDetails bookingDetails;
   String bookingCurrency;
-  Car car;
+  Car? car;
   User user;
+  UserBalance? userBalance;
+  DeliveryInfo? deliveryInfo;
+  PricingBreakdown? pricingBreakdown;
   PaymentType paymentType;
   List<PaymentGateway> paymentGateways;
 
   Data({
-    required this.token,
+    this.token,
     required this.bookingDetails,
     required this.bookingCurrency,
-    required this.car,
+    this.car,
     required this.user,
+    this.userBalance,
+    this.deliveryInfo,
+    this.pricingBreakdown,
     required this.paymentType,
     required this.paymentGateways,
   });
 
-  factory Data.fromJson(Map<String, dynamic> json) => Data(
-    token: json["token"],
-    bookingDetails: BookingDetails.fromJson(json["booking_details"]),
-    bookingCurrency: json["booking_currency"],
-    car: Car.fromJson(json["car"]),
-    user: User.fromJson(json["user"]),
-    paymentType: PaymentType.fromJson(json["payment-type"]),
-    paymentGateways: List<PaymentGateway>.from(json["payment_gateways"].map((x) => PaymentGateway.fromJson(x))),
-  );
+  factory Data.fromJson(Map<String, dynamic> json) {
+    try {
+      print('🔍 Parsing Data - Keys available: ${json.keys.toList()}');
+      print('  - token: ${json["token"]}');
+      print('  - booking_details: ${json["booking_details"] != null ? "EXISTS" : "NULL"}');
+      print('  - booking_currency: ${json["booking_currency"]}');
+      print('  - car: ${json["car"] != null ? "EXISTS" : "NULL"}');
+      print('  - user: ${json["user"] != null ? "EXISTS" : "NULL"}');
+      print('  - user_balance: ${json["user_balance"] != null ? "EXISTS" : "NULL"}');
+      print('  - delivery_info: ${json["delivery_info"] != null ? "EXISTS" : "NULL"}');
+      print('  - pricing_breakdown: ${json["pricing_breakdown"] != null ? "EXISTS" : "NULL"}');
+      print('  - payment-type: ${json["payment-type"] != null ? "EXISTS" : "NULL"}');
+      print('  - payment_gateways: ${json["payment_gateways"] != null ? "EXISTS" : "NULL"}');
+      
+      return Data(
+        token: _asString(json["token"], fallback: ''),
+        bookingDetails: BookingDetails.fromJson(
+          (json["booking_details"] as Map?)?.cast<String, dynamic>() ?? const {},
+        ),
+        bookingCurrency: _asString(json["booking_currency"], fallback: 'SAR'),
+        car: json["car"] is Map ? Car.fromJson((json["car"] as Map).cast<String, dynamic>()) : null,
+        user: User.fromJson((json["user"] as Map?)?.cast<String, dynamic>() ?? const {}),
+        userBalance: json["user_balance"] is Map
+            ? UserBalance.fromJson((json["user_balance"] as Map).cast<String, dynamic>())
+            : null,
+        deliveryInfo: json["delivery_info"] is Map
+            ? DeliveryInfo.fromJson((json["delivery_info"] as Map).cast<String, dynamic>())
+            : null,
+        pricingBreakdown: json["pricing_breakdown"] is Map
+            ? PricingBreakdown.fromJson((json["pricing_breakdown"] as Map).cast<String, dynamic>())
+            : null,
+        paymentType: PaymentType.fromJson(
+          (json["payment-type"] as Map?)?.cast<String, dynamic>() ??
+              (json["payment_type"] as Map?)?.cast<String, dynamic>() ??
+              const {},
+        ),
+        paymentGateways: (json["payment_gateways"] is List)
+            ? List<PaymentGateway>.from(
+                (json["payment_gateways"] as List)
+                    .whereType<Map>()
+                    .map((x) => PaymentGateway.fromJson(x.cast<String, dynamic>())),
+              )
+            : <PaymentGateway>[],
+      );
+    } catch (e, stackTrace) {
+      print('❌ Error parsing Data: $e');
+      print('📋 Available keys: ${json.keys.toList()}');
+      print('📍 Stack trace: $stackTrace');
+      rethrow;
+    }
+  }
 
   Map<String, dynamic> toJson() => {
     "token": token,
     "booking_details": bookingDetails.toJson(),
     "booking_currency": bookingCurrency,
-    "car": car.toJson(),
+    "car": car?.toJson(),
     "user": user.toJson(),
+    "user_balance": userBalance?.toJson(),
+    "delivery_info": deliveryInfo?.toJson(),
+    "pricing_breakdown": pricingBreakdown?.toJson(),
     "payment-type": paymentType.toJson(),
     "payment_gateways": List<dynamic>.from(paymentGateways.map((x) => x.toJson())),
   };
 }
 
 class BookingDetails {
-  int carArea;
   int carType;
-  String pickupTime;
   String pickupDate;
+  String pickupTime;
+  int rentalDays;
+  PickupLocationData? pickupLocation;
+  String? roundPickupDate;
+  String? roundPickupTime;
 
   BookingDetails({
-    required this.carArea,
     required this.carType,
-    required this.pickupTime,
     required this.pickupDate,
+    required this.pickupTime,
+    required this.rentalDays,
+    this.pickupLocation,
+    this.roundPickupDate,
+    this.roundPickupTime,
   });
 
-  factory BookingDetails.fromJson(Map<String, dynamic> json) => BookingDetails(
-    carArea: json["car_area"],
-    carType: json["car_type"],
-    pickupTime: json["pickup_time"],
-    pickupDate: json["pickup_date"],
+  factory BookingDetails.fromJson(Map<String, dynamic> json) {
+    try {
+      print('🔍 Parsing BookingDetails');
+      print('  - car_type: ${json["car_type"]} (type: ${json["car_type"].runtimeType})');
+      print('  - pickup_time: ${json["pickup_time"]}');
+      print('  - pickup_date: ${json["pickup_date"]}');
+      print('  - rental_days: ${json["rental_days"]} (type: ${json["rental_days"].runtimeType})');
+      print('  - pickup_location: ${json["pickup_location"] != null ? "EXISTS" : "NULL"}');
+      print('  - round_pickup_date: ${json["round_pickup_date"]}');
+      print('  - round_pickup_time: ${json["round_pickup_time"]}');
+      
+      return BookingDetails(
+        carType: _asInt(json["car_type"], fallback: 0),
+        pickupDate: _asString(json["pickup_date"], fallback: ''),
+        pickupTime: _asString(json["pickup_time"], fallback: ''),
+        rentalDays: _asInt(json["rental_days"], fallback: 1),
+        pickupLocation: json["pickup_location"] is Map
+            ? PickupLocationData.fromJson((json["pickup_location"] as Map).cast<String, dynamic>())
+            : null,
+        roundPickupDate: json["round_pickup_date"] == null ? null : _asString(json["round_pickup_date"]),
+        roundPickupTime: json["round_pickup_time"] == null ? null : _asString(json["round_pickup_time"]),
+      );
+    } catch (e, stackTrace) {
+      print('❌ Error parsing BookingDetails: $e');
+      print('📋 JSON: $json');
+      print('📍 Stack trace: $stackTrace');
+      rethrow;
+    }
+  }
+
+  Map<String, dynamic> toJson() => {
+    "car_type": carType,
+    "pickup_date": pickupDate,
+    "pickup_time": pickupTime,
+    "rental_days": rentalDays,
+    "pickup_location": pickupLocation?.toJson(),
+    "round_pickup_date": roundPickupDate,
+    "round_pickup_time": roundPickupTime,
+  };
+}
+
+class PickupLocationData {
+  double latitude;
+  double longitude;
+  String address;
+
+  PickupLocationData({
+    required this.latitude,
+    required this.longitude,
+    required this.address,
+  });
+
+  factory PickupLocationData.fromJson(Map<String, dynamic> json) => PickupLocationData(
+    latitude: _asDouble(json["latitude"], fallback: 0.0),
+    longitude: _asDouble(json["longitude"], fallback: 0.0),
+    address: _asString(json["address"], fallback: ''),
   );
 
   Map<String, dynamic> toJson() => {
-    "car_area": carArea,
-    "car_type": carType,
-    "pickup_time": pickupTime,
-    "pickup_date": pickupDate,
+    "latitude": latitude,
+    "longitude": longitude,
+    "address": address,
   };
 }
 
 class Car {
   int id;
   int vendorId;
-  int carAreaId;
-  int carTypeId;
-  String slug;
+  int branchId;
+  String? carTitle;
   String carModel;
-  int seat;
-  int experience;
   String carNumber;
+  int seat;
+  int year;
   String fees;
-  String image;
+  String price;
+  String pricePerDay;
+  String pricePerWeek;
+  String pricePerMonth;
+  String? image;
+  String? imageUrl;
   int status;
-  int approval;
-  DateTime createdAt;
-  DateTime updatedAt;
+  bool approval;
+  String? slug;
+  CarTypeInfo? carType;
+  CarModelInfo? carModelInfo;
+  AreaInfo? area;
+  BranchInfo? branch;
+  VendorInfo? vendor;
+  DateTime? createdAt;
 
   Car({
     required this.id,
     required this.vendorId,
-    required this.carAreaId,
-    required this.carTypeId,
-    required this.slug,
+    required this.branchId,
+    this.carTitle,
     required this.carModel,
     required this.seat,
-    required this.experience,
     required this.carNumber,
+    required this.year,
     required this.fees,
-    required this.image,
+    required this.price,
+    required this.pricePerDay,
+    required this.pricePerWeek,
+    required this.pricePerMonth,
+    this.image,
+    this.imageUrl,
     required this.status,
     required this.approval,
-    required this.createdAt,
-    required this.updatedAt,
+    this.slug,
+    this.carType,
+    this.carModelInfo,
+    this.area,
+    this.branch,
+    this.vendor,
+    this.createdAt,
   });
 
   factory Car.fromJson(Map<String, dynamic> json) => Car(
-    id: json["id"],
-    vendorId: json["vendor_id"],
-    carAreaId: json["car_area_id"],
-    carTypeId: json["car_type_id"],
-    slug: json["slug"],
-    carModel: json["car_model"],
-    seat: json["seat"],
-    experience: json["experience"],
-    carNumber: json["car_number"],
-    fees: json["fees"],
-    image: json["image"],
-    status: json["status"],
-    approval: json["approval"],
-    createdAt: DateTime.parse(json["created_at"]),
-    updatedAt: DateTime.parse(json["updated_at"]),
+    id: _asInt(json["id"]),
+    vendorId: _asInt(json["vendor_id"]),
+    branchId: _asInt(json["branch_id"]),
+    carTitle: json["car_title"] == null ? null : _asString(json["car_title"]),
+    carModel: _asString(json["car_model"], fallback: ''),
+    carNumber: _asString(json["car_number"], fallback: ''),
+    seat: _asInt(json["seat"]),
+    year: _asInt(json["year"]),
+    fees: _asString(json["fees"], fallback: "0.00"),
+    price: _asString(json["price"], fallback: "0.00"),
+    pricePerDay: _asString(json["price_per_day"], fallback: "0.00"),
+    pricePerWeek: _asString(json["price_per_week"], fallback: "0.00"),
+    pricePerMonth: _asString(json["price_per_month"], fallback: "0.00"),
+    image: json["image"] == null ? null : _asString(json["image"]),
+    imageUrl: json["image_url"] == null ? null : _asString(json["image_url"]),
+    status: _asInt(json["status"], fallback: 0),
+    approval: _asBool(json["approval"], fallback: false),
+    slug: json["slug"] == null ? null : _asString(json["slug"]),
+    carType: json["car_type"] is Map ? CarTypeInfo.fromJson((json["car_type"] as Map).cast<String, dynamic>()) : null,
+    carModelInfo: json["car_model_info"] is Map ? CarModelInfo.fromJson((json["car_model_info"] as Map).cast<String, dynamic>()) : null,
+    area: json["area"] is Map ? AreaInfo.fromJson((json["area"] as Map).cast<String, dynamic>()) : null,
+    branch: json["branch"] is Map ? BranchInfo.fromJson((json["branch"] as Map).cast<String, dynamic>()) : null,
+    vendor: json["vendor"] is Map ? VendorInfo.fromJson((json["vendor"] as Map).cast<String, dynamic>()) : null,
+    createdAt: json["created_at"] == null ? null : DateTime.tryParse(_asString(json["created_at"])),
   );
 
   Map<String, dynamic> toJson() => {
     "id": id,
     "vendor_id": vendorId,
-    "car_area_id": carAreaId,
-    "car_type_id": carTypeId,
-    "slug": slug,
+    "branch_id": branchId,
+    "car_title": carTitle,
     "car_model": carModel,
     "seat": seat,
-    "experience": experience,
     "car_number": carNumber,
+    "year": year,
     "fees": fees,
+    "price": price,
+    "price_per_day": pricePerDay,
+    "price_per_week": pricePerWeek,
+    "price_per_month": pricePerMonth,
     "image": image,
+    "image_url": imageUrl,
     "status": status,
     "approval": approval,
-    "created_at": createdAt.toIso8601String(),
-    "updated_at": updatedAt.toIso8601String(),
+    "slug": slug,
+    "car_type": carType?.toJson(),
+    "car_model_info": carModelInfo?.toJson(),
+    "area": area?.toJson(),
+    "branch": branch?.toJson(),
+    "vendor": vendor?.toJson(),
+    "created_at": createdAt?.toIso8601String(),
   };
+}
+
+class CarTypeInfo {
+  int id;
+  String name;
+  String slug;
+
+  CarTypeInfo({
+    required this.id,
+    required this.name,
+    required this.slug,
+  });
+
+  factory CarTypeInfo.fromJson(Map<String, dynamic> json) => CarTypeInfo(
+        id: _asInt(json['id']),
+        name: _asString(json['name']),
+        slug: _asString(json['slug']),
+      );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'slug': slug,
+      };
+}
+
+class CarModelInfo {
+  int id;
+  String name;
+  String? imageUrl;
+
+  CarModelInfo({
+    required this.id,
+    required this.name,
+    this.imageUrl,
+  });
+
+  factory CarModelInfo.fromJson(Map<String, dynamic> json) => CarModelInfo(
+        id: _asInt(json['id']),
+        name: _asString(json['name']),
+        imageUrl: json['image_url'] == null ? null : _asString(json['image_url']),
+      );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'image_url': imageUrl,
+      };
+}
+
+class AreaInfo {
+  int id;
+  String name;
+
+  AreaInfo({
+    required this.id,
+    required this.name,
+  });
+
+  factory AreaInfo.fromJson(Map<String, dynamic> json) => AreaInfo(
+        id: _asInt(json['id']),
+        name: _asString(json['name']),
+      );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+      };
+}
+
+class BranchInfo {
+  int id;
+  String name;
+  String slug;
+  String? address;
+  int status;
+
+  BranchInfo({
+    required this.id,
+    required this.name,
+    required this.slug,
+    this.address,
+    required this.status,
+  });
+
+  factory BranchInfo.fromJson(Map<String, dynamic> json) => BranchInfo(
+        id: _asInt(json['id']),
+        name: _asString(json['name']),
+        slug: _asString(json['slug']),
+        address: json['address'] == null ? null : _asString(json['address']),
+        status: _asInt(json['status']),
+      );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'slug': slug,
+        'address': address,
+        'status': status,
+      };
+}
+
+class VendorInfo {
+  int id;
+  String name;
+  String username;
+
+  VendorInfo({
+    required this.id,
+    required this.name,
+    required this.username,
+  });
+
+  factory VendorInfo.fromJson(Map<String, dynamic> json) => VendorInfo(
+        id: _asInt(json['id']),
+        name: _asString(json['name']),
+        username: _asString(json['username']),
+      );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'username': username,
+      };
 }
 
 class PaymentGateway implements DropdownModel{
@@ -185,13 +518,19 @@ class PaymentGateway implements DropdownModel{
   });
 
   factory PaymentGateway.fromJson(Map<String, dynamic> json) => PaymentGateway(
-    id: json["id"],
-    type: json["type"],
-    name: json["name"],
-    crypto: json["crypto"],
+    id: _asInt(json["id"]),
+    type: _asString(json["type"], fallback: _asString(json["name"], fallback: '')),
+    name: _asString(json["name"], fallback: ''),
+    crypto: _asInt(json["crypto"], fallback: 0),
     desc: json["desc"],
-    status: json["status"],
-    currencies: List<Currency>.from(json["currencies"].map((x) => Currency.fromJson(x))),
+    status: _asInt(json["status"], fallback: 0),
+    currencies: (json["currencies"] is List)
+        ? List<Currency>.from(
+            (json["currencies"] as List)
+                .whereType<Map>()
+                .map((x) => Currency.fromJson(x.cast<String, dynamic>())),
+          )
+        : <Currency>[],
   );
 
   Map<String, dynamic> toJson() => {
@@ -244,18 +583,22 @@ class Currency implements DropdownModel{
   factory Currency.fromJson(Map<String, dynamic> json) => Currency(
     id: json["id"],
     paymentGatewayId: json["payment_gateway_id"],
-    name: json["name"],
-    alias: json["alias"],
-    currencyCode: json["currency_code"],
-    currencySymbol: json["currency_symbol"] ?? '',
+    name: _asString(json["name"], fallback: ''),
+    alias: _asString(json["alias"], fallback: _asString(json["code"], fallback: '')),
+    currencyCode: _asString(json["currency_code"], fallback: _asString(json["code"], fallback: '')),
+    currencySymbol: _asString(json["currency_symbol"], fallback: ''),
     image: json["image"],
     minLimit: json["min_limit"],
     maxLimit: json["max_limit"],
-    percentCharge: json["percent_charge"],
-    fixedCharge: json["fixed_charge"],
-    rate: json["rate"].toInt(),
-    createdAt: DateTime.parse(json["created_at"]),
-    updatedAt: DateTime.parse(json["updated_at"]),
+    percentCharge: json["percent_charge"] ?? 0,
+    fixedCharge: json["fixed_charge"] ?? 0,
+    rate: json["rate"] ?? 1,
+    createdAt: json["created_at"] == null
+        ? DateTime.fromMillisecondsSinceEpoch(0)
+        : (DateTime.tryParse(_asString(json["created_at"])) ?? DateTime.fromMillisecondsSinceEpoch(0)),
+    updatedAt: json["updated_at"] == null
+        ? DateTime.fromMillisecondsSinceEpoch(0)
+        : (DateTime.tryParse(_asString(json["updated_at"])) ?? DateTime.fromMillisecondsSinceEpoch(0)),
   );
 
   Map<String, dynamic> toJson() => {
@@ -282,183 +625,163 @@ class Currency implements DropdownModel{
 class PaymentType {
   String onlinePayment;
   String cash;
+  String balance;
 
   PaymentType({
     required this.onlinePayment,
     required this.cash,
+    required this.balance,
   });
 
   factory PaymentType.fromJson(Map<String, dynamic> json) => PaymentType(
-    onlinePayment: json["online-payment"],
-    cash: json["cash"],
-  );
+        onlinePayment: _asString(json["online-payment"], fallback: "online-payment"),
+        cash: _asString(json["cash"], fallback: "cash"),
+        balance: _asString(json["balance"], fallback: "balance"),
+      );
 
   Map<String, dynamic> toJson() => {
-    "online-payment": onlinePayment,
-    "cash": cash,
-  };
+        "online-payment": onlinePayment,
+        "cash": cash,
+        "balance": balance,
+      };
 }
 
 class User {
   int id;
   String firstname;
   String lastname;
-  String username;
-  String email;
-  dynamic mobileCode;
-  dynamic mobile;
-  dynamic fullMobile;
-  dynamic referralId;
-  dynamic image;
-  int status;
-  dynamic address;
-  int emailVerified;
-  int smsVerified;
-  int kycVerified;
-  dynamic verCode;
-  dynamic verCodeSendAt;
-  int twoFactorVerified;
-  int twoFactorStatus;
-  dynamic twoFactorSecret;
-  dynamic emailVerifiedAt;
-  dynamic deletedAt;
-  DateTime createdAt;
-  DateTime updatedAt;
   String fullname;
-  String userImage;
-  StringStatus stringStatus;
-  String lastLogin;
-  StringStatus kycStringStatus;
+  String email;
+  String mobile;
+  bool emailVerified;
+  bool kycVerified;
+  bool twoFactorVerified;
 
   User({
     required this.id,
     required this.firstname,
     required this.lastname,
-    required this.username,
-    required this.email,
-    required this.mobileCode,
-    required this.mobile,
-    required this.fullMobile,
-    required this.referralId,
-    required this.image,
-    required this.status,
-    required this.address,
-    required this.emailVerified,
-    required this.smsVerified,
-    required this.kycVerified,
-    required this.verCode,
-    required this.verCodeSendAt,
-    required this.twoFactorVerified,
-    required this.twoFactorStatus,
-    required this.twoFactorSecret,
-    required this.emailVerifiedAt,
-    required this.deletedAt,
-    required this.createdAt,
-    required this.updatedAt,
     required this.fullname,
-    required this.userImage,
-    required this.stringStatus,
-    required this.lastLogin,
-    required this.kycStringStatus,
+    required this.email,
+    required this.mobile,
+    required this.emailVerified,
+    required this.kycVerified,
+    required this.twoFactorVerified,
   });
 
   factory User.fromJson(Map<String, dynamic> json) => User(
-    id: json["id"],
-    firstname: json["firstname"],
-    lastname: json["lastname"],
-    username: json["username"],
-    email: json["email"],
-    mobileCode: json["mobile_code"],
-    mobile: json["mobile"],
-    fullMobile: json["full_mobile"],
-    referralId: json["referral_id"],
-    image: json["image"],
-    status: json["status"],
-    address: json["address"],
-    emailVerified: json["email_verified"],
-    smsVerified: json["sms_verified"],
-    kycVerified: json["kyc_verified"],
-    verCode: json["ver_code"],
-    verCodeSendAt: json["ver_code_send_at"],
-    twoFactorVerified: json["two_factor_verified"],
-    twoFactorStatus: json["two_factor_status"],
-    twoFactorSecret: json["two_factor_secret"],
-    emailVerifiedAt: json["email_verified_at"],
-    deletedAt: json["deleted_at"],
-    createdAt: DateTime.parse(json["created_at"]),
-    updatedAt: DateTime.parse(json["updated_at"]),
-    fullname: json["fullname"],
-    userImage: json["userImage"],
-    stringStatus: StringStatus.fromJson(json["stringStatus"]),
-    lastLogin: json["lastLogin"],
-    kycStringStatus: StringStatus.fromJson(json["kycStringStatus"]),
+        id: _asInt(json['id']),
+        firstname: _asString(json['firstname']),
+        lastname: _asString(json['lastname']),
+        fullname: _asString(json['fullname']),
+        email: _asString(json['email']),
+        mobile: _asString(json['mobile']),
+        emailVerified: _asBool(json['email_verified']),
+        kycVerified: _asBool(json['kyc_verified']),
+        twoFactorVerified: _asBool(json['two_factor_verified']),
+      );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'firstname': firstname,
+        'lastname': lastname,
+        'fullname': fullname,
+        'email': email,
+        'mobile': mobile,
+        'email_verified': emailVerified,
+        'kyc_verified': kycVerified,
+        'two_factor_verified': twoFactorVerified,
+      };
+}
+
+class UserBalance {
+  String balance;
+  bool hasSufficientBalance;
+
+  UserBalance({
+    required this.balance,
+    required this.hasSufficientBalance,
+  });
+
+  factory UserBalance.fromJson(Map<String, dynamic> json) => UserBalance(
+    balance: _asString(json["balance"], fallback: "0.00"),
+    hasSufficientBalance: _asBool(json["has_sufficient_balance"], fallback: false),
   );
 
   Map<String, dynamic> toJson() => {
-    "id": id,
-    "firstname": firstname,
-    "lastname": lastname,
-    "username": username,
-    "email": email,
-    "mobile_code": mobileCode,
-    "mobile": mobile,
-    "full_mobile": fullMobile,
-    "referral_id": referralId,
-    "image": image,
-    "status": status,
-    "address": address,
-    "email_verified": emailVerified,
-    "sms_verified": smsVerified,
-    "kyc_verified": kycVerified,
-    "ver_code": verCode,
-    "ver_code_send_at": verCodeSendAt,
-    "two_factor_verified": twoFactorVerified,
-    "two_factor_status": twoFactorStatus,
-    "two_factor_secret": twoFactorSecret,
-    "email_verified_at": emailVerifiedAt,
-    "deleted_at": deletedAt,
-    "created_at": createdAt.toIso8601String(),
-    "updated_at": updatedAt.toIso8601String(),
-    "fullname": fullname,
-    "userImage": userImage,
-    "stringStatus": stringStatus.toJson(),
-    "lastLogin": lastLogin,
-    "kycStringStatus": kycStringStatus.toJson(),
+    "balance": balance,
+    "has_sufficient_balance": hasSufficientBalance,
   };
 }
 
-class StringStatus {
-  String stringStatusClass;
-  String value;
+class DeliveryInfo {
+  bool available;
+  String price;
 
-  StringStatus({
-    required this.stringStatusClass,
-    required this.value,
+  DeliveryInfo({
+    required this.available,
+    required this.price,
   });
 
-  factory StringStatus.fromJson(Map<String, dynamic> json) => StringStatus(
-    stringStatusClass: json["class"],
-    value: json["value"],
+  factory DeliveryInfo.fromJson(Map<String, dynamic> json) => DeliveryInfo(
+    available: _asBool(json["available"], fallback: false),
+    price: _asString(json["price"], fallback: "0.00"),
   );
 
   Map<String, dynamic> toJson() => {
-    "class": stringStatusClass,
-    "value": value,
+    "available": available,
+    "price": price,
   };
 }
 
-class Message {
-  List<String> success;
+class PricingBreakdown {
+  int rentalDays;
+  String rentalFees;
+  String deliveryPrice;
+  String charges;
+  String subtotal;
+  double taxPercentage;
+  String taxAmount;
+  String total;
+  String priceRuleApplied;
+  double taxRate;
 
-  Message({
-    required this.success,
+  PricingBreakdown({
+    required this.rentalDays,
+    required this.rentalFees,
+    required this.deliveryPrice,
+    required this.charges,
+    required this.subtotal,
+    required this.taxPercentage,
+    required this.taxAmount,
+    required this.total,
+    required this.priceRuleApplied,
+    required this.taxRate,
   });
 
-  factory Message.fromJson(Map<String, dynamic> json) => Message(
-    success: List<String>.from(json["success"].map((x) => x)),
+  factory PricingBreakdown.fromJson(Map<String, dynamic> json) => PricingBreakdown(
+    rentalDays: _asInt(json["rental_days"], fallback: 1),
+    rentalFees: _asString(json["rental_fees"], fallback: "0.00"),
+    deliveryPrice: _asString(json["delivery_price"], fallback: "0.00"),
+    charges: _asString(json["charges"], fallback: "0.00"),
+    subtotal: _asString(json["subtotal"], fallback: "0.00"),
+    taxPercentage: _asDouble(json["tax_percentage"], fallback: 0.0),
+    taxAmount: _asString(json["tax_amount"], fallback: "0.00"),
+    total: _asString(json["total"], fallback: "0.00"),
+    priceRuleApplied: _asString(json["price_rule_applied"], fallback: "daily"),
+    taxRate: _asDouble(json["tax_rate"], fallback: 0.0),
   );
 
   Map<String, dynamic> toJson() => {
-    "success": List<dynamic>.from(success.map((x) => x)),
+    "rental_days": rentalDays,
+    "rental_fees": rentalFees,
+    "delivery_price": deliveryPrice,
+    "charges": charges,
+    "subtotal": subtotal,
+    "tax_percentage": taxPercentage,
+    "tax_amount": taxAmount,
+    "total": total,
+    "price_rule_applied": priceRuleApplied,
+    "tax_rate": taxRate,
   };
 }

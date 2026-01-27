@@ -1,7 +1,8 @@
 import 'package:carbo/base/utils/basic_import.dart';
+import 'package:carbo/base/utils/local_storage.dart';
 import 'package:carbo/views/dashboard/model/area_has_type_model.dart';
 import 'package:carbo/views/dashboard/model/car_area_model.dart';
-import 'package:dynamic_languages/dynamic_languages.dart';
+import 'package:carbo/views/dashboard/model/branch_model.dart';
 import '../../../base/api/endpoint/api_endpoint.dart';
 import '../../../base/api/method/request_process.dart';
 import '../model/car_info_model.dart';
@@ -53,7 +54,9 @@ class DashboardController extends GetxController {
         _getDashboardInfo();
         areaList.clear();
         typeList.clear();
+        branchList.clear();
         getArea();
+        getBranches();
       },
     );
   }
@@ -65,8 +68,16 @@ class DashboardController extends GetxController {
     var defaultImg = _dashboardInfoModel.data.profileImagePaths.defaultImage;
     userProfileImage.value = '${baseUrl}/$path/$img';
     userDefaultImageUrl.value = '${baseUrl}/$defaultImg';
+    print('🖼️ User Profile Image URL: ${userProfileImage.value}');
+    print('🖼️ User Default Image URL: ${userDefaultImageUrl.value}');
     userFullName.value = _dashboardInfoModel.data.userInfo.fullname;
     userEmail.value = _dashboardInfoModel.data.userInfo.email;
+
+    // Save email and mobile to LocalStorage for auto-fill in booking
+    LocalStorage.save(
+      email: _dashboardInfoModel.data.userInfo.email,
+      number: _dashboardInfoModel.data.userInfo.mobile?.toString() ?? '',
+    );
   }
 
   //// GET ARE - - - - - - - - - - - - - - - - -
@@ -89,21 +100,19 @@ class DashboardController extends GetxController {
       onSuccess: (value) {
         _carAreaModel = value!;
         selectArea.value = _carAreaModel.data.first.name;
-        _carAreaModel.data.forEach(
-          (v) {
-            areaList.add(
-              Datum(
-                name: v.name,
-                status: v.status,
-                createdAt: v.createdAt,
-                id: v.id,
-                lastEditBy: v.lastEditBy,
-                slug: v.slug,
-                updatedAt: v.updatedAt,
-              ),
-            );
-          },
-        );
+        _carAreaModel.data.forEach((v) {
+          areaList.add(
+            Datum(
+              name: v.name,
+              status: v.status,
+              createdAt: v.createdAt,
+              id: v.id,
+              lastEditBy: v.lastEditBy,
+              slug: v.slug,
+              updatedAt: v.updatedAt,
+            ),
+          );
+        });
       },
     );
   }
@@ -115,6 +124,13 @@ class DashboardController extends GetxController {
   Rxn<TypesAll> selectType = Rxn<TypesAll>();
   final List<TypesAll> typeList = [];
 
+  // BRANCH - - - - - - - - - - - - - - - - -
+  Rxn<Branch> selectedBranch = Rxn<Branch>();
+  final List<Branch> branchList = [];
+
+  RxInt branchId = 0.obs;
+  RxString selectBranchName = ''.obs;
+
   final _isLoad = false.obs;
 
   bool get isLoad => _isLoad.value;
@@ -124,9 +140,7 @@ class DashboardController extends GetxController {
   AreaHasTypeModel get areaHasTypeModel => _areaHasTypeModel;
 
   Future<AreaHasTypeModel?> areaHasType() async {
-    Map<String, dynamic> inputBody = {
-      'area': areaId.value.toString(),
-    };
+    Map<String, dynamic> inputBody = {'area': areaId.value.toString()};
     return RequestProcess().request<AreaHasTypeModel>(
       fromJson: AreaHasTypeModel.fromJson,
       apiEndpoint: ApiEndpoint.postAreaHasType,
@@ -136,25 +150,57 @@ class DashboardController extends GetxController {
       body: inputBody,
       onSuccess: (value) {
         _areaHasTypeModel = value!;
-        _areaHasTypeModel.data.area.typesAll?.forEach(
-          (v) {
-            typeList.add(
-              TypesAll(
-                  name: v.type?.name,
-                  id: v.id,
-                  updatedAt: v.updatedAt,
-                  createdAt: v.createdAt,
-                  type: v.type,
-                  carTypeId: v.carTypeId,
-                  carAreaId: v.carAreaId),
-            );
-          },
-        );
+        _areaHasTypeModel.data.area.typesAll?.forEach((v) {
+          typeList.add(
+            TypesAll(
+              name: v.type?.name,
+              id: v.id,
+              updatedAt: v.updatedAt,
+              createdAt: v.createdAt,
+              type: v.type,
+              carTypeId: v.carTypeId,
+              carAreaId: v.carAreaId,
+            ),
+          );
+        });
       },
     );
   }
 
-// =  SEARCH CAR API
+  // GET BRANCHES - - - - - - - - - - - - - - - - -
+  late BranchModel _branchModel;
+
+  BranchModel get branchModel => _branchModel;
+
+  Future<BranchModel?> getBranches() async {
+    return RequestProcess().request<BranchModel>(
+      fromJson: BranchModel.fromJson,
+      apiEndpoint: ApiEndpoint.carBranches,
+      isLoading: _isLoading,
+      showErrorMessage: true,
+      onSuccess: (value) {
+        _branchModel = value!;
+        print('✅ Branches loaded: ${_branchModel.data.branches.length}');
+        _branchModel.data.branches.forEach((v) {
+          branchList.add(
+            Branch(
+              id: v.id,
+              name: v.name,
+              slug: v.slug,
+              address: v.address,
+              status: v.status,
+              createdAt: v.createdAt,
+              updatedAt: v.updatedAt,
+              lastEditBy: v.lastEditBy,
+            ),
+          );
+        });
+        print('📍 Total branches in list: ${branchList.length}');
+      },
+    );
+  }
+
+  // =  SEARCH CAR API
 
   var cars = <Car>[].obs;
   RxString carImgUrl = ''.obs;
@@ -174,6 +220,10 @@ class DashboardController extends GetxController {
       'pickup_time': selectedTime.value,
       'pickup_date': selectedDate.value,
     };
+    // Add branch_id if selected
+    if (branchId.value > 0) {
+      inputBody['branch_id'] = branchId.value;
+    }
     return RequestProcess().request<CarInfoModel>(
       fromJson: CarInfoModel.fromJson,
       apiEndpoint: ApiEndpoint.searchCar,
@@ -184,38 +234,34 @@ class DashboardController extends GetxController {
       onSuccess: (value) {
         _carInfoModel = value!;
         carToken.value = _carInfoModel.data.token;
+        print('🔑 Car Token: ${carToken.value}');
 
         carImgUrl.value =
             '${_carInfoModel.data.dataPath.baseUrl}/${_carInfoModel.data.dataPath.imagePath}/';
-        _carInfoModel.data.cars.forEach(
-          (element) {
-            cars.add(
-              Car(
-                  carAreaId: element.carAreaId,
-                  id: element.id,
-                  carTypeId: element.carTypeId,
-                  carNumber: element.carNumber,
-                  slug: element.slug,
-                  status: element.status,
-                  fees: element.fees,
-                  image: element.image,
-                  approval: element.approval,
-                  carModel: element.carModel,
-                  createdAt: element.createdAt,
-                  experience: element.experience,
-                  seat: element.seat,
-                  updatedAt: element.updatedAt,
-                  vendorId: element.vendorId,
-                  carTitle: element.carTitle),
-            );
-          },
-        );
-        if (cars.isEmpty) {
-          CustomSnackBar.error(
-            DynamicLanguage.isLoading
-                ? ""
-                : DynamicLanguage.key(Strings.noCarFindMessage),
+        _carInfoModel.data.cars.forEach((element) {
+          cars.add(
+            Car(
+              carAreaId: element.carAreaId,
+              id: element.id,
+              carTypeId: element.carTypeId,
+              carNumber: element.carNumber,
+              slug: element.slug,
+              status: element.status,
+              fees: element.fees,
+              image: element.image,
+              approval: element.approval,
+              carModel: element.carModel,
+              createdAt: element.createdAt,
+              experience: element.experience,
+              seat: element.seat,
+              updatedAt: element.updatedAt,
+              vendorId: element.vendorId,
+              carTitle: element.carTitle,
+            ),
           );
+        });
+        if (cars.isEmpty) {
+          CustomSnackBar.error(Strings.noCarFindMessage.tr);
         }
       },
     );

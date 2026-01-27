@@ -9,7 +9,10 @@ class AuthorizeGatewayScreen extends StatelessWidget {
   AuthorizeGatewayScreen({super.key});
 
   final passwordKey = GlobalKey<FormState>();
-  final controller = Get.put(PreviewController());
+  final PreviewController controller =
+      Get.isRegistered<PreviewController>()
+          ? Get.find<PreviewController>()
+          : Get.put(PreviewController());
 
   @override
   Widget build(BuildContext context) {

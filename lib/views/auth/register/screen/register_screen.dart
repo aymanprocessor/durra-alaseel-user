@@ -1,7 +1,4 @@
 import 'package:carbo/base/api/services/basic_services.dart';
-import 'package:carbo/base/utils/local_storage.dart';
-import 'package:carbo/base/widgets/loader.dart';
-import 'package:dynamic_languages/dynamic_languages.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -9,7 +6,6 @@ import '../../../../base/themes/token.dart';
 import '../../../../base/utils/dimensions.dart';
 import '../../../../base/utils/responsive_layout.dart';
 import '../../../../base/utils/size.dart';
-import '../../../../base/widgets/country_drop_down.dart';
 import '../../../../base/widgets/custom_app_bar.dart';
 import '../../../../base/widgets/custom_snackbar.dart';
 import '../../../../base/widgets/primary_button.dart';

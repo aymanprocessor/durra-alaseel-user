@@ -77,8 +77,8 @@ class RoutePageList {
     ),
     GetPage(
       name: Routes.dashboardScreen,
-      page: () => const DashboardScreen(),
-      binding: DashboardBinding(),
+      page: () => const CarsListScreen(),
+      binding: CarsBinding(),
     ),
     GetPage(
       name: Routes.splashScreen,

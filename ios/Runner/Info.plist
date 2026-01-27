@@ -51,5 +51,9 @@
     <string>to choose user profile image or scan qr code</string>
     <key>NSMicrophoneUsageDescription</key>
     <string>to take user profile image or scan qr code</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>This app needs your location to help you select a pickup location on the map</string>
+    <key>NSLocationAlwaysUsageDescription</key>
+    <string>This app needs your location to help you select a pickup location on the map</string>
   </dict>
 </plist>

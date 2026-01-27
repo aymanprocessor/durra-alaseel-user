@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:carbo/base/utils/local_storage.dart';
 import 'package:carbo/views/booking/controller/booking_controller.dart';
 import 'package:carbo/views/dashboard/controller/dashboard_controller.dart';
@@ -19,6 +20,8 @@ import '../widget/web_payment_screen.dart';
 
 class PreviewController extends GetxController {
   final dashboardController = Get.put(DashboardController());
+
+  bool _previewRequestInFlight = false;
 
   List<TextEditingController> inputFieldControllers = [];
   RxList inputFields = [].obs;
@@ -61,6 +64,7 @@ class PreviewController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    _isLoading.value = true;
     getPreviewData();
   }
 
@@ -70,6 +74,7 @@ class PreviewController extends GetxController {
     PaymentType(
       onlinePayment: "online-payment",
       cash: 'cash',
+      balance: 'balance',
     ),
   );
 
@@ -96,54 +101,88 @@ class PreviewController extends GetxController {
 
   ///=> GET ALL BOOKING PREVIEW INFO
 
-  final _isLoading = false.obs;
+  // Start in loading state to avoid building UI before data arrives.
+  final _isLoading = true.obs;
 
   bool get isLoading => _isLoading.value;
 
-  late BookingPreviewModel _bookingPreviewModel;
+  BookingPreviewModel? _bookingPreviewModel;
 
-  BookingPreviewModel get bookingPreviewModel => _bookingPreviewModel;
+  BookingPreviewModel? get bookingPreviewModel => _bookingPreviewModel;
 
   Future<BookingPreviewModel?> getPreviewData() async {
-    return RequestProcess().request<BookingPreviewModel>(
-      queryParams: {
-        'token': dashboardController.carToken.value,
-        'car_id': dashboardController.selectedCarId.value
-      },
-      fromJson: BookingPreviewModel.fromJson,
-      apiEndpoint: ApiEndpoint.getBookingPreview,
-      isLoading: _isLoading,
-      showErrorMessage: false,
-      onSuccess: (value) {
-        _bookingPreviewModel = value!;
-        _getPreviewALlData();
-        _bookingPreviewModel.data.paymentGateways.forEach(
-          (v) {
-            paymentGatewayList.add(
-              PaymentGateway(
-                status: v.status,
-                type: v.type,
-                desc: v.desc,
-                currencies: v.currencies,
-                crypto: v.crypto,
-                id: v.id,
-                name: v.name,
-              ),
-            );
-          },
-        );
-      },
-    );
+    if (_previewRequestInFlight) return _bookingPreviewModel;
+    _previewRequestInFlight = true;
+    // Get car data from BookingController (new flow from cars list)
+    final bookingController = Get.find<BookingController>();
+    String carId = bookingController.selectedCar.id.toString();
+    String rentalDays = bookingController.rentalDaysController.text;
+    
+    // Build query params as Map<String, String>
+    // Note: token is sent via Authorization Bearer header, not query param
+    Map<String, String> queryParams = {
+      'car_id': carId,
+      // Some backend implementations require car_type for pricing rules.
+      // Provide it when available to avoid server-side null errors.
+      if ((bookingController.selectedCar.carType?.id ?? 0) > 0)
+        'car_type': bookingController.selectedCar.carType!.id.toString(),
+      'rental_days': rentalDays,
+      'pickup_date': bookingController.selectedPickupDate.value,
+      'pickup_time': bookingController.selectedPickupTime.value,
+    };
+    
+    // Add pickup_location as separate fields (backend expects array format)
+    if (bookingController.pickupLocation.value != null && 
+        bookingController.pickupLocation.value!.isValid) {
+      queryParams['pickup_location[latitude]'] = bookingController.pickupLocation.value!.latitude.toString();
+      queryParams['pickup_location[longitude]'] = bookingController.pickupLocation.value!.longitude.toString();
+      queryParams['pickup_location[address]'] = bookingController.pickupLocation.value!.address;
+    } else {
+      // Temporary fake location for testing (Riyadh coordinates)
+      queryParams['pickup_location[latitude]'] = '24.7136';
+      queryParams['pickup_location[longitude]'] = '46.6753';
+      queryParams['pickup_location[address]'] = 'Riyadh, Saudi Arabia';
+    }
+    
+    try {
+      return await RequestProcess().request<BookingPreviewModel>(
+        queryParams: queryParams,
+        fromJson: BookingPreviewModel.fromJson,
+        apiEndpoint: ApiEndpoint.getBookingPreview,
+        isLoading: _isLoading,
+        showErrorMessage: false,
+        onSuccess: (value) {
+          _bookingPreviewModel = value;
+          if (_bookingPreviewModel != null) {
+            _getPreviewALlData();
+          }
+          paymentGatewayList
+            ..clear()
+            ..addAll(_bookingPreviewModel?.data.paymentGateways ?? <PaymentGateway>[]);
+        },
+      );
+    } finally {
+      _previewRequestInFlight = false;
+    }
   }
 
   void _getPreviewALlData() {
-    carModel.value = _bookingPreviewModel.data.car.carModel;
-    carNumber.value = _bookingPreviewModel.data.car.carNumber;
-    pickupTime.value = _bookingPreviewModel.data.bookingDetails.pickupTime;
-    slug.value = _bookingPreviewModel.data.car.slug;
-    Id.value = _bookingPreviewModel.data.car.id.toString();
-    cashBalance.value = _bookingPreviewModel.data.paymentType.cash;
-    onlinePayment.value = _bookingPreviewModel.data.paymentType.cash;
+    final model = _bookingPreviewModel;
+    if (model == null) return;
+
+    carModel.value = model.data.car?.carModel ?? '';
+    carNumber.value = model.data.car?.carNumber ?? '';
+    pickupTime.value = model.data.bookingDetails.pickupTime;
+    slug.value = model.data.car?.slug ?? '';
+    Id.value = model.data.car?.id.toString() ?? '';
+    cashBalance.value = model.data.paymentType.cash;
+    onlinePayment.value = model.data.paymentType.onlinePayment;
+
+    // Update totalPayable from pricing_breakdown
+    final totalString = model.data.pricingBreakdown?.total;
+    if (totalString != null) {
+      totalPayable.value = double.tryParse(totalString) ?? 0.0;
+    }
   }
 
   RxString paymentTypes = ''.obs;
@@ -171,25 +210,66 @@ class PreviewController extends GetxController {
   BookingConfirmModel get bookingConfirmModel => _bookingConfirmModel;
 
   Future<BookingConfirmModel?> bookingProcessAuto() async {
+    final bookingController = Get.find<BookingController>();
+    final previewModel = _bookingPreviewModel;
+    
+    // Use car data from preview API first, fallback to BookingController's selected car
+    String carSlugValue = slug.value.isNotEmpty 
+        ? slug.value 
+        : bookingController.getCarSlug();
+    String carIdValue = Id.value.isNotEmpty 
+        ? Id.value 
+        : bookingController.selectedCar.id.toString();
+
+    final pickupLocation = bookingController.pickupLocation.value;
+    final pickupLocationJson = (pickupLocation != null && pickupLocation.isValid)
+        ? pickupLocation.toJson()
+        : <String, dynamic>{};
+
+    final branchName = previewModel?.data.car?.branch?.name;
+    final locationDisplay = bookingController.isPickupFromBranch.value &&
+            branchName != null &&
+            branchName.trim().isNotEmpty
+        ? branchName.trim()
+        : (pickupLocation?.address ?? '');
+
+    final deliveryPriceString = previewModel?.data.pricingBreakdown?.deliveryPrice;
+    final deliveryPrice = double.tryParse(deliveryPriceString ?? '') ?? 0.0;
+    final includeDelivery = deliveryPrice > 0;
+
+    final tokenValue = (previewModel?.data.token ?? '').trim();
+
+    final gatewayType = paymentTypes.value;
+    final gatewayCurrency = selectedCurrency.value?.currencyCode ?? alias.value;
+    final isManualGateway = gatewayType.toLowerCase().contains('manual');
+
+    // Optional manual-only field (kept empty unless user provides it elsewhere)
+    final String? transactionId = null;
+    
+    final rentalDays = int.tryParse(bookingController.rentalDaysController.text) ?? 1;
+    final carId = int.tryParse(carIdValue) ?? bookingController.selectedCar.id;
+
     Map<String, dynamic> inputBody = {
-      'location': Get.find<BookingController>().locationController.text,
-      'destination': Get.find<BookingController>().destinationController.text,
-      'distance': Get.find<BookingController>().distanceController.text,
-      'message': Get.find<BookingController>().noteController.text,
-      'round_pickup_time':
-          Get.find<BookingController>().selectedRoundTime.value,
-      'round_pickup_date':
-          Get.find<BookingController>().selectedRoundDate.value,
-      'mobile': Get.find<BookingController>().mobileController.text,
+      'car_id': carId,
+      'car_slug': carSlugValue,
+      'location': locationDisplay,
+      'rental_days': rentalDays,
+      'pickup_location': pickupLocationJson,
+      'pickup_date': bookingController.selectedPickupDate.value,
+      'pickup_time': bookingController.selectedPickupTime.value,
       'credentials': LocalStorage.email,
-      'car_slug': slug.value,
-      'car_id': Id.value,
-      'gateway_type': paymentTypes.value,
-      'gateway_currency': alias.value,
+      'mobile': LocalStorage.number,
+      'message': bookingController.noteController.text,
       'payment': selectedMethodText,
-      'token': dashboardController.carToken.value,
-      'fees': Get.find<BookingController>().totalFees.value.toString(),
-      // 'transaction_id': fees.value,
+      'include_delivery': includeDelivery,
+      'delivery_price': deliveryPrice,
+      'round_pickup_date': bookingController.selectedRoundDate.value,
+      'round_pickup_time': bookingController.selectedRoundTime.value,
+      'gateway_type': gatewayType,
+      'gateway_currency': gatewayCurrency,
+      if (tokenValue.isNotEmpty) 'token': tokenValue,
+      if (isManualGateway && (transactionId?.trim().isNotEmpty ?? false))
+        'transaction_id': transactionId!.trim(),
     };
     return RequestProcess().request<BookingConfirmModel>(
       fromJson: BookingConfirmModel.fromJson,
@@ -211,22 +291,55 @@ class PreviewController extends GetxController {
   }
 
   Future<CommonSuccessModel?> cashBookedProcess() async {
+    final bookingController = Get.find<BookingController>();
+    final previewModel = _bookingPreviewModel;
+    
+    // Use car data from preview API first, fallback to BookingController's selected car
+    String carSlugValue = slug.value.isNotEmpty 
+        ? slug.value 
+        : bookingController.getCarSlug();
+    String carIdValue = Id.value.isNotEmpty 
+        ? Id.value 
+        : bookingController.selectedCar.id.toString();
+
+    final pickupLocation = bookingController.pickupLocation.value;
+    final pickupLocationJson = (pickupLocation != null && pickupLocation.isValid)
+        ? pickupLocation.toJson()
+        : <String, dynamic>{};
+
+    final branchName = previewModel?.data.car?.branch?.name;
+    final locationDisplay = bookingController.isPickupFromBranch.value &&
+            branchName != null &&
+            branchName.trim().isNotEmpty
+        ? branchName.trim()
+        : (pickupLocation?.address ?? '');
+
+    final deliveryPriceString = previewModel?.data.pricingBreakdown?.deliveryPrice;
+    final deliveryPrice = double.tryParse(deliveryPriceString ?? '') ?? 0.0;
+    final includeDelivery = deliveryPrice > 0;
+
+    final tokenValue = (previewModel?.data.token ?? '').trim();
+
+    final rentalDays = int.tryParse(bookingController.rentalDaysController.text) ?? 1;
+    final carId = int.tryParse(carIdValue) ?? bookingController.selectedCar.id;
+    
     Map<String, dynamic> inputBody = {
-      'location': Get.find<BookingController>().locationController.text,
-      'destination': Get.find<BookingController>().destinationController.text,
-      'distance': Get.find<BookingController>().distanceController.text,
-      'message': Get.find<BookingController>().noteController.text,
-      'round_pickup_time':
-          Get.find<BookingController>().selectedRoundTime.value,
-      'round_pickup_date':
-          Get.find<BookingController>().selectedRoundDate.value,
-      'mobile': Get.find<BookingController>().mobileController.text,
+      'car_id': carId,
+      'car_slug': carSlugValue,
+      'location': locationDisplay,
+      'rental_days': rentalDays,
+      'pickup_location': pickupLocationJson,
+      'pickup_date': bookingController.selectedPickupDate.value,
+      'pickup_time': bookingController.selectedPickupTime.value,
       'credentials': LocalStorage.email,
-      'car_slug': slug.value,
-      'car_id': Id.value,
+      'mobile': LocalStorage.number,
+      'message': bookingController.noteController.text,
       'payment': selectedMethodText,
-      'token': dashboardController.carToken.value,
-      'fees': Get.find<BookingController>().totalFees.value.toString(),
+      'include_delivery': includeDelivery,
+      'delivery_price': deliveryPrice,
+      'round_pickup_date': bookingController.selectedRoundDate.value,
+      'round_pickup_time': bookingController.selectedRoundTime.value,
+      if (tokenValue.isNotEmpty) 'token': tokenValue,
     };
     return RequestProcess().request<CommonSuccessModel>(
       fromJson: CommonSuccessModel.fromJson,
@@ -280,24 +393,65 @@ class PreviewController extends GetxController {
   CommonSuccessModel get commonSuccessModel => _commonSuccessModel;
 
   Future<CommonSuccessModel?> bookingManualProcess() async {
-    Map<String, String> inputBody = {
-      'location': Get.find<BookingController>().locationController.text,
-      'destination': Get.find<BookingController>().destinationController.text,
-      'distance': Get.find<BookingController>().distanceController.text,
-      'message': Get.find<BookingController>().noteController.text,
-      'round_pickup_time':
-          Get.find<BookingController>().selectedRoundTime.value,
-      'round_pickup_date':
-          Get.find<BookingController>().selectedRoundDate.value,
-      'mobile': Get.find<BookingController>().mobileController.text,
+    final bookingController = Get.find<BookingController>();
+    final previewModel = _bookingPreviewModel;
+    
+    // Use car data from preview API first, fallback to BookingController's selected car
+    String carSlugValue = slug.value.isNotEmpty 
+        ? slug.value 
+        : bookingController.getCarSlug();
+    String carIdValue = Id.value.isNotEmpty 
+        ? Id.value 
+        : bookingController.selectedCar.id.toString();
+    
+    final pickupLocation = bookingController.pickupLocation.value;
+    final pickupLocationJson = (pickupLocation != null && pickupLocation.isValid)
+        ? jsonEncode(pickupLocation.toJson())
+        : '';
+
+    final branchName = previewModel?.data.car?.branch?.name;
+    final locationDisplay = bookingController.isPickupFromBranch.value &&
+            branchName != null &&
+            branchName.trim().isNotEmpty
+        ? branchName.trim()
+        : (pickupLocation?.address ?? '');
+
+    final deliveryPriceString = previewModel?.data.pricingBreakdown?.deliveryPrice;
+    final deliveryPrice = double.tryParse(deliveryPriceString ?? '') ?? 0.0;
+    final includeDelivery = deliveryPrice > 0;
+
+    final tokenValue = (previewModel?.data.token ?? '').trim();
+
+    final gatewayType = paymentTypes.value;
+    final gatewayCurrency = selectedCurrency.value?.currencyCode ?? alias.value;
+    final isManualGateway = gatewayType.toLowerCase().contains('manual');
+    final String? transactionId = null;
+
+    final rentalDays = int.tryParse(bookingController.rentalDaysController.text) ?? 1;
+    final carId = int.tryParse(carIdValue) ?? bookingController.selectedCar.id;
+    
+    Map<String, dynamic> inputBody = {
+      'car_id': carId,
+      'car_slug': carSlugValue,
+      'location': locationDisplay,
+      'rental_days': rentalDays,
+      // Multipart form doesn't support nested objects directly; send pickup_location as JSON string.
+      'pickup_location': pickupLocationJson,
+      'pickup_date': bookingController.selectedPickupDate.value,
+      'pickup_time': bookingController.selectedPickupTime.value,
       'credentials': LocalStorage.email,
-      'car_slug': slug.value,
-      'car_id': Id.value,
-      'gateway_type': paymentTypes.value,
-      'gateway_currency': alias.value,
+      'mobile': LocalStorage.number,
+      'message': bookingController.noteController.text,
       'payment': selectedMethodText,
-      'token': dashboardController.carToken.value,
-      'fees': Get.find<BookingController>().totalFees.value.toString(),
+      'include_delivery': includeDelivery,
+      'delivery_price': deliveryPrice,
+      'round_pickup_date': bookingController.selectedRoundDate.value,
+      'round_pickup_time': bookingController.selectedRoundTime.value,
+      'gateway_type': gatewayType,
+      'gateway_currency': gatewayCurrency,
+      if (tokenValue.isNotEmpty) 'token': tokenValue,
+      if (isManualGateway && (transactionId?.trim().isNotEmpty ?? false))
+        'transaction_id': transactionId!.trim(),
     };
     final data = _manualInputModel.data.inputFields;
 
@@ -356,18 +510,15 @@ class PreviewController extends GetxController {
   RxDouble conversionAmount = 0.0.obs;
   RxDouble totalCharge = 0.0.obs;
 
+  // Note: Fee calculation is now done on backend via preview API
+  // This method is deprecated but kept for compatibility
   void calculateAllCharges() {
-    conversionAmount.value =
-        exRent.value * Get.find<BookingController>().totalFees.value;
-
-    // Calculate the percent charge based on the conversion amount
-    percentCharge.value = percentCharge.value / 100 * conversionAmount.value;
-
-    // Calculate the total charge
-    totalCharge.value = fixeCharge.value + percentCharge.value;
-
-    // Calculate the total payable amount
-    totalPayable.value = conversionAmount.value + totalCharge.value;
+    // Fees are now calculated on backend based on rental_days
+    // Use pricing_breakdown from preview API response instead
+    // conversionAmount.value = exRent.value * bookingController.totalFees.value;
+    // percentCharge.value = percentCharge.value / 100 * conversionAmount.value;
+    // totalCharge.value = fixeCharge.value + percentCharge.value;
+    // totalPayable.value = conversionAmount.value + totalCharge.value;
   }
 
   // Authorize Submit

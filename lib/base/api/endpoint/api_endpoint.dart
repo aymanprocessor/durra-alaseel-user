@@ -1,6 +1,6 @@
 class ApiConfig {
   // static const String mainDomain = "https://durraalaseel.nextoneplus.com";
-  static const String mainDomain = "http://192.168.1.211:8000";
+  static const String mainDomain = "http://192.168.1.211:8001";
   static const String baseUrl = "$mainDomain/api/v1";
   static const String languageUrl = "$baseUrl/settings/languages";
 }
@@ -25,6 +25,13 @@ enum ApiEndpoint {
   twoFaStatusUpdate('/user/google-2fa/status/update'),
   twoFaOtpVerify('/user/google-2fa/verify/code'),
   logOut('/user/logout'),
+
+  // Cars (Public)
+  carsList('/cars'),
+  carTypes('/cars/types'),
+  carModels('/cars/models'),
+  carDetails('/cars'),
+  carBranches('/cars/branches'),
 
   // Dashboard
   dashboardInfo('/user/dashboard'),
@@ -58,12 +65,12 @@ enum ApiEndpoint {
 
   /// Returns the full URL with optional query parameters
   String url({Map<String, String>? params}) {
-    var fullUrl = "${ApiConfig.baseUrl}$path";
-    if (params != null && params.isNotEmpty) {
-      fullUrl +=
-          '?${params.entries.map((e) => '${e.key}=${e.value}').join('&')}';
-    }
-    return fullUrl;
+    final base = "${ApiConfig.baseUrl}$path";
+
+    // Always build URLs via Uri to ensure proper percent-encoding
+    // (e.g. spaces, ':' in times, and bracketed keys like pickup_location[latitude]).
+    if (params == null || params.isEmpty) return base;
+    return Uri.parse(base).replace(queryParameters: params).toString();
   }
 
   /// Convenience method to append query parameters

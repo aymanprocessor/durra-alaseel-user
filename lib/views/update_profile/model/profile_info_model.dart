@@ -133,36 +133,36 @@ class Instructions {
 
 class UserInfo {
   int id;
-  String firstname;
-  String lastname;
-  String username;
-  String email;
-  dynamic mobileCode;
-  dynamic mobile;
-  dynamic image;
+  String? firstname;
+  String? lastname;
+  String? username;
+  String? email;
+  String? mobileCode;
+  String? mobile;
+  String? image;
   int kycVerified;
-  String country;
-  String city;
-  String state;
-  String postalCode;
-  String address;
+  String? country;
+  String? city;
+  String? state;
+  String? postalCode;
+  String? address;
   Kyc kyc;
 
   UserInfo({
     required this.id,
-    required this.firstname,
-    required this.lastname,
-    required this.username,
-    required this.email,
-    required this.mobileCode,
-    required this.mobile,
-    required this.image,
+    this.firstname,
+    this.lastname,
+    this.username,
+    this.email,
+    this.mobileCode,
+    this.mobile,
+    this.image,
     required this.kycVerified,
-    required this.country,
-    required this.city,
-    required this.state,
-    required this.postalCode,
-    required this.address,
+    this.country,
+    this.city,
+    this.state,
+    this.postalCode,
+    this.address,
     required this.kyc,
   });
 

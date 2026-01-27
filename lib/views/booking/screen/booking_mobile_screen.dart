@@ -16,7 +16,7 @@ class BookingMobileScreen extends GetView<BookingController> {
               disable: !controller.isFormValid.value,
               onPressed: () {
                 if (controller.isFormValid.value) {
-                  controller.calculateAllCharges();
+                  // No need to calculate charges - done by backend
                   Get.toNamed(Routes.previewScreen);
                 }
               },
@@ -24,9 +24,7 @@ class BookingMobileScreen extends GetView<BookingController> {
           )),
       appBar: CustomAppBar(
           centerTitle: false,
-          DynamicLanguage.key(
-            Strings.bookYorCar,
-          )),
+          Strings.bookYorCar),
       body: _bodyWidget(context),
     );
   }

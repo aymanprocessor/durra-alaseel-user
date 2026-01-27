@@ -1,12 +1,11 @@
 import 'dart:async';
-import 'package:dynamic_languages/dynamic_languages.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../maintenance/maintenance_dialog.dart';
 
-// FOR MAINTENANCE MODE - - - - - - - - - - - - - - - - -
+/// Navigation helper for splash screen timing
+/// Now simplified since language loading is synchronous
 class NavigatorPlug {
-  StreamSubscription<bool>? _subscription;
   StreamSubscription<bool>? _maintenanceSubscription;
   bool _timerStarted = false;
 
@@ -14,23 +13,20 @@ class NavigatorPlug {
     required int seconds,
     required VoidCallback onChanged,
   }) {
-    _subscription = DynamicLanguage.isLoadingValue.stream.listen(
-          (isLoading) {
-        _checkStatus(seconds, onChanged);
-      },
-    );
-
+    // Check maintenance status and navigate after delay
     _maintenanceSubscription =
         Get.find<SystemMaintenanceController>().maintenanceStatus.listen(
               (inMaintenance) {
             _checkStatus(seconds, onChanged);
           },
         );
+    
+    // Also trigger immediately in case maintenance is already checked
+    _checkStatus(seconds, onChanged);
   }
 
   void _checkStatus(int seconds, VoidCallback onChanged) {
     if (!_timerStarted &&
-        !DynamicLanguage.isLoadingValue.value &&
         Get.find<SystemMaintenanceController>().maintenanceStatus.value ==
             false) {
       _timerStarted = true;
@@ -38,10 +34,8 @@ class NavigatorPlug {
       Timer(
         Duration(seconds: seconds),
             () {
-          if (!DynamicLanguage.isLoadingValue.value &&
-              Get.find<SystemMaintenanceController>().maintenanceStatus.value ==
-                  false) {
-            _subscription?.cancel();
+          if (Get.find<SystemMaintenanceController>().maintenanceStatus.value ==
+              false) {
             _maintenanceSubscription?.cancel();
             onChanged();
           } else {
@@ -53,7 +47,6 @@ class NavigatorPlug {
   }
 
   void stopListening() {
-    _subscription?.cancel();
     _maintenanceSubscription?.cancel();
   }
 }

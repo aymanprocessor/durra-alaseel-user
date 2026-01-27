@@ -9,6 +9,25 @@ class PreviewSectionCard extends GetView<PreviewController> {
 
   @override
   Widget build(BuildContext context) {
+    final model = controller.bookingPreviewModel;
+    final pricingBreakdown = model?.data.pricingBreakdown;
+    final currency = model?.data.bookingCurrency ?? 'SAR';
+    final bookingDetails = model?.data.bookingDetails;
+    final user = model?.data.user;
+    final branch = model?.data.car?.branch;
+    
+    // Determine pickup location display
+    String pickupLocationDisplay;
+    if (branch?.name != null && branch!.name.isNotEmpty) {
+      // Use branch name if available
+      pickupLocationDisplay = '${branch.name} Branch';
+    } else {
+      // Use map location address
+      pickupLocationDisplay = bookingDetails?.pickupLocation?.address ?? 
+                             bookController.pickupLocation.value?.address ?? 
+                             'Not selected';
+    }
+    
     return Column(
       crossAxisAlignment: crossStart,
       children: [
@@ -28,38 +47,59 @@ class PreviewSectionCard extends GetView<PreviewController> {
               borderRadius: BorderRadius.circular(Dimensions.radius * 0.5)),
           child: Column(
             children: [
-              _cardSection(Strings.PickUpLocation,
-                  bookController.locationController.text),
-              _cardSection(Strings.destination,
-                  bookController.destinationController.text),
-              _cardSection(Strings.PickUpdate,
-                  Get.find<DashboardController>().selectedDate.value),
-              _cardSection(Strings.PickUpTime,
-                  Get.find<DashboardController>().selectedTime.value),
-              _cardSection(
-                  Strings.roundTripDate,
-                  bookController.selectedRoundDate.value.isEmpty
-                      ? 'N/A'
-                      : bookController.selectedRoundDate.value),
-              _cardSection(
-                  Strings.roundTripTime,
-                  bookController.selectedRoundTime.value.isEmpty
-                      ? 'N/A'
-                      : bookController.selectedRoundTime.value),
+              // User Email
+              if (user?.email != null && user!.email.isNotEmpty)
+                _cardSection(Strings.email, user.email),
+              // User Mobile
+              if (user?.mobile != null && user!.mobile.isNotEmpty)
+                _cardSection(Strings.Phone, user.mobile),
+              // Pickup Location
+              _cardSection(Strings.PickUpLocation, pickupLocationDisplay),
+              // Pickup Date from bookingDetails
+              if (bookingDetails?.pickupDate != null && bookingDetails!.pickupDate.isNotEmpty)
+                _cardSection(Strings.PickUpdate, bookingDetails.pickupDate),
+              // Pickup Time from bookingDetails
+              if (bookingDetails?.pickupTime != null && bookingDetails!.pickupTime.isNotEmpty)
+                _cardSection(Strings.PickUpTime, bookingDetails.pickupTime),
+              // Round Trip Date - only show if exists
+              if (bookingDetails?.roundPickupDate != null && bookingDetails!.roundPickupDate!.isNotEmpty)
+                _cardSection(Strings.roundTripDate, bookingDetails.roundPickupDate!),
+              // Round Trip Time - only show if exists
+              if (bookingDetails?.roundPickupTime != null && bookingDetails!.roundPickupTime!.isNotEmpty)
+                _cardSection(Strings.roundTripTime, bookingDetails.roundPickupTime!),
+              // Car Model
               _cardSection(Strings.carModel, controller.carModel.value),
-              _cardSection(Strings.carNumber, controller.carNumber.value),
-              _cardSection(Strings.distance,
-                  '${bookController.distanceController.text} KM'),
-              _cardSection(Strings.rate,
-                  '${double.parse(Get.find<BookingController>().Fees.value).toStringAsFixed(0)}/KM USD'),
-              _cardSection(
-                Strings.totalRent,
-                '${Get.find<BookingController>().totalFees.value.toStringAsFixed(BasicServices.precision.value)} USD',
-              ),
+              // Pricing breakdown
+              if (pricingBreakdown != null) ...[
+                _cardSection(
+                  Strings.rentalDays,
+                  '${pricingBreakdown.rentalDays}',
+                ),
+                _cardSection(
+                  Strings.rentalFees,
+                  '${pricingBreakdown.rentalFees} $currency',
+                ),
+                if (double.tryParse(pricingBreakdown.deliveryPrice) != null && 
+                    double.parse(pricingBreakdown.deliveryPrice) > 0)
+                  _cardSection(
+                    'Delivery',
+                    '${pricingBreakdown.deliveryPrice} $currency',
+                  ),
+                if (double.tryParse(pricingBreakdown.charges) != null && 
+                    double.parse(pricingBreakdown.charges) > 0)
+                  _cardSection(
+                    'Charges',
+                    '${pricingBreakdown.charges} $currency',
+                  ),
+                _cardSection(
+                  Strings.tax,
+                  '${pricingBreakdown.taxAmount} $currency',
+                ),
+              ],
               Obx(
                 () => _cardSection(
                   Strings.totalPayable,
-                  '${controller.totalPayable.value.toStringAsFixed(BasicServices.precision.value)} USD',
+                  '${controller.totalPayable.value.toStringAsFixed(BasicServices.precision.value)} $currency',
                 ),
               )
             ],

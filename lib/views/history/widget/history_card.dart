@@ -19,7 +19,7 @@ class HistoryCard extends GetView<HistoryController> {
           children: [
             ListTile(
               title: TextWidget(
-                info.cars.carModel,
+                info.cars.carModel?.toString() ?? 'N/A',
                 typographyStyle: TypographyStyle.titleMedium,
               ),
               subtitle: Row(
