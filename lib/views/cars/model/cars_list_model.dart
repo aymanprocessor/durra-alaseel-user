@@ -177,12 +177,15 @@ class CarItem {
   int year;
   String fees;
   String price;
+  String? deliveryPrice;
   String image;
   String imageUrl;
   int status;
+  bool? isDelivery;
   CarTypeInfo? carType;
   CarModelInfo? carModelInfo;
   AreaInfo? area;
+  BranchInfo? branch;
   VendorInfo? vendor;
   String createdAt;
 
@@ -196,12 +199,15 @@ class CarItem {
     required this.year,
     required this.fees,
     required this.price,
+    this.deliveryPrice,
     required this.image,
     required this.imageUrl,
     required this.status,
+    this.isDelivery,
     this.carType,
     this.carModelInfo,
     this.area,
+    this.branch,
     this.vendor,
     required this.createdAt,
   });
@@ -225,6 +231,8 @@ class CarItem {
     return carModel;
   }
 
+  double get deliveryPriceValue => double.tryParse(deliveryPrice ?? '0') ?? 0.0;
+
   factory CarItem.fromJson(Map<String, dynamic> json) => CarItem(
         id: json["id"] ?? 0,
         vendorId: json["vendor_id"] ?? 0,
@@ -237,9 +245,11 @@ class CarItem {
         year: json["year"] ?? 0,
         fees: json["fees"]?.toString() ?? '0',
         price: json["price"]?.toString() ?? '0',
+        deliveryPrice: json["delivery_price"]?.toString() ?? '0',
         image: json["image"] ?? '',
         imageUrl: json["image_url"] ?? '',
         status: json["status"] ?? 0,
+        isDelivery: _parseDeliveryAvailability({"is_delivery": json["is_delivery"]}),
         carType: json["car_type"] != null
             ? CarTypeInfo.fromJson(json["car_type"])
             : null,
@@ -247,6 +257,7 @@ class CarItem {
             ? CarModelInfo.fromJson(json["car_model_info"])
             : null,
         area: json["area"] != null ? AreaInfo.fromJson(json["area"]) : null,
+        branch: json["branch"] != null ? BranchInfo.fromJson(json["branch"]) : null,
         vendor:
             json["vendor"] != null ? VendorInfo.fromJson(json["vendor"]) : null,
         createdAt: json["created_at"] ?? '',
@@ -262,12 +273,15 @@ class CarItem {
         "year": year,
         "fees": fees,
         "price": price,
+        "delivery_price": deliveryPrice ?? '0',
         "image": image,
         "image_url": imageUrl,
         "status": status,
+        "is_delivery": isDelivery,
         "car_type": carType?.toJson(),
         "car_model_info": carModelInfo?.toJson(),
         "area": area?.toJson(),
+        "branch": branch?.toJson(),
         "vendor": vendor?.toJson(),
         "created_at": createdAt,
       };
@@ -339,6 +353,91 @@ class AreaInfo {
         "id": id,
         "name": name,
       };
+}
+
+class BranchInfo {
+  int id;
+  String name;
+  String slug;
+  String? address;
+  bool? hasDelivery;
+  double latitude;
+  double longitude;
+  bool deliveryEnabled;
+  double? deliveryRadiusKm;
+
+  BranchInfo({
+    required this.id,
+    required this.name,
+    required this.slug,
+    this.address,
+    this.hasDelivery,
+    this.latitude = 0.0,
+    this.longitude = 0.0,
+    this.deliveryEnabled = false,
+    this.deliveryRadiusKm,
+  });
+
+  bool get isDeliveryAvailable =>
+      deliveryEnabled && deliveryRadiusKm != null && deliveryRadiusKm! > 0;
+
+  factory BranchInfo.fromJson(Map<String, dynamic> json) => BranchInfo(
+        id: json["id"] ?? 0,
+        name: json["name"] ?? '',
+        slug: json["slug"] ?? '',
+        address: json["address"],
+        hasDelivery: _parseDeliveryAvailability(json),
+        latitude: (json["latitude"] as num?)?.toDouble() ?? 0.0,
+        longitude: (json["longitude"] as num?)?.toDouble() ?? 0.0,
+        deliveryEnabled: json["delivery_enabled"] as bool? ?? false,
+        deliveryRadiusKm: (json["delivery_radius_km"] as num?)?.toDouble(),
+      );
+
+  /// Parse from flat car-level JSON keys (branch_id, branch_name, branch_latitude, etc.)
+  factory BranchInfo.fromCarJson(Map<String, dynamic> json) => BranchInfo(
+        id: json["branch_id"] as int? ?? 0,
+        name: json["branch_name"] as String? ?? '',
+        slug: '',
+        address: null,
+        hasDelivery: json["delivery_enabled"] as bool? ?? false,
+        latitude: (json["branch_latitude"] as num?)?.toDouble() ?? 0.0,
+        longitude: (json["branch_longitude"] as num?)?.toDouble() ?? 0.0,
+        deliveryEnabled: json["delivery_enabled"] as bool? ?? false,
+        deliveryRadiusKm: (json["delivery_radius_km"] as num?)?.toDouble(),
+      );
+
+  Map<String, dynamic> toJson() => {
+        "id": id,
+        "name": name,
+        "slug": slug,
+        "address": address,
+        "has_delivery": hasDelivery,
+        "latitude": latitude,
+        "longitude": longitude,
+        "delivery_enabled": deliveryEnabled,
+        "delivery_radius_km": deliveryRadiusKm,
+      };
+}
+
+bool? _parseDeliveryAvailability(Map<String, dynamic> json) {
+  final raw = json["has_delivery"] ??
+      json["is_delivery"] ??
+      json["delivery_available"] ??
+      json["delivery"];
+
+  if (raw is bool) return raw;
+  if (raw is num) return raw == 1;
+  if (raw is String) {
+    final value = raw.toLowerCase().trim();
+    if (value == 'true' || value == '1' || value == 'yes' || value == 'available') {
+      return true;
+    }
+    if (value == 'false' || value == '0' || value == 'no' || value == 'not available') {
+      return false;
+    }
+  }
+
+  return null;
 }
 
 class VendorInfo {

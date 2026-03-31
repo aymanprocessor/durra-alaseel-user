@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../../base/themes/token.dart';
-import '../../../base/utils/dimensions.dart';
 import '../../../base/widgets/loader.dart';
 import '../../../languages/strings.dart';
 import '../../../routes/routes.dart';

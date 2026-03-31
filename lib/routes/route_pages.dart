@@ -95,5 +95,37 @@ class RoutePageList {
       page: () => HistoryScreen(),
       binding: HistoryBinding(),
     ),
+    GetPage(
+      name: Routes.pusherChannelsScreen,
+      page: () => const PusherChannelsExampleView(),
+    ),
+    GetPage(
+      name: Routes.kycScreen,
+      page: () => const KycScreen(),
+      binding: KycBinding(),
+    ),
+    GetPage(
+      name: Routes.bookingDetailsScreen,
+      page: () => const BookingDetailsScreen(),
+      binding: BookingDetailsBinding(),
+    ),
+    GetPage(
+      name: Routes.extensionHistoryScreen,
+      page: () => const ExtensionHistoryScreen(),
+      binding: ExtensionHistoryBinding(),
+    ),
+    GetPage(
+      name: Routes.mapLocationPickerScreen,
+      page: () => const MapLocationPickerScreen(),
+    ),
+    GetPage(
+      name: Routes.walletScreen,
+      page: () => const WalletScreen(),
+      binding: WalletBinding(),
+    ),
+    GetPage(
+      name: Routes.walletPaymentWebview,
+      page: () => const WalletPaymentWebviewScreen(),
+    ),
   ];
 }

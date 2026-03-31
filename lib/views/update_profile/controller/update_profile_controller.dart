@@ -85,13 +85,18 @@ class UpdateProfileController extends GetxController {
     // Save email and mobile to LocalStorage for auto-fill in booking
     LocalStorage.save(email: userInfo.email ?? '', number: userInfo.mobile ?? '');
 
-    if (userInfo.image != null && userInfo.image != '') {
+    // Check if user has a profile image - handle null, empty, and string "null"
+    if (userInfo.image != null && 
+        userInfo.image!.isNotEmpty && 
+        userInfo.image != 'null') {
       userImage.value =
           "${imagePaths.baseUrl}/${imagePaths.pathLocation}/${userInfo.image}";
-
       isAvailableUserImage.value = true;
+      print('✅ User has profile image: ${userInfo.image}');
     } else {
       userImage.value = "${imagePaths.baseUrl}/${imagePaths.defaultImage}";
+      isAvailableUserImage.value = false;
+      print('⚠️ No user image, using default (image value was: ${userInfo.image})');
     }
 
     _profileInfoModel.data.countries.forEach((element) {
@@ -161,6 +166,7 @@ class UpdateProfileController extends GetxController {
   ImagePicker imagePicker = ImagePicker();
   var isImagePathSet = false.obs;
   var imagePath = "".obs;
+  Rx<File?> imageFile = Rx<File?>(null);
 
   void setImagePath(String path) {
     imagePath.value = path;
@@ -177,7 +183,10 @@ class UpdateProfileController extends GetxController {
         maxWidth: 600,
       );
       if (image == null) return;
+      
+      // Store the File object directly to prevent path issues with cached files
       pickedFile = File(image.path);
+      imageFile.value = pickedFile;
       setImagePath(pickedFile!.path);
     } on PlatformException catch (e) {
       CustomSnackBar.error('Error: $e');

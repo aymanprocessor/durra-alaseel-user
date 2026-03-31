@@ -180,15 +180,22 @@ class _MapPickerWidgetState extends State<MapPickerWidget> {
     _getAddressFromLatLng(_currentCenter);
   }
 
-  void _confirmLocation() {
+  Future<void> _confirmLocation() async {
+    if (_currentAddress.isEmpty) {
+      await _getAddressFromLatLng(_currentCenter);
+    }
+
+    final resolvedAddress = _currentAddress.isNotEmpty
+        ? _currentAddress
+        : Strings.locationNotFound.tr;
     PickupLocation selectedLocation = PickupLocation(
       latitude: _currentCenter.latitude,
       longitude: _currentCenter.longitude,
-      address: _currentAddress,
+      address: resolvedAddress,
     );
 
     widget.onLocationSelected(selectedLocation);
-    Get.back();
+    Navigator.of(context).pop();
   }
 
   @override

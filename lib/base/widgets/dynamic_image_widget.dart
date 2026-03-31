@@ -46,7 +46,7 @@ class _DropFileState extends State<DynamicImageWidget> {
         controller.listFieldName.add(widget.fieldName);
       }
       setState(() {
-        controller.updateImageData(widget.fieldName, imageFile!.path);
+        controller.updateImageData(widget.fieldName, imageFile!.path, imageFile: imageFile);
       });
       Get.back();
       // CustomSnackBar.success('$labelName Added');
@@ -76,7 +76,15 @@ class _DropFileState extends State<DynamicImageWidget> {
           margin: EdgeInsets.all(
             Dimensions.horizontalSize * 0.25,
           ),
-          decoration: controller.getImagePath(widget.fieldName) == null
+          decoration: controller.getImageFile(widget.fieldName) != null
+              ? BoxDecoration(
+            borderRadius: BorderRadius.circular(Dimensions.radius),
+            image: DecorationImage(
+              fit: BoxFit.cover,
+              image: FileImage(controller.getImageFile(widget.fieldName)!),
+            ),
+          )
+              : controller.getImagePath(widget.fieldName) == null
               ? BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(Dimensions.radius),

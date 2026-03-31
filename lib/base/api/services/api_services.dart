@@ -29,6 +29,12 @@ class ApiServices {
           code: statusCode,
           showErrorMessage: showErrorMessage,
         );
+      } else if (method == 'DELETE') {
+        mapResponse = await ApiMethod(isBasic: isBasic).delete(
+          apiEndpoint,
+          code: statusCode,
+          showErrorMessage: showErrorMessage,
+        );
       } else if (method == 'GET') {
         mapResponse = await ApiMethod(isBasic: isBasic).get(
           apiEndpoint,
@@ -62,6 +68,8 @@ class ApiServices {
     bool showSuccessMessage = false,
     String tostTitle = Strings.success,
   }) async {
+    log.i('ApiServices multipartApiService called endpoint: $apiEndpoint');
+    log.i('ApiServices multipartApiService fieldList: $fieldList pathList: $pathList');
     try {
       Map<String, dynamic>? mapResponse =
           await ApiMethod(isBasic: isBasic).multipartMultiFile(
@@ -71,9 +79,13 @@ class ApiServices {
         pathList: pathList,
       );
 
+      log.i('ApiServices multipartApiService mapResponse: $mapResponse');
       if (mapResponse != null) {
+        log.i('ApiServices multipartApiService calling _handleResponse');
         return _handleResponse<T>(
             mapResponse, fromJson, showSuccessMessage, tostTitle);
+      } else {
+        log.i('ApiServices multipartApiService mapResponse is null');
       }
     } catch (e) {
       log.e('🐞🐞🐞 err from multipartApiService ==> $e 🐞🐞🐞');
@@ -89,7 +101,10 @@ class ApiServices {
     bool showSuccessMessage,
     String tostTitle,
   ) {
+    log.i('ApiServices _handleResponse called mapResponse: $mapResponse');
+    log.i('ApiServices _handleResponse calling fromJson');
     T result = fromJson(mapResponse);
+    log.i('ApiServices _handleResponse fromJson result: $result');
 
     if (showSuccessMessage) {
       var messages = CommonSuccessModel.fromJson(mapResponse);

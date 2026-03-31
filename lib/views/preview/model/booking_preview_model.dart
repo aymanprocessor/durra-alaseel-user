@@ -279,6 +279,8 @@ class Car {
   String pricePerDay;
   String pricePerWeek;
   String pricePerMonth;
+  String? allowanceKm;
+  String? allowancePricePerKm;
   String? image;
   String? imageUrl;
   int status;
@@ -305,6 +307,8 @@ class Car {
     required this.pricePerDay,
     required this.pricePerWeek,
     required this.pricePerMonth,
+    this.allowanceKm,
+    this.allowancePricePerKm,
     this.image,
     this.imageUrl,
     required this.status,
@@ -332,6 +336,8 @@ class Car {
     pricePerDay: _asString(json["price_per_day"], fallback: "0.00"),
     pricePerWeek: _asString(json["price_per_week"], fallback: "0.00"),
     pricePerMonth: _asString(json["price_per_month"], fallback: "0.00"),
+    allowanceKm: json["allowance_km"] == null ? null : _asString(json["allowance_km"]),
+    allowancePricePerKm: json["allowance_price_per_km"] == null ? null : _asString(json["allowance_price_per_km"]),
     image: json["image"] == null ? null : _asString(json["image"]),
     imageUrl: json["image_url"] == null ? null : _asString(json["image_url"]),
     status: _asInt(json["status"], fallback: 0),
@@ -359,6 +365,8 @@ class Car {
     "price_per_day": pricePerDay,
     "price_per_week": pricePerWeek,
     "price_per_month": pricePerMonth,
+    "allowance_km": allowanceKm,
+    "allowance_price_per_km": allowancePricePerKm,
     "image": image,
     "image_url": imageUrl,
     "status": status,

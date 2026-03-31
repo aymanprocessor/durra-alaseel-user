@@ -18,7 +18,12 @@ import '../bindings/reset_password_binding.dart';
 import '../bindings/setting_binding.dart';
 import '../bindings/splash_binding.dart';
 import '../bindings/update_profile_binding.dart';
+import '../bindings/booking_details_binding.dart';
+import '../bindings/extension_history_binding.dart';
+import '../bindings/kyc_binding.dart';
+import '../bindings/wallet_binding.dart';
 import '../views/auth/change_password/screen/change_password_screen.dart';
+import '../views/kyc/screen/kyc_screen.dart';
 import '../views/auth/login/screen/login_screen.dart';
 import '../views/auth/new_password/screen/new_password_screen.dart';
 import '../views/auth/otp_verification/screen/otp_verification_screen.dart';
@@ -26,14 +31,20 @@ import '../views/auth/register/screen/register_screen.dart';
 import '../views/auth/register_otp_verification/screen/register_otp_verification_screen.dart';
 import '../views/auth/reset_password/screen/reset_password_screen.dart';
 import '../views/booking/screen/booking_screen.dart';
+import '../views/booking/screen/map_location_picker_screen.dart';
 import '../views/cars/screen/cars_list_screen.dart';
 import '../views/notification/screen/notification_screen.dart';
 import '../views/onboard/screen/onboard_screen.dart';
 import '../views/preview/screen/preview_screen.dart';
 import '../views/product_details/screen/product_details_screen.dart';
+import '../views/pusher_channels_example_view.dart';
+import '../views/booking_details/screen/booking_details_screen.dart';
+import '../views/extension_history/screen/extension_history_screen.dart';
 import '../views/setting/screen/setting_screen.dart';
 import '../views/splash/screen/splash_screen.dart';
 import '../views/update_profile/screen/update_profile_screen.dart';
+import '../views/wallet/screen/wallet_screen.dart';
+import '../views/wallet/screen/wallet_payment_webview_screen.dart';
 
 part '../routes/route_pages.dart';
 
@@ -67,4 +78,11 @@ class Routes {
   static const String paymentManualField = '/paymentManualField';
   static const String RePaymentManualField = '/RePaymentManualField';
   static const String settingScreen = '/settingScreen';
+  static const String pusherChannelsScreen = '/pusherChannelsScreen';
+  static const String kycScreen = '/kycScreen';
+  static const String bookingDetailsScreen = '/bookingDetailsScreen';
+  static const String extensionHistoryScreen = '/extensionHistoryScreen';
+  static const String mapLocationPickerScreen = '/mapLocationPickerScreen';
+  static const String walletScreen = '/walletScreen';
+  static const String walletPaymentWebview = '/walletPaymentWebview';
 }

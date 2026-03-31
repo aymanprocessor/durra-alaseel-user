@@ -3,6 +3,9 @@ class ApiConfig {
   static const String mainDomain = "http://192.168.1.211:8001";
   static const String baseUrl = "$mainDomain/api/v1";
   static const String languageUrl = "$baseUrl/settings/languages";
+
+  static String extensionHistoryUrl(int bookingId) =>
+      '$baseUrl/user/car-booking/$bookingId/extensions';
 }
 
 enum ApiEndpoint {
@@ -47,6 +50,14 @@ enum ApiEndpoint {
   updatePassword('/user/profile/password/update'),
   deleteAccount('/user/profile/delete-account'),
 
+  // Identification (KYC)
+  identificationInfo('/user/identification/info'),
+  identificationAll('/user/identification/all'),
+  uploadNationalId('/user/identification/national-id/upload'),
+  deleteNationalId('/user/identification/national-id/delete'),
+  uploadDrivingLicense('/user/identification/driving-license/upload'),
+  deleteDrivingLicense('/user/identification/driving-license/delete'),
+
   // Booking confirm
   bookingConfirm('/user/car-booking/confirm'),
   getBookingPreview('/user/car-booking/preview'),
@@ -57,7 +68,20 @@ enum ApiEndpoint {
   rePayment('/user/car-booking/re-manual/input-fields'),
 
   // Authorize
-  authorizeSubmit("/user/car-booking/authorize-payment-submit");
+  authorizeSubmit("/user/car-booking/authorize-payment-submit"),
+
+  // Booking Extension
+  extendPreview('/user/car-booking/extend/preview'),
+  extendBooking('/user/car-booking/extend'),
+
+  // Delivery
+  checkDeliveryArea('/user/check-delivery-area'),
+
+  // Wallet
+  walletBalance('/user/wallet'),
+  walletTransactions('/user/wallet/transactions'),
+  walletRecharge('/user/wallet/recharge'),
+  cancelBooking('/user/car-booking/cancel');
 
   final String path;
 

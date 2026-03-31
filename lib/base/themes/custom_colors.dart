@@ -1,4 +1,4 @@
-part of 'token.dart';
+part of 'package:carbo/base/themes/token.dart';
 
 class CustomColor {
   //Light Color (updated to match uploaded logo: red + gray palette)

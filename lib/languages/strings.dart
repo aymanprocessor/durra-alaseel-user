@@ -49,6 +49,8 @@ class Strings {
   static const String yourLocation = "appLYourLocation";
   static const String login = "appLLogin";
   static const String notification = "appLNotification";
+  static const String wallet = "appLWallet";
+  static const String pusherChannels = "appLPusherChannels";
   static const String noNotification = "appLNoNotification";
   static const String noHistory = "appLNoHistory";
   static const String loginNow = "appLLoginNow";
@@ -168,6 +170,7 @@ class Strings {
   // Booking - Rental Days and Location
   static const String rentalDays = "appLRentalDays";
   static const String rentalFees = "appLRentalFees";
+  static const String delivery = "appLDelivery";
   static const String tax = "appLTax";
   static const String enterRentalDays = "appLEnterRentalDays";
   static const String selectPickupLocation = "appLSelectPickupLocation";
@@ -179,5 +182,43 @@ class Strings {
   static const String searchLocation = "appLSearchLocation";
   static const String loadingAddress = "appLLoadingAddress";
   static const String locationNotFound = "appLLocationNotFound";
-  
+  static const String allowanceInfo = "appLAllowanceInfo";
+
+  // KYC (Know Your Customer) / Identification
+  static const String kycVerification = "appLKycVerification";
+  static const String nationalId = "appLNationalId";
+  static const String drivingLicense = "appLDrivingLicense";
+  static const String uploadImage = "appLUploadImage";
+  static const String uploadToServer = "appLUploadToServer";
+  static const String clear = "appLClear";
+  static const String noImageUploaded = "appLNoImageUploaded";
+  static const String failedToLoadImage = "appLFailedToLoadImage";
+  static const String selectImageSource = "appLSelectImageSource";
+  static const String verificationComplete = "appLVerificationComplete";
+  static const String verificationIncomplete = "appLVerificationIncomplete";
+  static const String allDocumentsUploaded = "appLAllDocumentsUploaded";
+  static const String pleaseUploadAllDocuments = "appLPleaseUploadAllDocuments";
+  static const String progress = "appLProgress";
+  static const String nationalIdUploadedSuccessfully = "appLNationalIdUploadedSuccessfully";
+  static const String drivingLicenseUploadedSuccessfully = "appLDrivingLicenseUploadedSuccessfully";
+  static const String nationalIdDeletedSuccessfully = "appLNationalIdDeletedSuccessfully";
+  static const String drivingLicenseDeletedSuccessfully = "appLDrivingLicenseDeletedSuccessfully";
+  static const String confirmUpload = "appLConfirmUpload";
+  static const String confirmDelete = "appLConfirmDelete";
+  static const String uploadNationalIdQuestion = "appLUploadNationalIdQuestion";
+  static const String uploadDrivingLicenseQuestion = "appLUploadDrivingLicenseQuestion";
+  static const String deleteNationalIdQuestion = "appLDeleteNationalIdQuestion";
+  static const String deleteDrivingLicenseQuestion = "appLDeleteDrivingLicenseQuestion";
+  static const String pleaseSelectImage = "appLPleaseSelectImage";
+  static const String errorPickingImage = "appLErrorPickingImage";
+  static const String errorCapturingImage = "appLErrorCapturingImage";
+  static const String somethingWentWrong = "appLSomethingWentWrong";
+  static const String license = "appLLicense";
+  static const String identity = "appLIdentity";
+
+  // Branch Delivery Status
+  static const String branchDelivery = "appLBranchDelivery";
+  static const String deliveryAvailable = "appLDeliveryAvailable";
+  static const String deliveryNotAvailable = "appLDeliveryNotAvailable";
+  static const String deliveryUnknown = "appLDeliveryUnknown";
 }

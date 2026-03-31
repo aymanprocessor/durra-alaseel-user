@@ -5,6 +5,8 @@ import '../utils/basic_import.dart';
 class CustomDatePicker extends StatefulWidget {
   final RxString selectedDate; // Observable date string
   final bool showBorder;
+  final DateTime? firstDate;
+  final DateTime? lastDate;
 
   final String label;
   final String subtitle;
@@ -28,6 +30,8 @@ class CustomDatePicker extends StatefulWidget {
     this.calendarIconColor,
     this.leading,
     this.fieldPadding,
+    this.firstDate,
+    this.lastDate,
     Key? key, this.labelFontSize, this.hintFontSize, this.labelSpacing, required this.showBorder,
   }) : super(key: key);
 
@@ -40,11 +44,14 @@ class _CustomDatePickerState extends State<CustomDatePicker>
   bool isDatePickerOpened = false;
 
   Future<void> _selectDate() async {
+    final DateTime minDate = _normalizeDate(widget.firstDate ?? DateTime(1900));
+    final DateTime maxDate = _normalizeDate(widget.lastDate ?? DateTime(2100));
+    final DateTime initialDate = _clampDate(DateTime.now(), minDate, maxDate);
     final DateTime? pickedDate = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(1900),
-      lastDate: DateTime(2100),
+      initialDate: initialDate,
+      firstDate: minDate,
+      lastDate: maxDate,
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
@@ -74,6 +81,16 @@ class _CustomDatePickerState extends State<CustomDatePicker>
 
   String _formatDate(DateTime date) {
     return "${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
+  }
+
+  DateTime _normalizeDate(DateTime date) {
+    return DateTime(date.year, date.month, date.day);
+  }
+
+  DateTime _clampDate(DateTime date, DateTime min, DateTime max) {
+    if (date.isBefore(min)) return min;
+    if (date.isAfter(max)) return max;
+    return date;
   }
 
 

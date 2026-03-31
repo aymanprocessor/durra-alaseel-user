@@ -1,5 +1,5 @@
-import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:carbo/base/design_system/carbo_ds.dart';
 import 'package:carbo/views/update_profile/controller/update_profile_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -7,144 +7,179 @@ import '../../../../base/utils/basic_import.dart';
 import '../../dashboard/controller/dashboard_controller.dart';
 
 class ProfileImagePicker extends GetView<UpdateProfileController> {
-  ProfileImagePicker({super.key});
+  final double radius;
+  ProfileImagePicker({super.key, this.radius = 52.0});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      alignment: Alignment.center,
-      margin: EdgeInsets.symmetric(
-        vertical: Dimensions.verticalSize,
-      ),
-      child: InkWell(
-        splashColor: Colors.transparent,
-        highlightColor: Colors.transparent,
-        onTap: () {
-          showModalBottomSheet(
-            context: context,
-            builder: (context) => _imagePickerBottomSheetWidget(context),
-          );
-        },
-        child: Stack(
-          alignment: Alignment.bottomRight,
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  width: 10,
-                  color: CustomColor.background,
-                ),
-              ),
-              child: Obx(
-                () => Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      width: 2,
-                      color: CustomColor.primary,
-                    ),
-                  ),
-                  child: controller.imagePath.value != ''
-                      ? CircleAvatar(
-                          backgroundColor: CustomColor.background,
-                          backgroundImage:
-                              FileImage(File(controller.imagePath.value)),
-                          radius: Dimensions.radius * 5,
-                        )
-                      : Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                                width: 2, color: CustomColor.primary),
-                          ),
-                          child: CircleAvatar(
-                            radius: Dimensions.radius * 4.5,
-                            backgroundColor: Colors.transparent,
-                            child: ClipOval(
-                              child: CachedNetworkImage(
-                                imageUrl: Get.find<DashboardController>()
-                                    .userProfileImage
-                                    .value,
-                                errorWidget: (context, url, error) =>
-                                    Image.network(
+    return GestureDetector(
+      onTap: () {
+        showModalBottomSheet(
+          context: context,
+          backgroundColor: Colors.transparent,
+          builder: (context) => _imagePickerBottomSheetWidget(context),
+        );
+      },
+      child: Stack(
+        alignment: Alignment.bottomRight,
+        children: [
+          // outer ring — white border that separates avatar from the red hero
+          Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: CarboColors.surface,
+              boxShadow: CarboShadow.floating,
+            ),
+            padding: const EdgeInsets.all(4),
+            child: Obx(() {
+              return CircleAvatar(
+                radius: radius,
+                backgroundColor: CarboColors.background,
+                backgroundImage: controller.imageFile.value != null
+                    ? FileImage(controller.imageFile.value!) as ImageProvider
+                    : null,
+                child: controller.imageFile.value == null
+                    ? ClipOval(
+                        child: Builder(builder: (context) {
+                          final profileUrl = Get.find<DashboardController>()
+                              .userProfileImage
+                              .value;
+                          if (profileUrl.isEmpty) {
+                            return Icon(Icons.person_rounded,
+                                size: radius * 0.9,
+                                color: CarboColors.textSecondary);
+                          }
+                          return CachedNetworkImage(
+                            imageUrl: profileUrl,
+                            width: radius * 2,
+                            height: radius * 2,
+                            fit: BoxFit.cover,
+                            errorWidget: (context, url, error) {
+                              final defaultUrl =
                                   Get.find<DashboardController>()
                                       .userDefaultImageUrl
-                                      .value,
+                                      .value;
+                              if (defaultUrl.isEmpty) {
+                                return Icon(Icons.person_rounded,
+                                    size: radius * 0.9,
+                                    color: CarboColors.textSecondary);
+                              }
+                              return Image.network(defaultUrl,
                                   fit: BoxFit.cover,
-                                ),
-                                imageBuilder: (context, imageProvider) =>
-                                    Container(
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    image: DecorationImage(
-                                      image: imageProvider,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                ),
+                                  errorBuilder: (_, __, ___) => Icon(
+                                      Icons.person_rounded,
+                                      size: radius * 0.9,
+                                      color: CarboColors.textSecondary));
+                            },
+                          );
+                        }),
+                      )
+                    : null,
+              );
+            }),
+          ),
+          // camera badge
+          Positioned(
+            bottom: 4,
+            right: 4,
+            child: Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                gradient: CarboGradients.primary,
+                shape: BoxShape.circle,
+                border: Border.all(color: CarboColors.surface, width: 2.5),
+                boxShadow: CarboShadow.primaryGlow,
               ),
+              child: const Icon(Icons.camera_alt_rounded,
+                  color: Colors.white, size: 16),
             ),
-            Positioned(
-              bottom: 17,
-              right: 8,
-              child: CircleAvatar(
-                backgroundColor: CustomColor.whiteColor,
-                radius: Dimensions.radius * 1.3,
-                child: Icon(
-                  Icons.camera,
-                  color: CustomColor.primary,
-                  size: Dimensions.iconSizeDefault * 0.8,
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  _imagePickerBottomSheetWidget(BuildContext context) {
+  Widget _imagePickerBottomSheetWidget(BuildContext context) {
     return Container(
-      width: double.infinity,
-      height: MediaQuery.of(context).size.height * 0.15,
-      margin: EdgeInsets.all(Dimensions.verticalSize * 0.5),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+      margin: const EdgeInsets.fromLTRB(
+          CarboSpacing.x4, 0, CarboSpacing.x4, CarboSpacing.x5),
+      decoration: const BoxDecoration(
+        color: CarboColors.surface,
+        borderRadius: CarboRadius.xxlTop,
+      ),
+      padding: const EdgeInsets.all(CarboSpacing.x5),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Padding(
-            padding: EdgeInsets.all(Dimensions.paddingSize),
-            child: IconButton(
-                onPressed: () {
-                  Get.back();
-                  controller.pickImage(ImageSource.gallery);
-                },
-                icon: Icon(
-                  Icons.image,
-                  color: CustomColor.primary,
-                  size: 50,
-                )),
-          ),
-          Padding(
-            padding: EdgeInsets.all(Dimensions.paddingSize),
-            child: IconButton(
-              onPressed: () {
-                Get.back();
-                controller.pickImage(ImageSource.camera);
-              },
-              icon: Icon(
-                Icons.camera,
-                color: CustomColor.primary,
-                size: 50,
-              ),
+          // drag handle
+          Container(
+            width: 40,
+            height: 4,
+            margin: const EdgeInsets.only(bottom: CarboSpacing.x5),
+            decoration: BoxDecoration(
+              color: CarboColors.border,
+              borderRadius: CarboRadius.fullAll,
             ),
           ),
+          Text('Update Photo',
+              style: CarboTypography.titleMedium
+                  .copyWith(fontWeight: FontWeight.w700)),
+          const SizedBox(height: CarboSpacing.x5),
+          Row(
+            children: [
+              Expanded(
+                child: _pickerOption(
+                  context,
+                  icon: Icons.photo_library_rounded,
+                  label: 'Gallery',
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    controller.pickImage(ImageSource.gallery);
+                  },
+                ),
+              ),
+              const SizedBox(width: CarboSpacing.x4),
+              Expanded(
+                child: _pickerOption(
+                  context,
+                  icon: Icons.camera_alt_rounded,
+                  label: 'Camera',
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    controller.pickImage(ImageSource.camera);
+                  },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: CarboSpacing.x3),
         ],
+      ),
+    );
+  }
+
+  Widget _pickerOption(BuildContext context,
+      {required IconData icon,
+      required String label,
+      required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: CarboSpacing.x5),
+        decoration: BoxDecoration(
+          color: CarboColors.primaryLight,
+          borderRadius: CarboRadius.lgAll,
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: CarboColors.primary, size: 32),
+            const SizedBox(height: CarboSpacing.x2),
+            Text(label,
+                style: CarboTypography.labelMedium
+                    .copyWith(color: CarboColors.primary, fontWeight: FontWeight.w600)),
+          ],
+        ),
       ),
     );
   }

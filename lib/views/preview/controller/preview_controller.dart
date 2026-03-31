@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:carbo/base/utils/local_storage.dart';
 import 'package:carbo/views/booking/controller/booking_controller.dart';
 import 'package:carbo/views/dashboard/controller/dashboard_controller.dart';
@@ -21,6 +22,11 @@ import '../widget/web_payment_screen.dart';
 class PreviewController extends GetxController {
   final dashboardController = Get.put(DashboardController());
 
+  double _deliveryPriceForBooking(BookingController bookingController) {
+    if (!bookingController.isDeliveryEnabled) return 0.0;
+    return bookingController.deliveryPriceValue;
+  }
+
   bool _previewRequestInFlight = false;
 
   List<TextEditingController> inputFieldControllers = [];
@@ -30,6 +36,7 @@ class PreviewController extends GetxController {
   RxString selectType = "".obs;
   List<String> listImagePath = [];
   List<String> listFieldName = [];
+  Map<String, File> imageFileMap = {}; // Store File objects to prevent path issues
 
 
   var identifier = "".obs;
@@ -37,13 +44,17 @@ class PreviewController extends GetxController {
   final TextEditingController cardExpiryController = TextEditingController();
   final TextEditingController cardCVCController = TextEditingController();
 
-  updateImageData(String fieldName, String imagePath) {
+  updateImageData(String fieldName, String imagePath, {File? imageFile}) {
     if (listFieldName.contains(fieldName)) {
       int itemIndex = listFieldName.indexOf(fieldName);
       listImagePath[itemIndex] = imagePath;
     } else {
       listFieldName.add(fieldName);
       listImagePath.add(imagePath);
+    }
+    // Store the File object if provided
+    if (imageFile != null) {
+      imageFileMap[fieldName] = imageFile;
     }
     update();
   }
@@ -54,6 +65,10 @@ class PreviewController extends GetxController {
       return listImagePath[itemIndex];
     }
     return null;
+  }
+  
+  File? getImageFile(String fieldName) {
+    return imageFileMap[fieldName];
   }
 
   Rxn<PaymentGateway> selectPaymentGateway = Rxn<PaymentGateway>();
@@ -130,6 +145,11 @@ class PreviewController extends GetxController {
       'pickup_date': bookingController.selectedPickupDate.value,
       'pickup_time': bookingController.selectedPickupTime.value,
     };
+
+    final deliveryPrice = _deliveryPriceForBooking(bookingController);
+    final includeDelivery = deliveryPrice > 0;
+    queryParams['include_delivery'] = includeDelivery.toString();
+    queryParams['delivery_price'] = deliveryPrice.toString();
     
     // Add pickup_location as separate fields (backend expects array format)
     if (bookingController.pickupLocation.value != null && 
@@ -179,9 +199,24 @@ class PreviewController extends GetxController {
     onlinePayment.value = model.data.paymentType.onlinePayment;
 
     // Update totalPayable from pricing_breakdown
-    final totalString = model.data.pricingBreakdown?.total;
+    final bookingController = Get.find<BookingController>();
+    final pricing = model.data.pricingBreakdown;
+    final totalString = pricing?.total;
     if (totalString != null) {
       totalPayable.value = double.tryParse(totalString) ?? 0.0;
+    }
+
+    final deliveryPrice = _deliveryPriceForBooking(bookingController);
+    if (pricing != null) {
+      final previewDeliveryPrice = double.tryParse(pricing.deliveryPrice) ?? 0.0;
+      if (deliveryPrice > 0) {
+        pricing.deliveryPrice = deliveryPrice.toStringAsFixed(2);
+        if (previewDeliveryPrice == 0) {
+          totalPayable.value += deliveryPrice;
+        }
+      } else {
+        pricing.deliveryPrice = '0.00';
+      }
     }
   }
 
@@ -233,8 +268,7 @@ class PreviewController extends GetxController {
         ? branchName.trim()
         : (pickupLocation?.address ?? '');
 
-    final deliveryPriceString = previewModel?.data.pricingBreakdown?.deliveryPrice;
-    final deliveryPrice = double.tryParse(deliveryPriceString ?? '') ?? 0.0;
+    final deliveryPrice = _deliveryPriceForBooking(bookingController);
     final includeDelivery = deliveryPrice > 0;
 
     final tokenValue = (previewModel?.data.token ?? '').trim();
@@ -314,8 +348,7 @@ class PreviewController extends GetxController {
         ? branchName.trim()
         : (pickupLocation?.address ?? '');
 
-    final deliveryPriceString = previewModel?.data.pricingBreakdown?.deliveryPrice;
-    final deliveryPrice = double.tryParse(deliveryPriceString ?? '') ?? 0.0;
+    final deliveryPrice = _deliveryPriceForBooking(bookingController);
     final includeDelivery = deliveryPrice > 0;
 
     final tokenValue = (previewModel?.data.token ?? '').trim();
@@ -416,8 +449,7 @@ class PreviewController extends GetxController {
         ? branchName.trim()
         : (pickupLocation?.address ?? '');
 
-    final deliveryPriceString = previewModel?.data.pricingBreakdown?.deliveryPrice;
-    final deliveryPrice = double.tryParse(deliveryPriceString ?? '') ?? 0.0;
+    final deliveryPrice = _deliveryPriceForBooking(bookingController);
     final includeDelivery = deliveryPrice > 0;
 
     final tokenValue = (previewModel?.data.token ?? '').trim();

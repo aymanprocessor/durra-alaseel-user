@@ -1,4 +1,4 @@
-part of 'token.dart';
+part of 'package:carbo/base/themes/token.dart';
 
 class Themes {
   final box = GetStorage();

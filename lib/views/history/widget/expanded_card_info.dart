@@ -82,17 +82,23 @@ class ExpandedCardInfo extends GetView<HistoryController> {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: Dimensions.verticalSize * 0.25),
       child: Row(
-        mainAxisAlignment: mainSpaceBet,
+        crossAxisAlignment: crossStart,
         children: [
-          TextWidget(
-            title,
-            fontSize: Dimensions.titleSmall,
+          Expanded(
+            child: TextWidget(
+              title,
+              fontSize: Dimensions.titleSmall,
+            ),
           ),
-          TextWidget(
-            value,
-            fontWeight: FontWeight.w500,
-            color: CustomColor.primary,
-            fontSize: Dimensions.titleSmall,
+          Sizes.width.v10,
+          Expanded(
+            child: TextWidget(
+              value,
+              fontWeight: FontWeight.w500,
+              color: CustomColor.primary,
+              fontSize: Dimensions.titleSmall,
+              textAlign: TextAlign.end,
+            ),
           ),
         ],
       ),

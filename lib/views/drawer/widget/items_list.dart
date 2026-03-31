@@ -13,9 +13,19 @@ class OthersWidgets extends StatelessWidget {
         _itemCard(Icons.lock_open_outlined, Strings.changePassword,
             () => Get.toNamed(Routes.change_passwordScreen)),
         _itemCard(
+          Icons.credit_card,
+          Strings.license,
+          () => Get.toNamed(Routes.kycScreen),
+        ),
+        _itemCard(
           Icons.notifications_none,
           Strings.notification,
           () => Get.toNamed(Routes.notificationScreen),
+        ),
+        _itemCard(
+          Icons.account_balance_wallet_outlined,
+          Strings.wallet,
+          () => Get.toNamed(Routes.walletScreen),
         ),
         _itemCard(
           Icons.history,
@@ -26,6 +36,11 @@ class OthersWidgets extends StatelessWidget {
           Icons.language,
           Strings.language,
           ()=> Get.toNamed(Routes.settingScreen)
+        ),
+        _itemCard(
+          Icons.bolt_outlined,
+          Strings.pusherChannels,
+          () => Get.toNamed(Routes.pusherChannelsScreen),
         ),
         _itemCard(
           Icons.headphones,

@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
-import '../../../routes/routes.dart';
 import '../../maintenance/maintenance_dialog.dart';
 import '../../maintenance/maintenance_model.dart';
 import '../../utils/basic_import.dart';
@@ -74,16 +73,6 @@ class ApiMethod {
           '|📒📒📒|-----------------[[ GET ]] method response end -----------------|📒📒📒|');
 
       bool isMaintenance = response.statusCode == 503;
-
-      // Check Server Error
-      if (response.statusCode == 500) {
-        CustomSnackBar.error(Strings.serverError);
-        Get.offAllNamed(Routes.loginScreen);
-      }
-      if (response.statusCode == 401) {
-        Get.offAllNamed(Routes.loginScreen);
-        LocalStorage.clear();
-      }
 
       _maintenanceCheck(isMaintenance, response.body);
 
@@ -235,20 +224,6 @@ class ApiMethod {
 
       _maintenanceCheck(isMaintenance, response.body);
 
-      // Check Unauthorized
-      if (response.statusCode == 401) {
-        LocalStorage.clear();
-      }
-      // Check Server Error
-      if (response.statusCode == 500) {
-        CustomSnackBar.error(Strings.serverError);
-        Get.offAllNamed(Routes.loginScreen);
-      }
-      if (response.statusCode == 401) {
-        Get.offAllNamed(Routes.loginScreen);
-        LocalStorage.clear();
-      }
-
       if (response.statusCode == code) {
         try {
           return jsonDecode(response.body);
@@ -318,6 +293,111 @@ class ApiMethod {
     }
   }
 
+  // Delete Method
+  Future<Map<String, dynamic>?> delete(
+    String url, {
+    int code = 200,
+    int duration = 120,
+    bool showResult = false,
+    bool showErrorMessage = true,
+  }) async {
+    log.i(
+        '|📍📍📍|----------------- [[ DELETE ]] method details start -----------------|📍📍📍|');
+    log.i(url);
+    log.i(
+        '|📍📍📍|----------------- [[ DELETE ]] method details ended -----------------|📍📍📍|');
+
+    try {
+      final response = await http
+          .delete(
+            Uri.parse(url),
+            headers: isBasic ? basicHeaderInfo() : await bearerHeaderInfo(),
+          )
+          .timeout(Duration(seconds: duration));
+
+      log.i(
+          '|📒📒📒|-----------------[[ DELETE ]] method response start -----------------|📒📒📒|');
+
+      if (showResult) {
+        log.i(response.body.toString());
+      }
+
+      log.i(response.statusCode);
+
+      log.i(
+          '|📒📒📒|-----------------[[ DELETE ]] method response end -----------------|📒📒📒|');
+
+      bool isMaintenance = response.statusCode == 503;
+
+      _maintenanceCheck(isMaintenance, response.body);
+
+      if (response.statusCode == code) {
+        try {
+          return jsonDecode(response.body);
+        } catch (e) {
+          log.e('🐞🐞🐞 JSON Decode Error 🐞🐞🐞');
+          log.e('Response length: ${response.body.length}');
+          log.e('Error: $e');
+          if (showErrorMessage) {
+            CustomSnackBar.error('Failed to process server response');
+          }
+          return null;
+        }
+      } else {
+        log.e('🐞🐞🐞 Error Alert On Status Code 🐞🐞🐞');
+
+        try {
+          log.e(
+              'unknown error hitted in status code${jsonDecode(response.body)}');
+
+          ErrorResponse res = ErrorResponse.fromJson(jsonDecode(response.body));
+          if (isMaintenance) {
+          } else {
+            if (showErrorMessage) {
+              CustomSnackBar.error(res.message.error.join(''));
+            }
+          }
+        } catch (e) {
+          log.e('Failed to parse error response: $e');
+        }
+
+        return null;
+      }
+    } on SocketException {
+      log.e('🐞🐞🐞 Error Alert on Socket Exception 🐞🐞🐞');
+      if (showErrorMessage) {
+        CustomSnackBar.error('Check your Internet Connection and try again!');
+      }
+      return null;
+    } on TimeoutException {
+      log.e('🐞🐞🐞 Error Alert Timeout Exception🐞🐞🐞');
+
+      log.e('Time out exception$url');
+      if (showErrorMessage) {
+        CustomSnackBar.error('Something Went Wrong! Try again');
+      }
+      return null;
+    } on http.ClientException catch (err, stackrace) {
+      log.e('🐞🐞🐞 Error Alert Client Exception🐞🐞🐞');
+
+      log.e('client exception hitted');
+
+      log.e(err.toString());
+
+      log.e(stackrace.toString());
+
+      return null;
+    } catch (e) {
+      log.e('🐞🐞🐞 Other Error Alert 🐞🐞🐞');
+
+      log.e('❌❌❌ unlisted error received');
+
+      log.e("❌❌❌ $e");
+
+      return null;
+    }
+  }
+
   // Post Method
   Future<Map<String, dynamic>?> multipart(
       String url, Map<String, String> body, String filepath, String filedName,
@@ -344,14 +424,24 @@ class ApiMethod {
         )
         ..files.add(await http.MultipartFile.fromPath(filedName, filepath));
       var response = await request.send();
+      log.i('✅ Response received');
       var jsonData = await http.Response.fromStream(response);
 
       log.i(
-          '|📒📒📒|-----------------[[ POST ]] method response start ------------------|📒📒📒|');
+          '|📒📒📒|-----------------[[ POST ]] method response start ----------------|📒📒📒|');
 
+      log.i('Response Status Code: ${response.statusCode}');
+      log.i('Response Reason Phrase: ${response.reasonPhrase}');
+      
+      // Log response headers
+      log.i('Response Headers:');
+      response.headers.forEach((key, value) {
+        log.i('  $key: $value');
+      });
+      
+      log.i('Response Content Length: ${jsonData.body.length} bytes');
+      log.i('Raw Response Body:');
       log.i(jsonData.body.toString());
-
-      log.i(response.statusCode);
 
       log.i(
           '|📒📒📒|-----------------[[ POST ]] method response end --------------------|📒📒📒|');
@@ -452,33 +542,38 @@ class ApiMethod {
           isBasic ? basicHeaderInfo() : await bearerHeaderInfo(),
         );
 
+      // Add files and log their details
+      log.i('Multipart files to upload: ${fieldList.length}');
       for (int i = 0; i < fieldList.length; i++) {
+        final file = File(pathList[i]);
+        final fileSize = await file.length();
+        final fileName = pathList[i].split('/').last;
+        
+        log.i('File ${i + 1}: field=${fieldList[i]} name=$fileName path=${pathList[i]} size=${(fileSize / 1024).toStringAsFixed(2)}KB exists=${file.existsSync()}');
+        
         request.files
             .add(await http.MultipartFile.fromPath(fieldList[i], pathList[i]));
       }
 
+      // Log request headers
+      log.i('Request headers:');
+      request.headers.forEach((key, value) {
+        log.i('$key: $value');
+      });
+
+      log.i('Sending multipart request');
       var response = await request.send();
+      log.i('Response received');
       var jsonData = await http.Response.fromStream(response);
 
-      log.i(
-          '|📒📒📒|-----------------[[ POST ]] method response start ------------------|📒📒📒|');
-
-      log.i(jsonData.body.toString());
-
-      log.i(response.statusCode);
-
-      log.i(
-          '|📒📒📒|-----------------[[ POST ]] method response end --------------------|📒📒📒|');
+      log.i('Response status: ${response.statusCode} ${response.reasonPhrase}');
+      log.i('Response headers:');
+      response.headers.forEach((key, value) {
+        log.i('$key: $value');
+      });
+      log.i('Response body length: ${jsonData.body.length} bytes');
+      log.i('Response body: ${jsonData.body}');
       bool isMaintenance = response.statusCode == 503;
-
-      if (response.statusCode == 500) {
-        CustomSnackBar.error(Strings.serverError);
-        Get.offAllNamed(Routes.loginScreen);
-      }
-      if (response.statusCode == 401) {
-        Get.offAllNamed(Routes.loginScreen);
-        LocalStorage.clear();
-      }
       _maintenanceCheck(isMaintenance, jsonData);
 
       if (response.statusCode == code) {

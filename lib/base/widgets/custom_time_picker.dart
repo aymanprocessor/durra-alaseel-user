@@ -73,8 +73,10 @@ class _CustomTimePickerState extends State<CustomTimePicker>
   }
 
   String _formatTime(TimeOfDay time) {
-    final hour = time.hour; // 24-hour format
-    return "${hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}";
+    final hour = time.hourOfPeriod == 0 ? 12 : time.hourOfPeriod;
+    final minute = time.minute.toString().padLeft(2, '0');
+    final period = time.period == DayPeriod.am ? 'AM' : 'PM';
+    return "${hour.toString().padLeft(2, '0')}:$minute $period";
   }
 
   Widget _buildTimePickerButton(BuildContext context) {
@@ -133,17 +135,20 @@ class _CustomTimePickerState extends State<CustomTimePicker>
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                TextWidget(
-                                  widget.selectedTime.value.isEmpty
-                                      ? Strings.SelectATime
-                                      : widget.selectedTime.value,
-                                  fontSize: widget.hintFontSize ??
-                                      Dimensions.titleSmall,
-                                  style: CustomStyle.titleSmall.copyWith(
-                                    color: widget.labelColor ??
-                                        (isTimePickerOpened
-                                            ? CustomColor.primary
-                                            : null),
+                                Directionality(
+                                  textDirection: TextDirection.ltr,
+                                  child: TextWidget(
+                                    widget.selectedTime.value.isEmpty
+                                        ? Strings.SelectATime
+                                        : widget.selectedTime.value,
+                                    fontSize: widget.hintFontSize ??
+                                        Dimensions.titleSmall,
+                                    style: CustomStyle.titleSmall.copyWith(
+                                      color: widget.labelColor ??
+                                          (isTimePickerOpened
+                                              ? CustomColor.primary
+                                              : null),
+                                    ),
                                   ),
                                 ),
                                 if (widget.subtitle != '')

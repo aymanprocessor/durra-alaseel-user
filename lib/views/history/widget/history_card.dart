@@ -46,12 +46,41 @@ class HistoryCard extends GetView<HistoryController> {
                   ),
                 ],
               ),
-              trailing: TextWidget(
-                info.pickupDate.toString().substring(0, 11),
-                // info.pickupDate.toString(),
-                typographyStyle: TypographyStyle.bodySmall,
-                color: CustomColor.primary,
-                fontWeight: FontWeight.w700,
+              trailing: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextWidget(
+                    info.pickupDate.toString().substring(0, 11),
+                    typographyStyle: TypographyStyle.bodySmall,
+                    color: CustomColor.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  SizedBox(height: 2),
+                  GestureDetector(
+                    onTap: () => Get.toNamed(
+                      Routes.bookingDetailsScreen,
+                      arguments: {'booking': info},
+                    ),
+                    behavior: HitTestBehavior.opaque,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextWidget(
+                          Strings.details,
+                          fontSize: 11,
+                          color: CustomColor.secondary,
+                        ),
+                        Icon(
+                          Icons.chevron_right,
+                          size: 14,
+                          color: CustomColor.secondary,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
               onTap: () => controller.toggleCardExpansion(index),
             ),

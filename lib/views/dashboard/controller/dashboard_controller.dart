@@ -3,6 +3,8 @@ import 'package:carbo/base/utils/local_storage.dart';
 import 'package:carbo/views/dashboard/model/area_has_type_model.dart';
 import 'package:carbo/views/dashboard/model/car_area_model.dart';
 import 'package:carbo/views/dashboard/model/branch_model.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import '../../../backend/services/push_notification_controller.dart';
 import '../../../base/api/endpoint/api_endpoint.dart';
 import '../../../base/api/method/request_process.dart';
 import '../model/car_info_model.dart';
@@ -10,6 +12,7 @@ import '../model/dashboard_info_model.dart';
 
 class DashboardController extends GetxController {
   final List<String> carType = [];
+  final pushController = Get.find<PushNotificationController>();
 
   RxInt currentIndex = 0.obs;
   RxString selectedDate = ''.obs;
@@ -52,6 +55,12 @@ class DashboardController extends GetxController {
       onSuccess: (value) {
         _dashboardInfoModel = value!;
         _getDashboardInfo();
+        
+        // Subscribe to push notifications for auto-authenticated users
+        // This ensures users receive notifications after app restart
+        final userId = _dashboardInfoModel.data.userInfo.id;
+        pushController.subscribeUser(userId);
+        
         areaList.clear();
         typeList.clear();
         branchList.clear();
@@ -66,7 +75,22 @@ class DashboardController extends GetxController {
     var path = _dashboardInfoModel.data.profileImagePaths.pathLocation;
     var img = _dashboardInfoModel.data.userInfo.image;
     var defaultImg = _dashboardInfoModel.data.profileImagePaths.defaultImage;
-    userProfileImage.value = '${baseUrl}/$path/$img';
+    
+    // Clear old cached images to prevent showing stale data
+    _clearImageCache();
+    
+    // Check if user has a profile image
+    // Handle null, empty string, and the string "null"
+    if (img != null && 
+        img.toString().isNotEmpty && 
+        img.toString() != 'null') {
+      userProfileImage.value = '${baseUrl}/$path/$img';
+      print('✅ User has profile image: $img');
+    } else {
+      userProfileImage.value = '${baseUrl}/$defaultImg';
+      print('⚠️ No user image, using default (image value was: $img)');
+    }
+    
     userDefaultImageUrl.value = '${baseUrl}/$defaultImg';
     print('🖼️ User Profile Image URL: ${userProfileImage.value}');
     print('🖼️ User Default Image URL: ${userDefaultImageUrl.value}');
@@ -78,6 +102,19 @@ class DashboardController extends GetxController {
       email: _dashboardInfoModel.data.userInfo.email,
       number: _dashboardInfoModel.data.userInfo.mobile?.toString() ?? '',
     );
+  }
+
+  // Clear cached profile images
+  void _clearImageCache() {
+    try {
+      // Clear the cache for old profile images
+      if (userProfileImage.value.isNotEmpty) {
+        CachedNetworkImage.evictFromCache(userProfileImage.value);
+      }
+      print('🗑️ Cleared image cache');
+    } catch (e) {
+      print('⚠️ Failed to clear image cache: $e');
+    }
   }
 
   //// GET ARE - - - - - - - - - - - - - - - - -

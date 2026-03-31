@@ -13,21 +13,31 @@ class ProfileHeaderWidget extends GetView<DashboardController> {
       child: Column(
         children: [
           Sizes.height.v30,
-          Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(width: 2, color: CustomColor.primary),
-            ),
-            child: CircleAvatar(
+          Hero(
+            tag: 'profile_avatar',
+            child: Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(width: 2, color: CustomColor.primary),
+              ),
+              child: CircleAvatar(
               radius: Dimensions.radius * 4.5,
               backgroundColor: Colors.transparent,
               child: ClipOval(
                 child: CachedNetworkImage(
                   imageUrl: controller.userProfileImage.value,
-                  errorWidget: (context, url, error) => Image.network(
-                    controller.userDefaultImageUrl.value,
-                    fit: BoxFit.cover,
-                  ),
+                  errorWidget: (context, url, error) {
+                    print('❌ Profile Image Load Error: $error');
+                    print('❌ Failed URL: $url');
+                    return Image.network(
+                      controller.userDefaultImageUrl.value,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        print('❌ Default Image Also Failed: $error');
+                        return Icon(Icons.person, size: 50);
+                      },
+                    );
+                  },
                   imageBuilder: (context, imageProvider) => Container(
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
@@ -40,6 +50,7 @@ class ProfileHeaderWidget extends GetView<DashboardController> {
                 ),
               ),
             ),
+          ),
           ),
           Sizes.height.v10,
           Column(

@@ -1,11 +1,11 @@
+import 'package:carbo/base/design_system/carbo_ds.dart';
 import 'package:carbo/base/widgets/custom_time_picker.dart';
 import 'package:carbo/routes/routes.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../base/utils/basic_import.dart';
 import '../../../base/widgets/custom_date_picker.dart';
 import '../controller/booking_controller.dart';
-import '../widget/map_picker_widget.dart';
+import '../screen/map_location_picker_screen.dart';
 part 'booking_tablet_screen.dart';
 part 'booking_mobile_screen.dart';
 part '../widget/booking_all_fields.dart';

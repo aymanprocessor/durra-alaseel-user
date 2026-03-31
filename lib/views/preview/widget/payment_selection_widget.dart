@@ -7,165 +7,153 @@ class PaymentSelectionWidget extends GetView<PreviewController> {
       () => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          TextWidget(
-            padding: EdgeInsets.only(
-                top: Dimensions.verticalSize * 0.5,
-                bottom: Dimensions.verticalSize * 0.2),
-            Strings.payWIth,
-            fontWeight: FontWeight.bold,
+          Text(
+            Strings.payWIth.tr,
+            style: CarboTypography.titleLarge,
           ),
-
-          // Cash Payment Option
-          GestureDetector(
-            onTap: () {
-              controller.changePaymentMethod(0);
-              print(controller.selectedMethodText);
-            },
-            child: Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: Dimensions.defaultHorizontalSize,
-                vertical: Dimensions.verticalSize * 0.4,
-              ),
-              decoration: BoxDecoration(
-                color: controller.selectedMethod.value == 0
-                    ? CustomColor.primary
-                    : CustomColor.whiteColor,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: CustomColor.primary,
-                  width: 1,
+          const SizedBox(height: CarboSpacing.x3),
+          Row(
+            children: [
+              Expanded(
+                child: _PaymentCard(
+                  icon: Icons.payments_outlined,
+                  label: Strings.cashPayment.tr,
+                  isSelected: controller.selectedMethod.value == 0,
+                  onTap: () => controller.changePaymentMethod(0),
                 ),
               ),
-              child: Row(
-                children: [
-                  Icon(
-                      controller.selectedMethod.value == 0
-                          ? Icons.check_circle
-                          : Icons.circle_outlined,
-                      color: controller.selectedMethod.value == 0
-                          ? CustomColor.whiteColor
-                          : CustomColor.primary),
-                  Sizes.width.v10,
-                  TextWidget(
-                    Strings.cashPayment,
-                    color: controller.selectedMethod.value == 0
-                        ? CustomColor.whiteColor
-                        : CustomColor.primary,
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          Sizes.height.v10,
-          GestureDetector(
-            onTap: () {
-              controller.changePaymentMethod(1);
-              print(controller.selectedMethodText);
-            },
-            child: Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: Dimensions.defaultHorizontalSize,
-                vertical: Dimensions.verticalSize * 0.4,
-              ),
-              decoration: BoxDecoration(
-                color: controller.selectedMethod.value == 1
-                    ? CustomColor.primary
-                    : CustomColor.whiteColor,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: CustomColor.primary,
-                  width: 1,
+              const SizedBox(width: CarboSpacing.x3),
+              Expanded(
+                child: _PaymentCard(
+                  icon: CarboIcons.payment,
+                  label: Strings.onlinePayment.tr,
+                  isSelected: controller.selectedMethod.value == 1,
+                  onTap: () => controller.changePaymentMethod(1),
                 ),
               ),
-              child: Row(
-                children: [
-                  Icon(
-                    controller.selectedMethod.value == 1
-                        ? Icons.check_circle
-                        : Icons.circle_outlined,
-                    color: controller.selectedMethod.value == 1
-                        ? CustomColor.whiteColor
-                        : CustomColor.primary,
-                  ),
-                  Sizes.width.v10,
-                  TextWidget(
-                    Strings.onlinePayment,
-                    color: controller.selectedMethod.value == 1
-                        ? CustomColor.whiteColor
-                        : CustomColor.primary,
-                  ),
-                ],
-              ),
-            ),
+            ],
           ),
-          Sizes.height.v10,
-          Obx(
-            () => Column(
-              children: [
-                if (controller.selectedMethod.value == 1) ...[
-                  CustomDropDown<PaymentGateway>(
-                    decoration: BoxDecoration(
-                      color: CustomColor.whiteColor,
-                      borderRadius:
-                          BorderRadius.circular(Dimensions.radius * 0.6),
+          if (controller.selectedMethod.value == 1) ...[
+            const SizedBox(height: CarboSpacing.x3),
+            CustomDropDown<PaymentGateway>(
+              decoration: BoxDecoration(
+                color: CarboColors.surface,
+                borderRadius: CarboRadius.mdAll,
+                boxShadow: CarboShadow.card,
+              ),
+              itemsList: controller.paymentGatewayList,
+              selectMethod: RxString(Strings.selectMethod),
+              onChanged: (v) {
+                controller.selectPaymentGateway.value = v!;
+                controller.paymentTypes.value = v.type;
+                controller.currencyList.clear();
+                for (final c in v.currencies) {
+                  controller.currencyList.add(
+                    Currency(
+                      id: c.id,
+                      name: c.name,
+                      updatedAt: c.updatedAt,
+                      createdAt: c.createdAt,
+                      image: c.image,
+                      alias: c.alias,
+                      currencyCode: c.currencyCode,
+                      currencySymbol: c.currencySymbol,
+                      fixedCharge: c.fixedCharge,
+                      maxLimit: c.maxLimit,
+                      minLimit: c.maxLimit,
+                      paymentGatewayId: c.paymentGatewayId,
+                      percentCharge: c.percentCharge,
+                      rate: c.rate,
                     ),
-                    itemsList: controller.paymentGatewayList,
-                    selectMethod: RxString(Strings.selectMethod),
-                    onChanged: (v) {
-                      controller.selectPaymentGateway.value = v!;
-                      controller.paymentTypes.value = v.type;
-                      controller.currencyList.clear();
-                      v.currencies.forEach(
-                        (v) {
-                          controller.currencyList.add(
-                            Currency(
-                                id: v.id,
-                                name: v.name,
-                                updatedAt: v.updatedAt,
-                                createdAt: v.createdAt,
-                                image: v.image,
-                                alias: v.alias,
-                                currencyCode: v.currencyCode,
-                                currencySymbol: v.currencySymbol,
-                                fixedCharge: v.fixedCharge,
-                                maxLimit: v.maxLimit,
-                                minLimit: v.maxLimit,
-                                paymentGatewayId: v.paymentGatewayId,
-                                percentCharge: v.percentCharge,
-                                rate: v.rate),
-                          );
-                        },
-                      );
-                    },
-                  ),
-                  Sizes.height.v10,
-                  CustomDropDown<Currency>(
-                    decoration: BoxDecoration(
-                      color: CustomColor.whiteColor,
-                      borderRadius:
-                          BorderRadius.circular(Dimensions.radius * 0.6),
-                    ),
-                    itemsList: controller.currencyList,
-                    selectMethod: RxString(Strings.selectCurrency),
-                    onChanged: (v) {
-                      controller.selectedCurrency.value = v!;
-                      controller.alias.value = v.alias;
-                      controller.currencyName.value = v.name;
-                      print(controller.alias.value);
-                      controller.exRent.value = v.rate.toDouble();
-                      controller.percentCharge.value =
-                          v.percentCharge.toDouble();
-                      controller.fixeCharge.value = v.fixedCharge.toDouble();
-                      controller.calculateAllCharges();
-                    },
-                  ),
-                  Sizes.height.v10,
-                ]
-              ],
+                  );
+                }
+              },
             ),
-          )
+            const SizedBox(height: CarboSpacing.x3),
+            CustomDropDown<Currency>(
+              decoration: BoxDecoration(
+                color: CarboColors.surface,
+                borderRadius: CarboRadius.mdAll,
+                boxShadow: CarboShadow.card,
+              ),
+              itemsList: controller.currencyList,
+              selectMethod: RxString(Strings.selectCurrency),
+              onChanged: (v) {
+                controller.selectedCurrency.value = v!;
+                controller.alias.value = v.alias;
+                controller.currencyName.value = v.name;
+                controller.exRent.value = v.rate.toDouble();
+                controller.percentCharge.value = v.percentCharge.toDouble();
+                controller.fixeCharge.value = v.fixedCharge.toDouble();
+                controller.calculateAllCharges();
+              },
+            ),
+          ],
         ],
+      ),
+    );
+  }
+}
+
+class _PaymentCard extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _PaymentCard({
+    required this.icon,
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: CarboDuration.normal,
+        padding: const EdgeInsets.symmetric(
+          vertical: CarboSpacing.x4,
+          horizontal: CarboSpacing.x3,
+        ),
+        decoration: BoxDecoration(
+          color: isSelected ? CarboColors.primaryLight : CarboColors.surface,
+          borderRadius: CarboRadius.lgAll,
+          border: Border.all(
+            color: isSelected ? CarboColors.primary : CarboColors.border,
+            width: isSelected ? 1.5 : 1.0,
+          ),
+          boxShadow: isSelected ? CarboShadow.primaryGlow : CarboShadow.card,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AnimatedContainer(
+              duration: CarboDuration.fast,
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: isSelected ? CarboColors.primary : CarboColors.background,
+                borderRadius: CarboRadius.smAll,
+              ),
+              child: Icon(
+                icon,
+                size: 20,
+                color: isSelected ? Colors.white : CarboColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: CarboSpacing.x2),
+            Text(
+              label,
+              style: CarboTypography.labelLarge.copyWith(
+                color: isSelected ? CarboColors.primary : CarboColors.textSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -23,7 +23,7 @@ dependencies:
   flutter_svg: ^2.2.0
   r_dotted_line_border: ^0.1.1
   carousel_slider: ^5.1.1
-  cached_network_image: 3.4.1
+  cached_network_image: ^3.3.0
   image_picker: 1.1.2
   logger: ^2.6.1
   lottie: 3.3.1
@@ -45,6 +45,19 @@ dependencies:
   geocoding: ^3.0.0
   google_places_flutter: ^2.0.9
 
+  # Push Notifications
+  pusher_beams: ^1.1.2
+  permission_handler: ^11.0.1
+  awesome_notifications: ^0.10.0
+  firebase_messaging: ^14.7.0
+  
+  # Real-time Channels
+  pusher_channels_flutter: ^2.2.1
+
+dependency_overrides:
+  # Force uuid 3.x for pusher_beams compatibility
+  uuid: ^3.0.7
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -63,3 +76,4 @@ flutter:
     - assets/background/
     - assets/icons/
     - assets/logo/
+    - assets/html/

@@ -5,6 +5,7 @@ import '../../../views/auth/login/model/log_in_model.dart';
 import '../../../views/auth/register/model/register_model.dart';
 import '../../../views/auth/reset_password/model/find_user_send_code_model.dart';
 import '../../../views/auth/reset_password/model/forgot_pass_and_verify_model.dart';
+import '../../../backend/services/push_notification_controller.dart';
 import '../../utils/local_storage.dart';
 import '../endpoint/api_endpoint.dart';
 import '../method/request_process.dart';
@@ -60,6 +61,23 @@ class AuthServices {
           email: data.userInfo.email,
           kycStatus: data.userInfo.kycVerified,
         );
+        
+        // Subscribe user to push notifications
+        try {
+          print('🔔 Attempting to subscribe user to push notifications...');
+          print('👤 User ID: ${data.userInfo.id}');
+          print('🔑 Token saved: ${LocalStorage.token.isNotEmpty}');
+          
+          final pushController = Get.find<PushNotificationController>();
+          pushController.subscribeUser(data.userInfo.id);
+          
+          print('✅ Push notification subscription initiated');
+        } catch (e, stackTrace) {
+          print('⚠️ Failed to subscribe user to push notifications: $e');
+          print('Stack trace: $stackTrace');
+          // Don't fail login if push notification subscription fails
+        }
+        
         if (data.userInfo.emailVerified == 1) {
           if (data.userInfo.twoFactorStatus == 1 &&
               data.userInfo.twoFactorVerified == 0) {
@@ -93,6 +111,16 @@ class AuthServices {
       body: inputBody,
       onSuccess: (value) {
         _commonSuccessModel = value!;
+        
+        // Unsubscribe from push notifications
+        try {
+          final pushController = Get.find<PushNotificationController>();
+          pushController.unsubscribeUser();
+          print('✅ User unsubscribed from push notifications');
+        } catch (e) {
+          print('⚠️ Failed to unsubscribe from push notifications: $e');
+        }
+        
         Get.offAllNamed(Routes.loginScreen);
         LocalStorage.clear();
       },
@@ -134,6 +162,16 @@ class AuthServices {
           isEmailVerified: data.userInfo.emailVerified == 1,
           kycStatus: data.userInfo.kycVerified,
         );
+        
+        // Subscribe user to push notifications
+        try {
+          final pushController = Get.find<PushNotificationController>();
+          pushController.subscribeUser(data.userInfo.id);
+          print('✅ User subscribed to push notifications: ${data.userInfo.id}');
+        } catch (e) {
+          print('⚠️ Failed to subscribe user to push notifications: $e');
+        }
+        
         if (data.userInfo.emailVerified == 0) {
           if (data.userInfo.kycVerified == 0) {
             Routes.register_otp_verificationScreen.toNamed;
@@ -296,6 +334,16 @@ class AuthServices {
       body: inputBody,
       onSuccess: (value) {
         _commonSuccessModel = value!;
+        
+        // Unsubscribe from push notifications
+        try {
+          final pushController = Get.find<PushNotificationController>();
+          pushController.unsubscribeUser();
+          print('✅ User unsubscribed from push notifications');
+        } catch (e) {
+          print('⚠️ Failed to unsubscribe from push notifications: $e');
+        }
+        
         Get.offAllNamed(Routes.loginScreen);
         LocalStorage.clear();
       },

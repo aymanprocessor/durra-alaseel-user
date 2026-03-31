@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'base/maintenance/maintenance_dialog.dart';
 import 'base/utils/basic_import.dart';
 import 'initializer.dart';
@@ -13,6 +14,12 @@ import 'routes/routes.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppInitializer.init();
+  
+  // Check if app was opened from a notification action
+  final initialAction = await AwesomeNotifications().getInitialNotificationAction(
+    removeFromActionEvents: true,
+  );
+  
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       systemNavigationBarIconBrightness: Brightness.dark,
@@ -21,11 +28,17 @@ void main() async {
       statusBarBrightness: Brightness.light,
     ),
   );
-  runApp(const MyApp());
+  
+  runApp(MyApp(initialNotificationAction: initialAction));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  // Global navigator key for navigating from static methods
+  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+  
+  final ReceivedAction? initialNotificationAction;
+  
+  const MyApp({super.key, this.initialNotificationAction});
 
   @override
   Widget build(BuildContext context) {
@@ -36,6 +49,7 @@ class MyApp extends StatelessWidget {
       designSize: const Size(375, 812),
       builder: (_, child) => GetMaterialApp(
         debugShowCheckedModeBanner: false,
+        navigatorKey: navigatorKey, // Add navigator key for static navigation
         initialRoute: Routes.splashScreen,
         title: Strings.appName,
         theme: Themes.light,

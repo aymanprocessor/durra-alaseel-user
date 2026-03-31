@@ -22,14 +22,16 @@ class TopAppBarWidget extends GetView<DashboardController> {
           splashColor: Colors.transparent,
           highlightColor: Colors.transparent,
           onTap: () => Get.toNamed(Routes.update_profileScreen),
-          child: Container(
-            margin: EdgeInsets.symmetric(
-                horizontal: Dimensions.defaultHorizontalSize),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(width: 2, color: CustomColor.primary),
-            ),
-            child: Obx(
+          child: Hero(
+            tag: 'profile_avatar',
+            child: Container(
+              margin: EdgeInsets.symmetric(
+                  horizontal: Dimensions.defaultHorizontalSize),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(width: 2, color: CustomColor.primary),
+              ),
+              child: Obx(
               () {
                 final profileImageUrl = controller.userProfileImage.value;
                 final defaultImageUrl = controller.userDefaultImageUrl.value;
@@ -64,6 +66,7 @@ class TopAppBarWidget extends GetView<DashboardController> {
                 );
               },
             ),
+          ),
           ),
         ),
       ],
