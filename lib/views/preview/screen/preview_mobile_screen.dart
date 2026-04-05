@@ -26,8 +26,6 @@ class PreviewMobileScreen extends GetView<PreviewController> {
                     ),
                     sliver: SliverList(
                       delegate: SliverChildListDelegate([
-                        PaymentSelectionWidget(),
-                        const SizedBox(height: CarboSpacing.x3),
                         PreviewSectionCard(),
                         const SizedBox(height: CarboSpacing.x4),
                       ]),
@@ -97,42 +95,15 @@ class _PreviewHeroHeader extends GetView<PreviewController> {
                 ],
               ),
               const SizedBox(height: CarboSpacing.x5),
-              Builder(builder: (_) {
-                final car = controller.bookingPreviewModel?.data.car;
-                if (car == null) return const SizedBox.shrink();
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (car.carModel.isNotEmpty)
-                      Text(
-                        car.carModel,
-                        style: CarboTypography.headlineLarge.copyWith(
-                          color: Colors.white,
-                          height: 1.1,
-                        ),
-                      ),
-                    if (car.carNumber.isNotEmpty) ...[
-                      const SizedBox(height: CarboSpacing.x2),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: CarboSpacing.x3,
-                          vertical: 5,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: CarboRadius.fullAll,
-                        ),
-                        child: Text(
-                          car.carNumber,
-                          style: CarboTypography.labelMedium.copyWith(
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
-                );
-              }),
+              Text(
+                Strings.bookingPreview.tr,
+                style: CarboTypography.headlineLarge.copyWith(
+                  color: Colors.white,
+                  height: 1.1,
+                ),
+              ),
+              const SizedBox(height: CarboSpacing.x3),
+              CarSummaryCard(car: Get.find<BookingController>().selectedCar),
             ],
           ),
         ),
@@ -142,7 +113,11 @@ class _PreviewHeroHeader extends GetView<PreviewController> {
 }
 
 class _BottomBar extends GetView<PreviewController> {
-  const _BottomBar();
+  _BottomBar();
+
+  final WalletController _walletController = Get.isRegistered<WalletController>()
+      ? Get.find<WalletController>()
+      : Get.put(WalletController());
 
   @override
   Widget build(BuildContext context) {
@@ -158,13 +133,17 @@ class _BottomBar extends GetView<PreviewController> {
         color: CarboColors.surface,
         boxShadow: CarboShadow.floating,
       ),
-      child: Obx(
-        () => PrimaryButton(
+      child: Obx(() {
+        final wallet = _walletController.walletModel.value;
+        final isInsufficient = wallet != null &&
+            wallet.balance < controller.totalPayable.value;
+        return PrimaryButton(
           isLoading: controller.isBookingLoading,
           title: Strings.ConfirmBooking,
-          onPressed: () => controller.handlePaymentProcess(),
-        ),
-      ),
+          disable: isInsufficient,
+          onPressed: isInsufficient ? () {} : () => controller.handlePaymentProcess(),
+        );
+      }),
     );
   }
 }

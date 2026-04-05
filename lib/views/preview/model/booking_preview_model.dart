@@ -1,9 +1,26 @@
+import 'package:get/get.dart';
 import '../../../base/widgets/custom_drop_down.dart';
+import '../../../languages/locale_service.dart';
 
 String _asString(dynamic value, {String fallback = ''}) {
   if (value == null) return fallback;
   if (value is String) return value;
   return value.toString();
+}
+
+String _asLocalizedString(dynamic value, {String fallback = ''}) {
+  if (value == null) return fallback;
+  if (value is String) return value.isEmpty ? fallback : value;
+  if (value is Map) {
+    final lang = Get.find<LocaleService>().currentLanguageCode;
+    final localized = value[lang] ?? value['en'] ?? value.values.firstWhere(
+      (v) => v != null && v.toString().isNotEmpty,
+      orElse: () => null,
+    );
+    if (localized != null) return localized.toString();
+    return fallback;
+  }
+  return fallback;
 }
 
 int _asInt(dynamic value, {int fallback = 0}) {
@@ -326,7 +343,7 @@ class Car {
     id: _asInt(json["id"]),
     vendorId: _asInt(json["vendor_id"]),
     branchId: _asInt(json["branch_id"]),
-    carTitle: json["car_title"] == null ? null : _asString(json["car_title"]),
+    carTitle: json["car_title"] == null ? null : _asLocalizedString(json["car_title"]),
     carModel: _asString(json["car_model"], fallback: ''),
     carNumber: _asString(json["car_number"], fallback: ''),
     seat: _asInt(json["seat"]),

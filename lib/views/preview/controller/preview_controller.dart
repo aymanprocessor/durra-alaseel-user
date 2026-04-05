@@ -8,14 +8,17 @@ import 'package:carbo/views/preview/widget/authorize_payment_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import '../../../base/api/endpoint/api_endpoint.dart';
+import '../../../base/api/services/basic_services.dart';
 import '../../../base/api/method/request_process.dart';
 import '../../../base/api/model/common_success_model.dart';
 import '../../../languages/strings.dart';
 import '../../../routes/routes.dart';
 import '../../congratulations/model/congratulations_model.dart';
 import '../../congratulations/screen/congratulations_screen.dart';
+import '../../wallet/controller/wallet_controller.dart';
 import '../model/booking_confirm_model.dart';
 import '../model/manual_input_model.dart';
+import '../model/wallet_booking_confirm_model.dart';
 import '../screen/preview_screen.dart';
 import '../widget/web_payment_screen.dart';
 
@@ -105,13 +108,7 @@ class PreviewController extends GetxController {
   }
 
   void handlePaymentProcess() {
-    if (selectedMethodText == 'cash') {
-      cashBookedProcess();
-    } else if (alias.value.contains('manual')) {
-      paymentManualInsert();
-    } else {
-      bookingProcessAuto();
-    }
+    walletBookedProcess();
   }
 
   ///=> GET ALL BOOKING PREVIEW INFO
@@ -204,6 +201,11 @@ class PreviewController extends GetxController {
     final totalString = pricing?.total;
     if (totalString != null) {
       totalPayable.value = double.tryParse(totalString) ?? 0.0;
+    }
+
+    // Cache tax percentage for booking screen estimate
+    if (pricing != null && pricing.taxPercentage > 0) {
+      BasicServices.taxPercentage.value = pricing.taxPercentage;
     }
 
     final deliveryPrice = _deliveryPriceForBooking(bookingController);
@@ -383,6 +385,77 @@ class PreviewController extends GetxController {
       onSuccess: (value) {
         _commonSuccessModel = value!;
         _confirmation(_commonSuccessModel);
+      },
+    );
+  }
+
+  Future<WalletBookingConfirmModel?> walletBookedProcess() async {
+    final bookingController = Get.find<BookingController>();
+    final previewModel = _bookingPreviewModel;
+
+    String carSlugValue = slug.value.isNotEmpty
+        ? slug.value
+        : bookingController.getCarSlug();
+    String carIdValue = Id.value.isNotEmpty
+        ? Id.value
+        : bookingController.selectedCar.id.toString();
+
+    final pickupLocation = bookingController.pickupLocation.value;
+    final pickupLocationJson = (pickupLocation != null && pickupLocation.isValid)
+        ? pickupLocation.toJson()
+        : <String, dynamic>{};
+
+    final branchName = previewModel?.data.car?.branch?.name;
+    final locationDisplay = bookingController.isPickupFromBranch.value &&
+            branchName != null &&
+            branchName.trim().isNotEmpty
+        ? branchName.trim()
+        : (pickupLocation?.address ?? '');
+
+    final deliveryPrice = _deliveryPriceForBooking(bookingController);
+    final includeDelivery = deliveryPrice > 0;
+    final tokenValue = (previewModel?.data.token ?? '').trim();
+    final rentalDays = int.tryParse(bookingController.rentalDaysController.text) ?? 1;
+    final carId = int.tryParse(carIdValue) ?? bookingController.selectedCar.id;
+
+    final Map<String, dynamic> inputBody = {
+      'car_id': carId,
+      'car_slug': carSlugValue,
+      'location': locationDisplay,
+      'rental_days': rentalDays,
+      'pickup_location': pickupLocationJson,
+      'pickup_date': bookingController.selectedPickupDate.value,
+      'pickup_time': bookingController.selectedPickupTime.value,
+      'credentials': LocalStorage.email,
+      'mobile': LocalStorage.number,
+      'message': bookingController.noteController.text,
+      'payment': 'balance',
+      'include_delivery': includeDelivery,
+      'delivery_price': deliveryPrice,
+      'round_pickup_date': bookingController.selectedRoundDate.value,
+      'round_pickup_time': bookingController.selectedRoundTime.value,
+      if (tokenValue.isNotEmpty) 'token': tokenValue,
+    };
+
+    return RequestProcess().request<WalletBookingConfirmModel>(
+      fromJson: WalletBookingConfirmModel.fromJson,
+      apiEndpoint: ApiEndpoint.bookingConfirm,
+      isLoading: _isBookingLoading,
+      method: HttpMethod.POST,
+      body: inputBody,
+      onSuccess: (value) {
+        if (Get.isRegistered<WalletController>()) {
+          final walletController = Get.find<WalletController>();
+          walletController.fetchWallet();
+          walletController.fetchTransactions(refresh: true);
+        }
+        final congratulation = Congratulation(
+          details: Strings.bookingSuccessfully,
+          route: Routes.dashboardScreen,
+          buttonText: Strings.backToHome,
+          type: Strings.payment,
+        );
+        Get.to(() => CongratulationsScreen(), arguments: congratulation);
       },
     );
   }

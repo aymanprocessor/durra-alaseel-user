@@ -50,6 +50,8 @@ class Strings {
   static const String login = "appLLogin";
   static const String notification = "appLNotification";
   static const String wallet = "appLWallet";
+  static const String insufficientBalance = "appLInsufficientBalance";
+  static const String rechargeWallet = "appLRechargeWallet";
   static const String pusherChannels = "appLPusherChannels";
   static const String noNotification = "appLNoNotification";
   static const String noHistory = "appLNoHistory";
@@ -221,4 +223,25 @@ class Strings {
   static const String deliveryAvailable = "appLDeliveryAvailable";
   static const String deliveryNotAvailable = "appLDeliveryNotAvailable";
   static const String deliveryUnknown = "appLDeliveryUnknown";
+
+  // Booking Form
+  static const String deliveryLocation     = "appLDeliveryLocation";
+  static const String rentalDetails        = "appLRentalDetails";
+  static const String additionalNotes      = "appLAdditionalNotes";
+  static const String checkingDelivery     = "appLCheckingDelivery";
+  static const String withinDeliveryRange  = "appLWithinDeliveryRange";
+
+  // Booking Details Screen
+  static const String bookingDetails       = "appLBookingDetails";
+  static const String endDate              = "appLEndDate";
+  static const String paymentType          = "appLPaymentType";
+  static const String extendRental         = "appLExtendRental";
+  static const String viewExtensionHistory = "appLViewExtensionHistory";
+  static const String cancelBooking        = "appLCancelBooking";
+  static const String cancelBookingConfirm = "appLCancelBookingConfirm";
+  static const String yesCancel            = "appLYesCancel";
+  static const String keepBooking          = "appLKeepBooking";
+  static const String deliveryToLocation   = "appLDeliveryToLocation";
+  static const String branchPickup         = "appLBranchPickup";
+  static const String myBooking            = "appLMyBooking";
 }

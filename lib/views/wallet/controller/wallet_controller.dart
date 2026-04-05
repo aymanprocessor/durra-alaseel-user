@@ -22,6 +22,7 @@ class WalletController extends GetxController {
   void onInit() {
     super.onInit();
     fetchWallet();
+    fetchTransactions();
   }
 
   @override

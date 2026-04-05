@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../../maintenance/maintenance_dialog.dart';
 import '../../maintenance/maintenance_model.dart';
@@ -42,11 +43,11 @@ class ApiMethod {
     bool showResult = false,
     bool showErrorMessage = true,
   }) async {
-    log.i(
-        '|📍📍📍|----------------- [[ GET ]] method details start -----------------|📍📍📍|');
-    log.i(url);
-    log.i(
-        '|📍📍📍|----------------- [[ GET ]] method details ended -----------------|📍📍📍|');
+    if (kDebugMode) {
+      log.i('|📍📍📍|----------------- [[ GET ]] method details start -----------------|📍📍📍|');
+      log.i(url);
+      log.i('|📍📍📍|----------------- [[ GET ]] method details ended -----------------|📍📍📍|');
+    }
 
     Future<http.Response> doGet() async {
       return http
@@ -60,17 +61,12 @@ class ApiMethod {
     try {
       final response = await doGet();
 
-      log.i(
-          '|📒📒📒|-----------------[[ GET ]] method response start -----------------|📒📒📒|');
-
-      if (showResult) {
+      if (kDebugMode) {
+        log.i('|📒📒📒|-----------------[[ GET ]] method response start -----------------|📒📒📒|');
+        log.i('Status: ${response.statusCode}');
         log.i(response.body.toString());
+        log.i('|📒📒📒|-----------------[[ GET ]] method response end -----------------|📒📒📒|');
       }
-
-      log.i(response.statusCode);
-
-      log.i(
-          '|📒📒📒|-----------------[[ GET ]] method response end -----------------|📒📒📒|');
 
       bool isMaintenance = response.statusCode == 503;
 
@@ -84,8 +80,10 @@ class ApiMethod {
               .replaceAll(':nul,', ':null,')
               .replaceAll(':nul}', ':null}')
               .replaceAll(':nul]', ':null]')
-              // Fix missing comma between quoted strings
-              .replaceAll(RegExp(r'"\s*"'), '","');
+              // Fix missing comma between quoted strings (only when there is
+              // at least one non-quote character between the two quotes so that
+              // legitimate empty-string values "" are never touched)
+              .replaceAll(RegExp(r'"(\s+)"'), '","');
           
           return jsonDecode(sanitizedBody);
         } catch (e) {
@@ -152,7 +150,7 @@ class ApiMethod {
                   .replaceAll(':nul,', ':null,')
                   .replaceAll(':nul}', ':null}')
                   .replaceAll(':nul]', ':null]')
-                  .replaceAll(RegExp(r'"\s*"'), '","');
+                  .replaceAll(RegExp(r'"(\s+)"'), '","');
               return jsonDecode(sanitizedBody);
             } catch (e) {
               log.e('🐞🐞🐞 JSON Decode Error (retry) 🐞🐞🐞');
@@ -191,15 +189,12 @@ class ApiMethod {
     bool showErrorMessage = true,
   }) async {
     try {
-      log.i(
-          '|📍📍📍|-----------------[[ POST ]] method details start -----------------|📍📍📍|');
-
-      log.i(url);
-
-      log.i(body);
-
-      log.i(
-          '|📍📍📍|-----------------[[ POST ]] method details end ------------|📍📍📍|');
+      if (kDebugMode) {
+        log.i('|📍📍📍|-----------------[[ POST ]] method details start -----------------|📍📍📍|');
+        log.i(url);
+        log.i(body);
+        log.i('|📍📍📍|-----------------[[ POST ]] method details end ------------|📍📍📍|');
+      }
 
       final response = await http
           .post(
@@ -209,17 +204,12 @@ class ApiMethod {
           )
           .timeout(Duration(seconds: duration));
 
-      log.i(
-          '|📒📒📒|-----------------[[ POST ]] method response start ------------------|📒📒📒|');
-
-      if (showResult) {
+      if (kDebugMode) {
+        log.i('|📒📒📒|-----------------[[ POST ]] method response start ------------------|📒📒📒|');
+        log.i('Status: ${response.statusCode}');
         log.i(response.body.toString());
+        log.i('|📒📒📒|-----------------[[ POST ]] method response end --------------------|📒📒📒|');
       }
-
-      log.i(response.statusCode);
-
-      log.i(
-          '|📒📒📒|-----------------[[ POST ]] method response end --------------------|📒📒📒|');
       bool isMaintenance = response.statusCode == 503;
 
       _maintenanceCheck(isMaintenance, response.body);
@@ -301,11 +291,11 @@ class ApiMethod {
     bool showResult = false,
     bool showErrorMessage = true,
   }) async {
-    log.i(
-        '|📍📍📍|----------------- [[ DELETE ]] method details start -----------------|📍📍📍|');
-    log.i(url);
-    log.i(
-        '|📍📍📍|----------------- [[ DELETE ]] method details ended -----------------|📍📍📍|');
+    if (kDebugMode) {
+      log.i('|📍📍📍|----------------- [[ DELETE ]] method details start -----------------|📍📍📍|');
+      log.i(url);
+      log.i('|📍📍📍|----------------- [[ DELETE ]] method details ended -----------------|📍📍📍|');
+    }
 
     try {
       final response = await http
@@ -315,17 +305,12 @@ class ApiMethod {
           )
           .timeout(Duration(seconds: duration));
 
-      log.i(
-          '|📒📒📒|-----------------[[ DELETE ]] method response start -----------------|📒📒📒|');
-
-      if (showResult) {
+      if (kDebugMode) {
+        log.i('|📒📒📒|-----------------[[ DELETE ]] method response start -----------------|📒📒📒|');
+        log.i('Status: ${response.statusCode}');
         log.i(response.body.toString());
+        log.i('|📒📒📒|-----------------[[ DELETE ]] method response end -----------------|📒📒📒|');
       }
-
-      log.i(response.statusCode);
-
-      log.i(
-          '|📒📒📒|-----------------[[ DELETE ]] method response end -----------------|📒📒📒|');
 
       bool isMaintenance = response.statusCode == 503;
 
@@ -403,16 +388,13 @@ class ApiMethod {
       String url, Map<String, String> body, String filepath, String filedName,
       {int code = 200, bool showResult = false}) async {
     try {
-      log.i(
-          '|📍📍📍|-----------------[[ Multipart ]] method details start -----------------|📍📍📍|');
-
-      log.i(url);
-
-      log.i(body);
-      log.i(filepath);
-
-      log.i(
-          '|📍📍📍|-----------------[[ Multipart ]] method details end ------------|📍📍📍|');
+      if (kDebugMode) {
+        log.i('|📍📍📍|-----------------[[ Multipart ]] method details start -----------------|📍📍📍|');
+        log.i(url);
+        log.i(body);
+        log.i(filepath);
+        log.i('|📍📍📍|-----------------[[ Multipart ]] method details end ------------|📍📍📍|');
+      }
 
       final request = http.MultipartRequest(
         'POST',
@@ -424,27 +406,14 @@ class ApiMethod {
         )
         ..files.add(await http.MultipartFile.fromPath(filedName, filepath));
       var response = await request.send();
-      log.i('✅ Response received');
       var jsonData = await http.Response.fromStream(response);
 
-      log.i(
-          '|📒📒📒|-----------------[[ POST ]] method response start ----------------|📒📒📒|');
-
-      log.i('Response Status Code: ${response.statusCode}');
-      log.i('Response Reason Phrase: ${response.reasonPhrase}');
-      
-      // Log response headers
-      log.i('Response Headers:');
-      response.headers.forEach((key, value) {
-        log.i('  $key: $value');
-      });
-      
-      log.i('Response Content Length: ${jsonData.body.length} bytes');
-      log.i('Raw Response Body:');
-      log.i(jsonData.body.toString());
-
-      log.i(
-          '|📒📒📒|-----------------[[ POST ]] method response end --------------------|📒📒📒|');
+      if (kDebugMode) {
+        log.i('|📒📒📒|-----------------[[ Multipart ]] method response start ----------------|📒📒📒|');
+        log.i('Status: ${response.statusCode} ${response.reasonPhrase}');
+        log.i(jsonData.body.toString());
+        log.i('|📒📒📒|-----------------[[ Multipart ]] method response end --------------------|📒📒📒|');
+      }
       bool isMaintenance = response.statusCode == 503;
 
       _maintenanceCheck(isMaintenance, jsonData);
@@ -520,19 +489,14 @@ class ApiMethod {
     required List<String> fieldList,
   }) async {
     try {
-      log.i(
-          '|📍📍📍|-----------------[[ Multipart ]] method details start -----------------|📍📍📍|');
-
-      log.i(url);
-
-      if (showResult) {
+      if (kDebugMode) {
+        log.i('|📍📍📍|-----------------[[ Multipart ]] method details start -----------------|📍📍📍|');
+        log.i(url);
         log.i(body);
         log.i(pathList);
         log.i(fieldList);
+        log.i('|📍📍📍|-----------------[[ Multipart ]] method details end ------------|📍📍📍|');
       }
-
-      log.i(
-          '|📍📍📍|-----------------[[ Multipart ]] method details end ------------|📍📍📍|');
       final request = http.MultipartRequest(
         'POST',
         Uri.parse(url),
@@ -543,36 +507,25 @@ class ApiMethod {
         );
 
       // Add files and log their details
-      log.i('Multipart files to upload: ${fieldList.length}');
       for (int i = 0; i < fieldList.length; i++) {
-        final file = File(pathList[i]);
-        final fileSize = await file.length();
-        final fileName = pathList[i].split('/').last;
-        
-        log.i('File ${i + 1}: field=${fieldList[i]} name=$fileName path=${pathList[i]} size=${(fileSize / 1024).toStringAsFixed(2)}KB exists=${file.existsSync()}');
-        
+        if (kDebugMode) {
+          final file = File(pathList[i]);
+          final fileSize = await file.length();
+          final fileName = pathList[i].split('/').last;
+          log.i('File ${i + 1}: field=${fieldList[i]} name=$fileName size=${(fileSize / 1024).toStringAsFixed(2)}KB');
+        }
         request.files
             .add(await http.MultipartFile.fromPath(fieldList[i], pathList[i]));
       }
-
-      // Log request headers
-      log.i('Request headers:');
-      request.headers.forEach((key, value) {
-        log.i('$key: $value');
-      });
-
-      log.i('Sending multipart request');
       var response = await request.send();
-      log.i('Response received');
       var jsonData = await http.Response.fromStream(response);
 
-      log.i('Response status: ${response.statusCode} ${response.reasonPhrase}');
-      log.i('Response headers:');
-      response.headers.forEach((key, value) {
-        log.i('$key: $value');
-      });
-      log.i('Response body length: ${jsonData.body.length} bytes');
-      log.i('Response body: ${jsonData.body}');
+      if (kDebugMode) {
+        log.i('|📒📒📒|-----------------[[ Multipart ]] method response start-----------------|📒📒📒|');
+        log.i('Status: ${response.statusCode} ${response.reasonPhrase}');
+        log.i(jsonData.body);
+        log.i('|📒📒📒|-----------------[[ Multipart ]] method response end-----------------|📒📒📒|');
+      }
       bool isMaintenance = response.statusCode == 503;
       _maintenanceCheck(isMaintenance, jsonData);
 

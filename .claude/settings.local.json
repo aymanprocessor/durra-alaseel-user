@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /c/DATA/Dora Alaseel/Source Code/durra-alaseel-user -maxdepth 2 -type f \\\\\\(-name CLAUDE.md -o -name .cursorrules -o -name .cursor -o -name .github -o -name *.md \\\\\\))",
+      "Bash(grep -i \"\\\\.dart$\")",
+      "Bash(flutter analyze:*)"
+    ]
+  }
+}

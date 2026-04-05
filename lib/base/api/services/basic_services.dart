@@ -21,6 +21,9 @@ class BasicServices {
   static RxInt precision = (1).obs;
   static RxString baseColor = ''.obs;
   static RxString baseCurCode = ''.obs;
+  static RxDouble taxPercentage = 0.0.obs;
+  static RxString taxName = ''.obs;
+  static RxBool taxStatus = false.obs;
 
 // GET BASIC SETTING INFO - - - - - - - - - - - - - - - - -
   static final _isLoading = false.obs;
@@ -56,6 +59,9 @@ class BasicServices {
         contactUs.value = _basicSettingsModel.data.webLinks.contactUs;
         aboutUs.value = _basicSettingsModel.data.webLinks.aboutUs;
         baseCurCode.value = _basicSettingsModel.data.baseCur.code;
+        taxPercentage.value = _basicSettingsModel.data.basicSettings.taxPercentage;
+        taxName.value = _basicSettingsModel.data.basicSettings.taxName;
+        taxStatus.value = _basicSettingsModel.data.basicSettings.taxStatus;
 
         var imagePaths = _basicSettingsModel.data.imagePaths;
         var siteLogo = _basicSettingsModel.data.basicSettings.siteLogo;

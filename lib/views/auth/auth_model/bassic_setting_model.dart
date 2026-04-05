@@ -32,6 +32,7 @@ class Data {
   List<OnboardScreen> onboardScreens;
   ImagePaths imagePaths;
   AppImagePaths appImagePaths;
+  double taxPercentage;
 
   Data({
     required this.basicSettings,
@@ -42,7 +43,19 @@ class Data {
     required this.onboardScreens,
     required this.imagePaths,
     required this.appImagePaths,
+    this.taxPercentage = 0.0,
   });
+
+  static double _parseTax(Map<String, dynamic> json) {
+    for (final key in ['tax_percentage', 'tax_rate', 'tax', 'vat_percentage', 'vat']) {
+      final raw = json[key];
+      if (raw == null) continue;
+      if (raw is num) return raw.toDouble();
+      final parsed = double.tryParse(raw.toString());
+      if (parsed != null) return parsed;
+    }
+    return 0.0;
+  }
 
   factory Data.fromJson(Map<String, dynamic> json) => Data(
     basicSettings: BasicSettings.fromJson(json["basic_settings"]),
@@ -53,6 +66,7 @@ class Data {
     onboardScreens: List<OnboardScreen>.from(json["onboard_screens"].map((x) => OnboardScreen.fromJson(x))),
     imagePaths: ImagePaths.fromJson(json["image_paths"]),
     appImagePaths: AppImagePaths.fromJson(json["app_image_paths"]),
+    taxPercentage: _parseTax(json),
   );
 
   Map<String, dynamic> toJson() => {
@@ -143,6 +157,9 @@ class BasicSettings {
   String siteLogoDark;
   String siteFav;
   String siteFavDark;
+  double taxPercentage;
+  String taxName;
+  bool taxStatus;
 
   BasicSettings({
     required this.id,
@@ -156,13 +173,16 @@ class BasicSettings {
     required this.siteLogoDark,
     required this.siteFav,
     required this.siteFavDark,
+    this.taxPercentage = 0.0,
+    this.taxName = '',
+    this.taxStatus = false,
   });
 
   factory BasicSettings.fromJson(Map<String, dynamic> json) => BasicSettings(
     id: json["id"],
     agreePolicy: json["agree_policy"],
     userRegister: json["user_registration"],
-    precision:json["precision"],
+    precision: json["precision"],
     siteName: json["site_name"],
     siteTitle: json["site_title"],
     timezone: json["timezone"],
@@ -170,6 +190,9 @@ class BasicSettings {
     siteLogoDark: json["site_logo_dark"],
     siteFav: json["site_fav"],
     siteFavDark: json["site_fav_dark"],
+    taxPercentage: double.tryParse(json["tax_percentage"]?.toString() ?? '') ?? 0.0,
+    taxName: json["tax_name"]?.toString() ?? '',
+    taxStatus: json["tax_status"] == true || json["tax_status"] == 1,
   );
 
   Map<String, dynamic> toJson() => {

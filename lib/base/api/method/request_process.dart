@@ -1,4 +1,5 @@
 import 'dart:developer' as developer;
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import '../endpoint/api_endpoint.dart';
 import '../services/api_services.dart';
@@ -27,28 +28,27 @@ class RequestProcess extends GetxController {
       isLoading.value = true;
       update();
       final String endpointUrl = apiEndpoint.url(params: queryParams);
-      
-      // Comprehensive logging
-      developer.log('═══════════════════════════════════════════════════════════');
-      developer.log('📡 API REQUEST START');
-      developer.log('═══════════════════════════════════════════════════════════');
-      developer.log('🔗 URL: $endpointUrl');
-      developer.log('📝 Method: $method');
-      developer.log('📦 Body: ${body ?? "null"}');
-      developer.log('🔍 Query Params: ${queryParams ?? "null"}');
-      developer.log('📋 Field List: ${fieldList ?? "null"}');
-      developer.log('📁 Path List: ${pathList ?? "null"}');
-      developer.log('⚙️  Show Success: $showSuccessMessage');
-      developer.log('⚙️  Show Error: $showErrorMessage');
-      developer.log('⚙️  Is Basic: $isBasic');
-      developer.log('⚙️  Show Result: $showResult');
-      developer.log('═══════════════════════════════════════════════════════════');
+
+      if (kDebugMode) {
+        developer.log('═══════════════════════════════════════════════════════════');
+        developer.log('📡 API REQUEST START');
+        developer.log('═══════════════════════════════════════════════════════════');
+        developer.log('🔗 URL: $endpointUrl');
+        developer.log('📝 Method: $method');
+        developer.log('📦 Body: ${body ?? "null"}');
+        developer.log('🔍 Query Params: ${queryParams ?? "null"}');
+        developer.log('📋 Field List: ${fieldList ?? "null"}');
+        developer.log('📁 Path List: ${pathList ?? "null"}');
+        developer.log('═══════════════════════════════════════════════════════════');
+      }
       
       T? value;
       if (method == HttpMethod.POST && fieldList != null && pathList != null) {
-        developer.log('📤 Multipart Upload Request');
-        developer.log('   Fields: $fieldList');
-        developer.log('   Files: $pathList');
+        if (kDebugMode) {
+          developer.log('📤 Multipart Upload Request');
+          developer.log('   Fields: $fieldList');
+          developer.log('   Files: $pathList');
+        }
         value = await ApiServices.multipartApiService<T>(
           fromJson,
           endpointUrl,
@@ -60,7 +60,7 @@ class RequestProcess extends GetxController {
         );
       } else {
         String httpMethod = method == HttpMethod.POST ? 'POST' : method == HttpMethod.DELETE ? 'DELETE' : 'GET';
-        developer.log('📨 Standard $httpMethod Request');
+        if (kDebugMode) developer.log('📨 Standard $httpMethod Request');
         value = await ApiServices.apiService<T>(
           fromJson,
           endpointUrl,
@@ -73,22 +73,26 @@ class RequestProcess extends GetxController {
         );
       }
 
-      developer.log('═══════════════════════════════════════════════════════════');
-      developer.log('✅ API REQUEST SUCCESS');
-      developer.log('📊 Response Type: ${value.runtimeType}');
-      developer.log('📄 Response Value: $value');
-      developer.log('═══════════════════════════════════════════════════════════');
-      
+      if (kDebugMode) {
+        developer.log('═══════════════════════════════════════════════════════════');
+        developer.log('✅ API RESPONSE');
+        developer.log('📊 Type: ${value.runtimeType}');
+        developer.log('📄 Value: $value');
+        developer.log('═══════════════════════════════════════════════════════════');
+      }
+
       onSuccess(value);
       return value;
     } catch (e) {
-      developer.log('═══════════════════════════════════════════════════════════');
-      developer.log('❌ API REQUEST ERROR');
-      developer.log('🐞 Error Type: ${e.runtimeType}');
-      developer.log('🐞 Error Message: $e');
-      developer.log('🔗 URL: ${apiEndpoint.url(params: queryParams)}');
-      developer.log('📝 Method: $method');
-      developer.log('═══════════════════════════════════════════════════════════');
+      if (kDebugMode) {
+        developer.log('═══════════════════════════════════════════════════════════');
+        developer.log('❌ API REQUEST ERROR');
+        developer.log('🐞 Error Type: ${e.runtimeType}');
+        developer.log('🐞 Error Message: $e');
+        developer.log('🔗 URL: ${apiEndpoint.url(params: queryParams)}');
+        developer.log('📝 Method: $method');
+        developer.log('═══════════════════════════════════════════════════════════');
+      }
       log.e('🐞🐞🐞 Error from API service: $e 🐞🐞🐞');
       if (onError != null) onError(e);
     } finally {

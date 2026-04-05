@@ -39,6 +39,7 @@ class BookingController extends GetxController {
   // Car data from route arguments
   late CarItem selectedCar;
   RxString carFee = '0'.obs;
+  RxInt rentalDaysCount = 0.obs;
 
   bool? get deliveryAvailable {
     return selectedCar.branch?.isDeliveryAvailable;
@@ -166,8 +167,8 @@ class BookingController extends GetxController {
     bool hasValidPickupLocation = isPickupFromBranch.value || 
         (pickupLocation.value != null && pickupLocation.value!.isValid);
     
-    bool hasValidRentalDays = rentalDaysController.text.isNotEmpty && 
-        (int.tryParse(rentalDaysController.text) ?? 0) > 0;
+    rentalDaysCount.value = int.tryParse(rentalDaysController.text) ?? 0;
+    bool hasValidRentalDays = rentalDaysCount.value > 0;
     
     bool hasPickupDate = selectedPickupDate.value.isNotEmpty;
     bool hasPickupTime = selectedPickupTime.value.isNotEmpty;

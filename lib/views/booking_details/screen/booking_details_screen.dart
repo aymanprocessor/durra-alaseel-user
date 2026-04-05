@@ -38,7 +38,7 @@ class BookingDetailsScreen extends GetView<BookingDetailsController> {
       title: Obx(() {
         final carModel = controller.booking.value?.cars.carModel?.toString();
         return TextWidget(
-          carModel ?? 'Booking Details',
+          carModel ?? Strings.bookingDetails.tr,
           typographyStyle: TypographyStyle.titleMedium,
           fontWeight: FontWeight.w700,
         );
@@ -73,10 +73,11 @@ class _BookingDetailsBody extends StatelessWidget {
           SizedBox(height: Dimensions.verticalSize * 0.5),
           _InfoCard(booking: booking),
           SizedBox(height: Dimensions.verticalSize * 0.5),
-          if (booking.status == 2) _NearCompletionWarning(booking: booking),
-          SizedBox(height: Dimensions.verticalSize * 0.5),
           Obx(() => controller.canExtend
               ? _ExtendRentalButton(controller: controller)
+              : const SizedBox.shrink()),
+          Obx(() => controller.canCancel
+              ? _CancelBookingButton(controller: controller)
               : const SizedBox.shrink()),
           SizedBox(height: Dimensions.verticalSize * 0.3),
           _ExtensionHistoryLink(controller: controller),
@@ -206,10 +207,10 @@ class _InfoCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          _infoRow(Strings.PickUpLocation, booking.location),
-          _divider(),
-          _infoRow(Strings.destination,
-              booking.destination.isNotEmpty ? booking.destination : '—'),
+          _DeliveryRow(
+            isDelivery: booking.isDelivery,
+            location: booking.location,
+          ),
           _divider(),
           _infoRow(
             Strings.PickUpdate,
@@ -217,19 +218,13 @@ class _InfoCard extends StatelessWidget {
           ),
           _divider(),
           _infoRow(Strings.PickUpTime, booking.pickupTime),
-          if (booking.roundPickupDate != null) ...[
-            _divider(),
-            _infoRow('End Date', booking.roundPickupDate.toString().length >= 10
-                ? booking.roundPickupDate.toString().substring(0, 10)
-                : booking.roundPickupDate.toString()),
-          ],
           _divider(),
           _infoRow(
             Strings.totalAmount,
             '${booking.totalAmount ?? 0} $curCode',
           ),
           _divider(),
-          _infoRow('Payment', booking.paymentType),
+          _infoRow(Strings.paymentType, booking.paymentType),
           _divider(),
           _infoRow(
             Strings.status,
@@ -287,44 +282,83 @@ class _InfoCard extends StatelessWidget {
   }
 }
 
-class _NearCompletionWarning extends StatelessWidget {
-  final History booking;
+class _DeliveryRow extends StatelessWidget {
+  final bool isDelivery;
+  final String location;
 
-  const _NearCompletionWarning({required this.booking});
+  const _DeliveryRow({
+    required this.isDelivery,
+    required this.location,
+  });
 
   @override
   Widget build(BuildContext context) {
-    // Show warning if end date (roundPickupDate) is within 24 hours
-    final endDateRaw = booking.roundPickupDate;
-    if (endDateRaw == null) return const SizedBox.shrink();
+    final color = isDelivery ? CustomColor.primary : CustomColor.secondary;
+    final icon = isDelivery
+        ? Icons.local_shipping_outlined
+        : Icons.storefront_outlined;
+    final chipLabel = isDelivery
+        ? Strings.deliveryToLocation.tr
+        : Strings.branchPickup.tr;
 
-    final endDate = DateTime.tryParse(endDateRaw.toString());
-    if (endDate == null) return const SizedBox.shrink();
-
-    final hoursLeft = endDate.difference(DateTime.now()).inHours;
-    if (hoursLeft > 24) return const SizedBox.shrink();
-
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(Dimensions.defaultHorizontalSize * 0.75),
-      decoration: BoxDecoration(
-        color: Colors.amber.shade50,
-        borderRadius: BorderRadius.circular(Dimensions.radius * 0.8),
-        border: Border.all(color: Colors.amber.shade300),
-      ),
-      child: Row(
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: Dimensions.verticalSize * 0.3),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.warning_amber_rounded,
-              color: Colors.amber.shade700, size: 20),
-          SizedBox(width: 8),
-          Expanded(
-            child: TextWidget(
-              'Your booking ends in $hoursLeft hour${hoursLeft == 1 ? '' : 's'}. Consider extending now.',
-              fontSize: Dimensions.bodySmall,
-              color: Colors.amber.shade800,
-              fontWeight: FontWeight.w500,
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: Row(
+                  children: [
+                    Icon(icon, size: 16, color: CustomColor.secondary),
+                    SizedBox(width: 6),
+                    TextWidget(
+                      Strings.delivery.tr,
+                      fontSize: Dimensions.titleSmall,
+                      color: CustomColor.secondary,
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius:
+                      BorderRadius.circular(Dimensions.radius * 2),
+                  border: Border.all(color: color.withValues(alpha: 0.4)),
+                ),
+                child: TextWidget(
+                  chipLabel,
+                  fontSize: Dimensions.bodySmall,
+                  color: color,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ),
+          if (location.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.location_on_outlined,
+                    size: 14, color: CustomColor.secondary),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: TextWidget(
+                    location,
+                    fontSize: Dimensions.bodySmall,
+                    color: CustomColor.secondary,
+                    maxLines: 2,
+                    textOverflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );
@@ -341,7 +375,7 @@ class _ExtendRentalButton extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: PrimaryButton(
-        title: 'Extend Rental',
+        title: Strings.extendRental.tr,
         onPressed: () => _openExtendSheet(context),
       ),
     );
@@ -382,7 +416,7 @@ class _ExtensionHistoryLink extends StatelessWidget {
                   size: 18, color: CustomColor.primary),
               SizedBox(width: 6),
               TextWidget(
-                'View Extension History',
+                Strings.viewExtensionHistory.tr,
                 fontSize: Dimensions.titleSmall,
                 color: CustomColor.primary,
                 fontWeight: FontWeight.w600,
@@ -391,6 +425,69 @@ class _ExtensionHistoryLink extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _CancelBookingButton extends StatelessWidget {
+  final BookingDetailsController controller;
+
+  const _CancelBookingButton({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(top: Dimensions.verticalSize * 0.5),
+      child: Obx(
+        () => SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            onPressed: controller.isCancelLoading.value
+                ? null
+                : () => _showConfirmDialog(context),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: CustomColor.rejected,
+              side: BorderSide(color: CustomColor.rejected),
+              padding: EdgeInsets.symmetric(
+                vertical: Dimensions.verticalSize * 0.4,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(Dimensions.radius),
+              ),
+            ),
+            child: controller.isCancelLoading.value
+                ? SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: CustomColor.rejected,
+                    ),
+                  )
+                : TextWidget(
+                    Strings.cancelBooking.tr,
+                    fontSize: Dimensions.titleSmall,
+                    color: CustomColor.rejected,
+                    fontWeight: FontWeight.w600,
+                  ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showConfirmDialog(BuildContext context) {
+    Get.defaultDialog(
+      title: Strings.cancelBooking.tr,
+      middleText: Strings.cancelBookingConfirm.tr,
+      textConfirm: Strings.yesCancel.tr,
+      textCancel: Strings.keepBooking.tr,
+      confirmTextColor: Colors.white,
+      buttonColor: CustomColor.rejected,
+      onConfirm: () {
+        Navigator.of(context).pop();
+        controller.cancelBooking();
+      },
     );
   }
 }

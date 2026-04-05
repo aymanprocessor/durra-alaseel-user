@@ -131,32 +131,14 @@ class _BookingHeroHeader extends GetView<BookingController> {
               ),
               const SizedBox(height: CarboSpacing.x5),
               Text(
-                'Rental Details',
+                Strings.rentalDetails.tr,
                 style: CarboTypography.headlineLarge.copyWith(
                   color: Colors.white,
                   height: 1.1,
                 ),
               ),
-              const SizedBox(height: CarboSpacing.x2),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: CarboSpacing.x3,
-                  vertical: 5,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: CarboRadius.fullAll,
-                ),
-                child: Builder(builder: (context) {
-                  final car = controller.selectedCar;
-                  return Text(
-                    car.carModel.isNotEmpty ? car.carModel : 'Select your car above',
-                    style: CarboTypography.labelMedium.copyWith(
-                      color: Colors.white,
-                    ),
-                  );
-                }),
-              ),
+              const SizedBox(height: CarboSpacing.x3),
+              CarSummaryCard(car: controller.selectedCar),
             ],
           ),
         ),

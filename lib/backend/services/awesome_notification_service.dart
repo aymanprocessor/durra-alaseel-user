@@ -108,6 +108,8 @@ class AwesomeNotificationService {
       case 'booking':
       case 'trip':
       case 'driver':
+      case 'booking-confirmed':
+      case 'booking-cancelled':
         return 'booking_channel';
       case 'payment':
       case 'refund':
@@ -132,6 +134,8 @@ class AwesomeNotificationService {
     switch (type?.toLowerCase()) {
       case 'booking':
       case 'trip':
+      case 'booking-confirmed':
+      case 'booking-cancelled':
         return NotificationCategory.Event;
       case 'payment':
         return NotificationCategory.Service;
@@ -155,6 +159,8 @@ class AwesomeNotificationService {
     switch (type?.toLowerCase()) {
       case 'booking':
       case 'trip':
+      case 'booking-confirmed':
+      case 'booking-cancelled':
         return [
           NotificationActionButton(
             key: 'VIEW_BOOKING',
@@ -326,9 +332,11 @@ class AwesomeNotificationService {
     switch (type?.toLowerCase()) {
       case 'booking':
       case 'trip':
+      case 'booking-confirmed':
+      case 'booking-cancelled':
         await _navigateToBooking(payload);
         break;
-      
+
       case 'payment':
         await _navigateToPayment(payload);
         break;

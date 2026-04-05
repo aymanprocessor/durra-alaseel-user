@@ -98,6 +98,10 @@ class PreviewSectionCard extends GetView<PreviewController> {
 
         const SizedBox(height: CarboSpacing.x3),
 
+        _WalletBalanceCard(),
+
+        const SizedBox(height: CarboSpacing.x3),
+
         if (pricingBreakdown != null)
           _PricingCard(
             pricingBreakdown: pricingBreakdown,
@@ -106,6 +110,140 @@ class PreviewSectionCard extends GetView<PreviewController> {
           ),
       ],
     );
+  }
+}
+
+class _WalletBalanceCard extends GetView<PreviewController> {
+  _WalletBalanceCard();
+
+  final WalletController _walletController = Get.isRegistered<WalletController>()
+      ? Get.find<WalletController>()
+      : Get.put(WalletController());
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final wallet = _walletController.walletModel.value;
+      final isLoading = _walletController.isLoading.value;
+      final balance = wallet?.balance ?? 0.0;
+      final currency = wallet?.currency ?? 'SAR';
+      final totalPayable = controller.totalPayable.value;
+      final isInsufficient = !isLoading && wallet != null && balance < totalPayable;
+
+      return Container(
+        decoration: BoxDecoration(
+          color: CarboColors.surface,
+          borderRadius: CarboRadius.lgAll,
+          boxShadow: CarboShadow.card,
+          border: isInsufficient
+              ? Border.all(color: CarboColors.debit.withOpacity(0.4))
+              : null,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(CarboSpacing.x4),
+              child: Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: isInsufficient
+                          ? CarboColors.debit.withOpacity(0.1)
+                          : CarboColors.credit.withOpacity(0.12),
+                      borderRadius: CarboRadius.mdAll,
+                    ),
+                    child: Icon(
+                      Icons.account_balance_wallet_outlined,
+                      color: isInsufficient ? CarboColors.debit : CarboColors.credit,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: CarboSpacing.x3),
+                  Expanded(
+                    child: Text(
+                      Strings.wallet.tr,
+                      style: CarboTypography.bodyMedium.copyWith(
+                        color: CarboColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                  if (isLoading && wallet == null)
+                    const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: CarboColors.credit,
+                      ),
+                    )
+                  else
+                    Text(
+                      '${balance.toStringAsFixed(2)} $currency',
+                      style: CarboTypography.titleMedium.copyWith(
+                        color: isInsufficient ? CarboColors.debit : CarboColors.credit,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            if (isInsufficient) ...[
+              const Divider(height: 1, color: CarboColors.divider),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  CarboSpacing.x4,
+                  CarboSpacing.x3,
+                  CarboSpacing.x4,
+                  CarboSpacing.x4,
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.warning_amber_rounded,
+                      color: CarboColors.debit,
+                      size: 16,
+                    ),
+                    const SizedBox(width: CarboSpacing.x2),
+                    Expanded(
+                      child: Text(
+                        Strings.insufficientBalance.tr,
+                        style: CarboTypography.bodySmall.copyWith(
+                          color: CarboColors.debit,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: CarboSpacing.x3),
+                    GestureDetector(
+                      onTap: () => Get.toNamed(Routes.walletScreen),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: CarboSpacing.x3,
+                          vertical: CarboSpacing.x2,
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: CarboGradients.primary,
+                          borderRadius: CarboRadius.mdAll,
+                          boxShadow: CarboShadow.primaryGlow,
+                        ),
+                        child: Text(
+                          Strings.rechargeWallet.tr,
+                          style: CarboTypography.labelSmall.copyWith(
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+      );
+    });
   }
 }
 

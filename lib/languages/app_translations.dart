@@ -61,6 +61,8 @@ class AppTranslations extends Translations {
     'appLLogin': 'Login',
     'appLNotification': 'Notifications',
     'appLWallet': 'Wallet',
+    'appLInsufficientBalance': 'Insufficient balance to complete this booking.',
+    'appLRechargeWallet': 'Recharge Wallet',
     'appLPusherChannels': 'Pusher Channels',
     'appLNoNotification': 'No Notifications',
     'appLNoHistory': 'No History',
@@ -224,6 +226,27 @@ class AppTranslations extends Translations {
     'appLErrorPickingImage': 'Error picking image',
     'appLErrorCapturingImage': 'Error capturing image',
     'appLSomethingWentWrong': 'Something went wrong',
+
+    // Booking Form
+    'appLDeliveryLocation':     'Delivery Location',
+    'appLRentalDetails':        'Rental Details',
+    'appLAdditionalNotes':      'Additional Notes',
+    'appLCheckingDelivery':     'Checking delivery availability...',
+    'appLWithinDeliveryRange':  'Within delivery range — delivery fee applies',
+
+    // Booking Details Screen
+    'appLBookingDetails':       'Booking Details',
+    'appLEndDate':              'End Date',
+    'appLPaymentType':          'Payment Type',
+    'appLExtendRental':         'Extend Rental',
+    'appLViewExtensionHistory': 'View Extension History',
+    'appLCancelBooking':        'Cancel Booking',
+    'appLCancelBookingConfirm': 'Are you sure you want to cancel this booking?',
+    'appLYesCancel':            'Yes, Cancel',
+    'appLKeepBooking':          'Keep Booking',
+    'appLDeliveryToLocation':   'Delivery to Location',
+    'appLBranchPickup':         'Branch Pickup',
+    'appLMyBooking':            'My Booking',
   };
 
   static const Map<String, String> _arTranslations = {
@@ -279,6 +302,8 @@ class AppTranslations extends Translations {
     'appLLogin': 'تسجيل الدخول',
     'appLNotification': 'الإشعارات',
     'appLWallet': 'المحفظة',
+    'appLInsufficientBalance': 'الرصيد غير كافٍ لإتمام هذا الحجز.',
+    'appLRechargeWallet': 'شحن المحفظة',
     'appLPusherChannels': 'قنوات بوشَر',
     'appLNoNotification': 'لا توجد إشعارات',
     'appLNoHistory': 'لا يوجد سجل',
@@ -442,5 +467,26 @@ class AppTranslations extends Translations {
     'appLErrorPickingImage': 'خطأ في اختيار الصورة',
     'appLErrorCapturingImage': 'خطأ في التقاط الصورة',
     'appLSomethingWentWrong': 'حدث خطأ ما',
+
+    // Booking Form
+    'appLDeliveryLocation':     'موقع التوصيل',
+    'appLRentalDetails':        'تفاصيل الإيجار',
+    'appLAdditionalNotes':      'ملاحظات إضافية',
+    'appLCheckingDelivery':     'جاري التحقق من إمكانية التوصيل...',
+    'appLWithinDeliveryRange':  'ضمن نطاق التوصيل — تطبق رسوم التوصيل',
+
+    // Booking Details Screen
+    'appLBookingDetails':       'تفاصيل الحجز',
+    'appLEndDate':              'تاريخ الانتهاء',
+    'appLPaymentType':          'طريقة الدفع',
+    'appLExtendRental':         'تمديد الإيجار',
+    'appLViewExtensionHistory': 'عرض سجل التمديد',
+    'appLCancelBooking':        'إلغاء الحجز',
+    'appLCancelBookingConfirm': 'هل أنت متأكد من إلغاء هذا الحجز؟',
+    'appLYesCancel':            'نعم، إلغاء',
+    'appLKeepBooking':          'الاحتفاظ بالحجز',
+    'appLDeliveryToLocation':   'توصيل إلى الموقع',
+    'appLBranchPickup':         'استلام من الفرع',
+    'appLMyBooking':            'حجوزاتي',
   };
 }
