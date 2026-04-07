@@ -175,6 +175,7 @@ class AppTranslations extends Translations {
     
     // Booking & Location
     'appLRentalDays': 'Rental Days',
+    'appLDays': 'Days',
     'appLRentalFees': 'Rental Fees',
     'appLDelivery': 'Delivery',
     'appLTax': 'Tax',
@@ -247,6 +248,18 @@ class AppTranslations extends Translations {
     'appLDeliveryToLocation':   'Delivery to Location',
     'appLBranchPickup':         'Branch Pickup',
     'appLMyBooking':            'My Booking',
+    'appLVehicleInfo':          'Vehicle Info',
+    'appLDailyRate':            'Daily Rate',
+    'appLTransactionId':        'Transaction ID',
+    'appLPriceBreakdown':       'Price Breakdown',
+    'appLCharges':              'Charges',
+    'appLSubtotal':             'Subtotal',
+    'appLBookingInfo':          'Booking Info',
+    'appLBookingId':            'Booking ID',
+    'appLOpenInMap':            'Open in Map',
+    'appLVendorInfo':            'Vendor Info',
+    'appLVendorName':            'Vendor Name',
+    'appLBranchName':            'Branch',
   };
 
   static const Map<String, String> _arTranslations = {
@@ -416,6 +429,7 @@ class AppTranslations extends Translations {
     
     // Booking & Location
     'appLRentalDays': 'أيام الإيجار',
+    'appLDays': 'يوم',
     'appLRentalFees': 'رسوم الإيجار',
     'appLDelivery': 'التوصيل',
     'appLTax': 'الضريبة',
@@ -488,5 +502,17 @@ class AppTranslations extends Translations {
     'appLDeliveryToLocation':   'توصيل إلى الموقع',
     'appLBranchPickup':         'استلام من الفرع',
     'appLMyBooking':            'حجوزاتي',
+    'appLVehicleInfo':          'معلومات المركبة',
+    'appLDailyRate':            'السعر اليومي',
+    'appLTransactionId':        'رقم المعاملة',
+    'appLPriceBreakdown':       'تفاصيل السعر',
+    'appLCharges':              'الرسوم',
+    'appLSubtotal':             'المجموع الفرعي',
+    'appLBookingInfo':          'معلومات الحجز',
+    'appLBookingId':            'رقم الحجز',
+    'appLOpenInMap':            'فتح في الخريطة',
+    'appLVendorInfo':            'معلومات المؤجر',
+    'appLVendorName':            'اسم المؤجر',
+    'appLBranchName':            'الفرع',
   };
 }

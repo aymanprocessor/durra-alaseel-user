@@ -18,7 +18,7 @@ class ExtensionHistoryScreen extends GetView<ExtensionHistoryController> {
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_new_rounded,
               color: CustomColor.typography, size: 20),
-          onPressed: () => Get.back(),
+          onPressed: () => Navigator.of(context).pop(),
         ),
         title: TextWidget(
           'Extension History',

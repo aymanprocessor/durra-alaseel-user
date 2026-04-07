@@ -2,102 +2,148 @@ part of '../screen/history_screen.dart';
 
 class HistoryCard extends GetView<HistoryController> {
   final int index;
-
   const HistoryCard(this.index, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final h = MediaQuery.of(context).size.height;
     final info = controller.historyList[index];
-    return Obx(
-      () => Card(
-        margin: EdgeInsets.symmetric(
-            vertical: Dimensions.verticalSize * 0.2,
-            horizontal: Dimensions.defaultHorizontalSize),
-        elevation: 0,
-        child: Column(
-          children: [
-            ListTile(
-              title: TextWidget(
-                info.cars.carModel?.toString() ?? 'N/A',
-                typographyStyle: TypographyStyle.titleMedium,
-              ),
-              subtitle: Row(
-                children: [
-                  CircleAvatar(
-                      radius: Dimensions.radius * 0.3,
-                      backgroundColor: info.status == 1
-                          ? Colors.orange
-                          : info.status == 2
-                              ? Colors.blue
-                              : info.status == 3
-                                  ? CustomColor.primary
-                                  : CustomColor.rejected),
-                  Sizes.width.v5,
-                  TextWidget(
-                    info.status == 1
-                        ? Strings.pending
-                        : info.status == 2
-                            ? Strings.ongoing
-                            : info.status == 3
-                                ? Strings.complete
-                                : Strings.reject,
-                    typographyStyle: TypographyStyle.labelMedium,
-                  ),
-                ],
-              ),
-              trailing: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextWidget(
-                    info.pickupDate.toString().substring(0, 11),
-                    typographyStyle: TypographyStyle.bodySmall,
-                    color: CustomColor.primary,
-                    fontWeight: FontWeight.w700,
-                  ),
-                  SizedBox(height: 2),
-                  GestureDetector(
-                    onTap: () => Get.toNamed(
-                      Routes.bookingDetailsScreen,
-                      arguments: {'booking': info},
+    final cars = info.cars;
+
+    final enValue = cars.carTitle['en'];
+    final carTitle = (enValue is Map ? enValue['car_title'] : enValue)?.toString() ?? 'N/A';
+    final carModel = cars.carModel?.toString() ?? '';
+    final year = cars.year != 0 ? cars.year.toString() : '';
+
+    return GestureDetector(
+      onTap: () => Get.toNamed(Routes.bookingDetailsScreen, arguments: {'booking': info}),
+      child: Container(
+        decoration: BoxDecoration(
+          color: CarboColors.surface,
+          borderRadius: CarboRadius.lgAll,
+          boxShadow: CarboShadow.card,
+        ),
+        child: ClipRRect(
+          borderRadius: CarboRadius.lgAll,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Hero(
+                tag: 'car_hero_${info.id}',
+                child: SizedBox(
+                  width: 100,
+                  height: 110,
+                  child: Image.network(
+                    cars.imageUrl,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) => Container(
+                      color: CarboColors.background,
+                      child: const Center(
+                        child: Icon(CarboIcons.car, color: CarboColors.textDisabled, size: 32),
+                      ),
                     ),
-                    behavior: HitTestBehavior.opaque,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        TextWidget(
-                          Strings.details,
-                          fontSize: 11,
-                          color: CustomColor.secondary,
-                        ),
-                        Icon(
-                          Icons.chevron_right,
-                          size: 14,
-                          color: CustomColor.secondary,
+                  ),
+                ),
+              ),
+              // Info section
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(CarboSpacing.x3),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Title row + status badge
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              carTitle,
+                              style: CarboTypography.titleMedium,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: CarboSpacing.x2),
+                          _buildStatusBadge(info.status),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      // Year
+                      if (year.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          year,
+                          style: CarboTypography.caption.copyWith(color: CarboColors.textDisabled),
                         ),
                       ],
-                    ),
+                      const SizedBox(height: CarboSpacing.x2),
+                      const Divider(height: 1, color: CarboColors.divider),
+                      const SizedBox(height: CarboSpacing.x2),
+                      // Amount + date
+                      Row(
+                        children: [
+                          Text(
+                            '${info.amount ?? 0} ${BasicServices.baseCurCode}',
+                            style: CarboTypography.labelMedium.copyWith(
+                              color: CarboColors.primary,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const Spacer(),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.calendar_today_outlined, size: 11, color: CarboColors.textSecondary),
+                              const SizedBox(width: 3),
+                              Text(
+                                DateFormat('d MMM yyyy').format(info.pickupDate),
+                                style: CarboTypography.caption,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-              onTap: () => controller.toggleCardExpansion(index),
-            ),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              height: controller.isExpanded[index].value ? h * 0.3 : 0,
-              child: ExpandedCardInfo(index),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties.add(IntProperty('index', index));
+  Widget _buildStatusBadge(int status) {
+    final Color bg;
+    final Color fg;
+    final String label;
+
+    if (status == 1) {
+      bg = CarboColors.warningBg;
+      fg = CarboColors.warning;
+      label = Strings.pending;
+    } else if (status == 2) {
+      bg = CarboColors.infoBg;
+      fg = CarboColors.info;
+      label = Strings.ongoing;
+    } else if (status == 3) {
+      bg = CarboColors.successBg;
+      fg = CarboColors.success;
+      label = Strings.complete;
+    } else {
+      bg = CarboColors.errorBg;
+      fg = CarboColors.error;
+      label = Strings.reject;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: CarboSpacing.x2, vertical: 3),
+      decoration: BoxDecoration(color: bg, borderRadius: CarboRadius.fullAll),
+      child: Text(
+        label.tr,
+        style: CarboTypography.caption.copyWith(color: fg, fontWeight: FontWeight.w700),
+      ),
+    );
   }
 }

@@ -42,7 +42,7 @@ class DashboardBinding extends Bindings {
 Routes defined in `lib/routes/routes.dart`. Use Get navigation:
 ```dart
 Get.toNamed(Routes.bookingScreen, arguments: {'car': selectedCar});
-Get.back();  // No context needed
+Navigator.of(context).pop();  // Never use Get.back()
 ```
 
 ---
@@ -292,7 +292,7 @@ flutter build apk --release              # Production APK
 - **NDK conflicts**: Cleared via `Remove-Item -Recurse $env:LOCALAPPDATA\Android\sdk\ndk\*`
 - **Manifest package errors**: Fixed pusher_beams_android manifest via post-processing
 - **API 401 Unauthorized**: Verify Bearer token in headers
-- **`LateInitializationError` on `SnackbarController._controller` when calling `Get.back()`**: GetX's `Get.back()` internally calls `closeCurrentSnackbar`, which accesses a `late AnimationController` that may not be initialized yet (race condition when a snackbar is mid-queue). Fix: replace `Get.back()` with `Navigator.of(context).pop()` in the widget's `onTap` to bypass the snackbar close logic entirely.
+- **NEVER use `Get.back()`**: Always use `Navigator.of(context).pop()` instead. GetX's `Get.back()` internally calls `closeCurrentSnackbar`, which accesses a `late AnimationController` that may not be initialized yet (race condition when a snackbar is mid-queue), causing `LateInitializationError`. This rule applies globally to ALL screens and widgets — not just specific ones.
 - **RefreshIndicator not animating (pull-to-refresh stuck)**: Do NOT use `BouncingScrollPhysics` (or `BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics())`) inside a `CustomScrollView` wrapped with `RefreshIndicator`. Bouncing physics suppresses the overscroll that `RefreshIndicator` needs. Use `AlwaysScrollableScrollPhysics()` instead:
   ```dart
   // WRONG - refresh indicator will not animate
@@ -384,6 +384,21 @@ CarboIcons.transaction
 CarboIcons.back
 CarboIcons.car
 ```
+
+---
+
+## Screen-Specific Notes
+
+### Booking Details Screen (`lib/views/booking_details/screen/booking_details_screen.dart`)
+- **Completely redesigned** — modern card-based UI using Carbo Design System tokens exclusively
+- **Red gradient header** — compact bar with back button and title only
+- **Car Info Card** (`_CarInfoCard`) — Hero car image on top, divider, row with car icon + title + year + status badge. First card in SliverList
+- **Booking Info Card** (`_BookingInfoCard`) — pickup date/time, round trip, delivery chip, location, payment, transaction ID
+- **Price Breakdown Card** (`_PriceBreakdownCard`) — rental fees, charges, delivery fee, subtotal, tax, gradient total bar
+- **Vehicle Info Card** (`_VehicleInfoCard`) — car model, year, seats, daily rate, car number
+- **Cancel dialog** — modern `showModalBottomSheet` with `_CancelConfirmSheet`: errorBg header, circular close icon, side-by-side "Keep Booking" / "Yes, Cancel" buttons
+- Hero animation: `Hero(tag: 'car_hero_${booking.id}')` matches `HistoryCard`
+- Back button uses `Navigator.of(context).pop()` (not `Get.back()`)
 
 ---
 

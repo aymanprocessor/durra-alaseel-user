@@ -6,33 +6,34 @@ class HistoryMobileScreen extends GetView<HistoryController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(
-        Strings.history,
-        centerTitle: false,
-        showBackButton: true,
+      backgroundColor: CarboColors.background,
+      appBar: AppBar(
+        backgroundColor: CarboColors.surface,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        leading: GestureDetector(
+          onTap: () => Navigator.of(context).pop(),
+          child: const Icon(CarboIcons.back, color: CarboColors.textPrimary, size: 20),
+        ),
+        title: Text(Strings.history.tr, style: CarboTypography.headlineSmall),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Divider(height: 1, color: CarboColors.divider),
+        ),
       ),
-      body: Obx(
-        () => controller.isLoading ? Loader() : _bodyWidget(),
-      ),
-    );
-  }
-
-  _bodyWidget() {
-    return SafeArea(
-      child: controller.historyList.isNotEmpty
-          ? Padding(
-              padding: EdgeInsets.only(top: Dimensions.verticalSize),
-              child: ListView.builder(
-                itemCount: controller.historyList.length,
-                itemBuilder: (context, index) {
-                  if (index >= controller.historyList.length) {
-                    return SizedBox.shrink();
-                  }
-                  return HistoryCard(index);
-                },
-              ),
-            )
-          : EmptyDataWidget(),
+      body: Obx(() {
+        if (controller.isLoading) return const Center(child: Loader());
+        if (controller.historyList.isEmpty) return const EmptyDataWidget();
+        return ListView.separated(
+          padding: const EdgeInsets.symmetric(
+            horizontal: CarboSpacing.x5,
+            vertical: CarboSpacing.x4,
+          ),
+          itemCount: controller.historyList.length,
+          separatorBuilder: (_, __) => const SizedBox(height: CarboSpacing.x3),
+          itemBuilder: (_, index) => HistoryCard(index),
+        );
+      }),
     );
   }
 }

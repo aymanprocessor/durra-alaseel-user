@@ -24,7 +24,7 @@ All controllers extend `GetxController` and use reactive variables (`Rx<T>`, `.o
 Each screen has a `*Binding` class in `lib/bindings/` that registers controllers using `Get.lazyPut()` (lazy) or `Get.put()` (immediate). Bindings must be registered in `lib/routes/route_pages.dart` before navigation.
 
 ### Navigation
-Named routes defined in `lib/routes/routes.dart`. Use `Get.toNamed(Routes.xyz, arguments: {...})` and `Get.back()`. Pass data between screens via `Get.arguments`.
+Named routes defined in `lib/routes/routes.dart`. Use `Get.toNamed(Routes.xyz, arguments: {...})` and `Navigator.of(context).pop()` (never `Get.back()`). Pass data between screens via `Get.arguments`.
 
 ### API Layer
 All API calls go through `RequestProcess` in `lib/base/api/method/request_process.dart`:
@@ -95,7 +95,7 @@ Use `developer.log()` for complex flow tracing and `log.i()` / `log.e()` from `b
 
 ## Known Issues & Fixes
 
-- **`LateInitializationError` on `Get.back()`**: Replace `Get.back()` with `Navigator.of(context).pop()` in widget `onTap` handlers to avoid snackbar animation race condition.
+- **NEVER use `Get.back()`**: Always use `Navigator.of(context).pop()` instead. `Get.back()` internally calls `closeCurrentSnackbar`, which accesses a `late AnimationController` that may not be initialized yet, causing `LateInitializationError` on `SnackbarController._controller`. This applies to ALL screens, not just specific ones.
 - **`RefreshIndicator` not animating**: Do NOT use `BouncingScrollPhysics` inside a `CustomScrollView` wrapped with `RefreshIndicator`. Use `AlwaysScrollableScrollPhysics()` instead.
 - **NDK conflicts**: Clear with `Remove-Item -Recurse $env:LOCALAPPDATA\Android\sdk\ndk\*`
 - **API 401 errors**: Verify Bearer token is present in request headers.
@@ -116,6 +116,28 @@ Use `developer.log()` for complex flow tracing and `log.i()` / `log.e()` from `b
 - `CarSummaryCard` is a shared public widget (takes a `CarItem`) used in both the booking and preview hero headers
 - The old private `_CarSummaryCard` in `booking_mobile_screen.dart` and `_PreviewCarSummaryCard` in `preview_mobile_screen.dart` have been removed
 - Preview screen imports it from `package:carbo/views/booking/widget/car_summary_card.dart` and calls `CarSummaryCard(car: Get.find<BookingController>().selectedCar)` directly — no `Builder` needed since `BookingController` is always registered before navigation to preview
+
+### Booking Details Screen (`lib/views/booking_details/screen/booking_details_screen.dart`)
+- **Completely redesigned** from flat layout to modern card-based UI using Carbo Design System tokens exclusively
+- **Hero animation**: Car image wrapped in `Hero(tag: 'car_hero_${booking.id}')` — matches the Hero in `HistoryCard` for smooth transition from history list to details
+- **Red gradient header** (`CarboGradients.primary`) — compact bar with back button and "Booking Details" title only (no car info)
+- **4 separated cards**:
+  1. **Car Info Card** (`_CarInfoCard`) — Hero car image (160px, BoxFit.contain) on top, divider, then row with car icon, title, year, and `_StatusBadge` pill. Moved out of header into SliverList as first card
+  2. **Booking Info Card** (`_BookingInfoCard`) — pickup date/time, round trip (with length guard on `roundPickupDate.toString()` to prevent `RangeError`), delivery type with chip badge, location, payment type, transaction ID
+  3. **Price Breakdown Card** (`_PriceBreakdownCard`) — rental fees, charges, delivery fee, subtotal, tax, gradient total bar (same pattern as preview screen `_PricingCard`)
+  4. **Vehicle Info Card** (`_VehicleInfoCard`) — car model, year, seats, daily rate, car number (uses `vendorId`-related car data since API only returns vendor ID, not name)
+- **Note card** (`_NoteCard`) — info-style card shown only when `booking.message` is not empty
+- **Cancel booking dialog** — redesigned from `Get.defaultDialog` to a modern `showModalBottomSheet` with `_CancelConfirmSheet`: errorBg header with circular close icon, headline in error red, centered confirmation text, side-by-side "Keep Booking" (outlined) and "Yes, Cancel" (solid error red) buttons
+- **Reusable private widgets**: `_SectionCard`, `_DetailRow`, `_PricingRow`, `_DeliveryDetailRow` — same patterns as preview screen
+- **Status badge colors** match `HistoryCard`: pending=warning, ongoing=info, completed=success, default=error
+- No AppBar — uses CustomScrollView with SliverToBoxAdapter for the hero header
+- Back button uses `Navigator.of(context).pop()` (not `Get.back()`) to avoid snackbar race condition
+
+### History Card (`lib/views/history/widget/history_card.dart`)
+- Car image wrapped in `Hero(tag: 'car_hero_${info.id}')` to enable hero transition to booking details screen
+
+### String Keys Added
+- `vehicleInfo`, `dailyRate`, `transactionId`, `priceBreakdown`, `charges`, `subtotal`, `bookingInfo` — added to `strings.dart` and EN/AR translations in `app_translations.dart`
 
 ## Execution Rules
 

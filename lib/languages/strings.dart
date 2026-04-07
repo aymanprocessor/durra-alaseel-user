@@ -171,6 +171,7 @@ class Strings {
   
   // Booking - Rental Days and Location
   static const String rentalDays = "appLRentalDays";
+  static const String days = "appLDays";
   static const String rentalFees = "appLRentalFees";
   static const String delivery = "appLDelivery";
   static const String tax = "appLTax";
@@ -244,4 +245,16 @@ class Strings {
   static const String deliveryToLocation   = "appLDeliveryToLocation";
   static const String branchPickup         = "appLBranchPickup";
   static const String myBooking            = "appLMyBooking";
+  static const String vehicleInfo          = "appLVehicleInfo";
+  static const String dailyRate            = "appLDailyRate";
+  static const String transactionId        = "appLTransactionId";
+  static const String priceBreakdown       = "appLPriceBreakdown";
+  static const String charges              = "appLCharges";
+  static const String subtotal             = "appLSubtotal";
+  static const String bookingInfo          = "appLBookingInfo";
+  static const String bookingId               = "appLBookingId";
+  static const String openInMap            = "appLOpenInMap";
+  static const String vendorInfo           = "appLVendorInfo";
+  static const String vendorName           = "appLVendorName";
+  static const String branchName           = "appLBranchName";
 }
