@@ -138,6 +138,17 @@ Use `developer.log()` for complex flow tracing and `log.i()` / `log.e()` from `b
 
 ### String Keys Added
 - `vehicleInfo`, `dailyRate`, `transactionId`, `priceBreakdown`, `charges`, `subtotal`, `bookingInfo` — added to `strings.dart` and EN/AR translations in `app_translations.dart`
+- `confirmExtension`, `extendingByDays`, `additionalDays`, `newEndDate`, `ofDays`, `yesExtend`, `amountToCharge` — added for extend booking sheet in `strings.dart` and EN/AR translations in `app_translations.dart`
+
+### Extend Booking Bottom Sheet (`lib/views/booking_details/widget/extend_booking_bottom_sheet.dart`)
+- **Fully redesigned** with hero counter widget, animated preview card, skeleton loader, and confirm sheet — all Carbo DS tokens exclusively
+- **Counter**: `RxInt days` (1–365), `increment()`/`decrement()` with 800ms debounce before API preview fetch. `isPending` flag shows spinner while waiting.
+- **Animated counter number**: `_AnimatedCounterNumber` — `AnimatedSwitcher` + `SlideTransition` direction-aware (slide up for increment, slide down for decrement)
+- **Progress bar**: `LayoutBuilder` + `AnimatedContainer` for proportional fill (days/365)
+- **Skeleton loader**: `_SkeletonLoader` with `AnimationController.repeat(reverse:true)` pulsing opacity while `isPreviewLoading` is true
+- **Preview card**: gradient bg `#FFF5F5→#FFECEC`, red left-border strip, rows for additional days / new end date / daily rate / amount; gradient total pill at bottom
+- **Confirm sheet**: `_ExtendConfirmSheet` via `showModalBottomSheet` — `CarboColors.primaryLight` header, summary, Cancel + "Yes, Extend" buttons
+- **`VoidCallback onClose`**: sheet passes `() => Navigator.of(context).pop()` to `controller.confirmExtension(onClose)` — controller never stores `BuildContext`, no `Get.back()`
 
 ## Execution Rules
 
