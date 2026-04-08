@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../../../base/api/endpoint/api_endpoint.dart';
 import '../../../base/api/method/request_process.dart';
 import '../../../base/utils/basic_import.dart';
@@ -12,46 +12,58 @@ class ExtendBookingController extends GetxController {
 
   ExtendBookingController(this.bookingId);
 
-  final TextEditingController extensionDaysController = TextEditingController();
+  // ── Counter state ────────────────────────────────────────────────────────────
+  final RxInt days = 1.obs;
+  final RxBool isPending = false.obs;   // true while debounce timer is running
 
+  // ── Preview state ─────────────────────────────────────────────────────────────
   final RxBool isPreviewLoading = false.obs;
-  final RxBool isConfirming = false.obs;
-  final RxBool isPreviewLoaded = false.obs;
+  final RxBool isPreviewLoaded  = false.obs;
   final Rx<ExtendPreviewModel?> previewResult = Rx<ExtendPreviewModel?>(null);
   final RxString validationError = ''.obs;
 
+  // ── Confirm state ─────────────────────────────────────────────────────────────
+  final RxBool isConfirming = false.obs;
+
   Timer? _debounce;
 
-  void onDaysChanged(String val) {
-    _debounce?.cancel();
+  // ── Public counter methods ────────────────────────────────────────────────────
 
+  void increment() {
+    if (days.value >= 365) return;
+    days.value++;
+    _onCounterChanged();
+  }
+
+  void decrement() {
+    if (days.value <= 1) return;
+    days.value--;
+    _onCounterChanged();
+  }
+
+  // ── Internal ──────────────────────────────────────────────────────────────────
+
+  void _onCounterChanged() {
+    isPending.value = true;
     previewResult.value = null;
     isPreviewLoaded.value = false;
     validationError.value = '';
-
-    if (val.isEmpty) return;
-
-    final parsed = int.tryParse(val.trim());
-    if (parsed == null || parsed <= 0) {
-      validationError.value = 'Extension days must be greater than 0';
-      return;
-    }
-
-    _debounce = Timer(
-      const Duration(milliseconds: 800),
-      () => _fetchPreview(parsed),
-    );
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 800), () {
+      isPending.value = false;
+      _fetchPreview(days.value);
+    });
   }
 
-  Future<void> _fetchPreview(int days) async {
+  Future<void> _fetchPreview(int numDays) async {
     await RequestProcess().request<ExtendPreviewModel>(
       fromJson: ExtendPreviewModel.fromJson,
       apiEndpoint: ApiEndpoint.extendPreview,
       isLoading: isPreviewLoading,
       method: HttpMethod.GET,
       queryParams: {
-        'booking_id': bookingId.toString(),
-        'extension_days': days.toString(),
+        'booking_id':     bookingId.toString(),
+        'extension_days': numDays.toString(),
       },
       showErrorMessage: true,
       onSuccess: (value) {
@@ -70,15 +82,10 @@ class ExtendBookingController extends GetxController {
     );
   }
 
-  Future<void> confirmExtension() async {
+  /// [onClose] is called after a successful extension to dismiss the sheet.
+  /// The sheet passes `() => Navigator.of(context).pop()`.
+  Future<void> confirmExtension(VoidCallback onClose) async {
     if (isConfirming.value || !isPreviewLoaded.value) return;
-
-    final daysText = extensionDaysController.text.trim();
-    final days = int.tryParse(daysText);
-    if (days == null || days <= 0) {
-      validationError.value = 'Extension days must be greater than 0';
-      return;
-    }
 
     await RequestProcess().request<ExtendConfirmModel>(
       fromJson: ExtendConfirmModel.fromJson,
@@ -86,13 +93,13 @@ class ExtendBookingController extends GetxController {
       isLoading: isConfirming,
       method: HttpMethod.POST,
       body: {
-        'booking_id': bookingId,
-        'extension_days': days,
+        'booking_id':     bookingId,
+        'extension_days': days.value,
       },
       showSuccessMessage: false,
       showErrorMessage: true,
       onSuccess: (value) {
-        Get.back();
+        onClose();
         CustomSnackBar.success(
           title: Strings.success,
           message: (value?.message.isNotEmpty == true)
@@ -111,7 +118,6 @@ class ExtendBookingController extends GetxController {
 
   @override
   void onClose() {
-    extensionDaysController.dispose();
     _debounce?.cancel();
     super.onClose();
   }
