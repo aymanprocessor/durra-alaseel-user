@@ -257,4 +257,11 @@ class Strings {
   static const String vendorInfo           = "appLVendorInfo";
   static const String vendorName           = "appLVendorName";
   static const String branchName           = "appLBranchName";
+  static const String confirmExtension  = "appLConfirmExtension";
+  static const String extendingByDays   = "appLExtendingByDays";
+  static const String additionalDays    = "appLAdditionalDays";
+  static const String newEndDate        = "appLNewEndDate";
+  static const String ofDays            = "appLOfDays";
+  static const String yesExtend         = "appLYesExtend";
+  static const String amountToCharge    = "appLAmountToCharge";
 }

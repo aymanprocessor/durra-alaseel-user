@@ -260,6 +260,14 @@ class AppTranslations extends Translations {
     'appLVendorInfo':            'Vendor Info',
     'appLVendorName':            'Vendor Name',
     'appLBranchName':            'Branch',
+    // Extend booking sheet
+    'appLConfirmExtension':  'Confirm Extension',
+    'appLExtendingByDays':   'Extending by {days} days',
+    'appLAdditionalDays':    'Additional Days',
+    'appLNewEndDate':        'New End Date',
+    'appLOfDays':            'of 365 days',
+    'appLYesExtend':         'Yes, Extend',
+    'appLAmountToCharge':    'Amount to Charge',
   };
 
   static const Map<String, String> _arTranslations = {
@@ -514,5 +522,13 @@ class AppTranslations extends Translations {
     'appLVendorInfo':            'معلومات المؤجر',
     'appLVendorName':            'اسم المؤجر',
     'appLBranchName':            'الفرع',
+    // Extend booking sheet
+    'appLConfirmExtension':  'تأكيد التمديد',
+    'appLExtendingByDays':   'تمديد بـ {days} أيام',
+    'appLAdditionalDays':    'أيام إضافية',
+    'appLNewEndDate':        'تاريخ الانتهاء الجديد',
+    'appLOfDays':            'من 365 يوم',
+    'appLYesExtend':         'نعم، مدّد',
+    'appLAmountToCharge':    'المبلغ المطلوب',
   };
 }
