@@ -1,0 +1,76 @@
+{
+  "session_id": "session-2026-05-11-0020",
+  "started": "2026-05-11T21:20:26.957Z",
+  "files_read": {
+    "C:/DATA/Dora Alaseel/Source Code/durra-alaseel-user/lib/views/auth/register/controller/register_controller.dart": {
+      "count": 2,
+      "tokens": 431,
+      "first_read": "2026-05-11T21:23:25.130Z"
+    },
+    "C:/DATA/Dora Alaseel/Source Code/durra-alaseel-user/lib/views/auth/register/widget/register_input_fields.dart": {
+      "count": 1,
+      "tokens": 420,
+      "first_read": "2026-05-11T21:23:26.013Z"
+    },
+    "C:/DATA/Dora Alaseel/Source Code/durra-alaseel-user/lib/base/api/method/api_method.dart": {
+      "count": 1,
+      "tokens": 5017,
+      "first_read": "2026-05-11T21:23:26.417Z"
+    },
+    "C:/DATA/Dora Alaseel/Source Code/durra-alaseel-user/lib/base/api/services/auth_services.dart": {
+      "count": 1,
+      "tokens": 3092,
+      "first_read": "2026-05-11T21:23:33.239Z"
+    },
+    "C:/DATA/Dora Alaseel/Source Code/durra-alaseel-user/lib/base/widgets/primary_input_widget.dart": {
+      "count": 1,
+      "tokens": 3395,
+      "first_read": "2026-05-11T21:23:33.959Z"
+    },
+    "C:/DATA/Dora Alaseel/Source Code/durra-alaseel-user/lib/views/auth/register/screen/register_screen.dart": {
+      "count": 1,
+      "tokens": 376,
+      "first_read": "2026-05-11T21:23:41.828Z"
+    },
+    "C:/DATA/Dora Alaseel/Source Code/durra-alaseel-user/lib/views/auth/register/widget/register_button.dart": {
+      "count": 1,
+      "tokens": 264,
+      "first_read": "2026-05-11T21:23:41.942Z"
+    },
+    "C:/DATA/Dora Alaseel/Source Code/durra-alaseel-user/lib/base/api/model/error_message_model.dart": {
+      "count": 1,
+      "tokens": 181,
+      "first_read": "2026-05-11T21:23:46.804Z"
+    }
+  },
+  "files_written": [
+    {
+      "file": "C:/DATA/Dora Alaseel/Source Code/durra-alaseel-user/lib/views/auth/register/controller/register_controller.dart",
+      "action": "create",
+      "tokens": 706,
+      "at": "2026-05-11T21:29:51.065Z"
+    },
+    {
+      "file": "C:/DATA/Dora Alaseel/Source Code/durra-alaseel-user/lib/views/auth/register/widget/register_input_fields.dart",
+      "action": "create",
+      "tokens": 579,
+      "at": "2026-05-11T21:30:00.263Z"
+    },
+    {
+      "file": "C:/DATA/Dora Alaseel/Source Code/durra-alaseel-user/lib/views/auth/register/widget/register_button.dart",
+      "action": "create",
+      "tokens": 280,
+      "at": "2026-05-11T21:30:13.338Z"
+    }
+  ],
+  "edit_counts": {
+    "lib/views/auth/register/controller/register_controller.dart": 1,
+    "lib/views/auth/register/widget/register_input_fields.dart": 1,
+    "lib/views/auth/register/widget/register_button.dart": 1
+  },
+  "anatomy_hits": 8,
+  "anatomy_misses": 0,
+  "repeated_reads_warned": 1,
+  "cerebrum_warnings": 0,
+  "stop_count": 2
+}

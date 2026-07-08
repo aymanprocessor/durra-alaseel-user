@@ -77,8 +77,6 @@ class _BookingDetailsBody extends StatelessWidget {
                       child: _CancelBookingButton(controller: controller),
                     )
                   : const SizedBox.shrink()),
-              const SizedBox(height: CarboSpacing.x3),
-              _ExtensionHistoryLink(controller: controller),
               const SizedBox(height: CarboSpacing.x6),
             ]),
           ),
@@ -708,6 +706,9 @@ class _PriceBreakdownCard extends StatelessWidget {
     final int rentalDays = booking.rentalDays > 0 ? booking.rentalDays : (dailyFee > 0 ? (_toDouble(booking.amount) / dailyFee).round() : 0);
     final String dailyFeeFormatted = _formatNum(booking.cars.fees);
     final String rentalLabel = rentalDays > 0 ? '$rentalDays ${Strings.days.tr} x $dailyFeeFormatted $curCode' : Strings.rentalFees.tr;
+    final int extDays = booking.totalExtensionDays;
+    final String extLabel = '${Strings.extend.tr} $extDays ${Strings.days.tr} x $dailyFeeFormatted $curCode';
+    final String extAmount = _formatNum(extDays * dailyFee);
 
     return Container(
       decoration: const BoxDecoration(
@@ -760,6 +761,13 @@ class _PriceBreakdownCard extends StatelessWidget {
                   currency: curCode,
                   labelDirection: ui.TextDirection.ltr,
                 ),
+                if (extDays > 0)
+                  _PricingRow(
+                    label: extLabel,
+                    value: extAmount,
+                    currency: curCode,
+                    labelDirection: ui.TextDirection.ltr,
+                  ),
                 if (_toDouble(booking.charges) > 0)
                   _PricingRow(
                     label: Strings.charges.tr,
@@ -859,7 +867,7 @@ class _VendorInfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vendor = booking.cars.vendor;
-    final branchName = booking.cars.branchName;
+    final branch = booking.cars.branch;
 
     return _SectionCard(
       icon: Icons.store_outlined,
@@ -871,14 +879,128 @@ class _VendorInfoCard extends StatelessWidget {
             label: Strings.vendorName.tr,
             value: vendor.fullname,
           ),
-        if (branchName.isNotEmpty)
+        if (branch != null && branch.email.isNotEmpty)
+          _DetailRow(
+            icon: Icons.email_outlined,
+            label: Strings.email.tr,
+            value: branch.email,
+          ),
+        if (branch != null && branch.phone.isNotEmpty)
+          _DetailRow(
+            icon: Icons.phone_outlined,
+            label: Strings.Phone.tr,
+            value: branch.phone,
+          ),
+        if (branch != null && (branch.address ?? '').isNotEmpty)
+          _BranchLocationRow(
+            address: branch.address!,
+            latitude: branch.latitude,
+            longitude: branch.longitude,
+          ),
+        if (branch != null && branch.name.isNotEmpty)
           _DetailRow(
             icon: Icons.location_city_outlined,
             label: Strings.branchName.tr,
-            value: branchName,
+            value: branch.name,
           ),
       ],
     );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BRANCH LOCATION ROW
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _BranchLocationRow extends StatelessWidget {
+  final String address;
+  final String latitude;
+  final String longitude;
+
+  const _BranchLocationRow({
+    required this.address,
+    required this.latitude,
+    required this.longitude,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: CarboSpacing.x4,
+        vertical: CarboSpacing.x2,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.location_on_outlined,
+              size: 15, color: CarboColors.textSecondary),
+          const SizedBox(width: CarboSpacing.x2),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  Strings.branchLocation.tr,
+                  style: CarboTypography.bodyMedium.copyWith(
+                    color: CarboColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  address,
+                  style: CarboTypography.titleSmall,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: CarboSpacing.x2),
+          GestureDetector(
+            onTap: _openInMap,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: CarboSpacing.x2,
+                vertical: 3,
+              ),
+              decoration: BoxDecoration(
+                color: CarboColors.primary.withValues(alpha: 0.1),
+                borderRadius: CarboRadius.fullAll,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.map_outlined,
+                      size: 12, color: CarboColors.primary),
+                  const SizedBox(width: 4),
+                  Text(
+                    Strings.openInMap.tr,
+                    style: CarboTypography.caption.copyWith(
+                      color: CarboColors.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openInMap() async {
+    final geoUri = Uri.parse('geo:$latitude,$longitude?q=$latitude,$longitude($address)');
+    final webUri = Uri.parse(
+        'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude');
+    try {
+      if (await canLaunchUrl(geoUri)) {
+        await launchUrl(geoUri);
+      } else {
+        await launchUrl(webUri, mode: LaunchMode.externalApplication);
+      }
+    } catch (_) {}
   }
 }
 
@@ -1156,42 +1278,4 @@ class _CancelConfirmSheet extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// EXTENSION HISTORY LINK
-// ─────────────────────────────────────────────────────────────────────────────
 
-class _ExtensionHistoryLink extends StatelessWidget {
-  final BookingDetailsController controller;
-  const _ExtensionHistoryLink({required this.controller});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: GestureDetector(
-        onTap: controller.navigateToExtensionHistory,
-        behavior: HitTestBehavior.opaque,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            vertical: CarboSpacing.x2,
-            horizontal: CarboSpacing.x4,
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.history_outlined,
-                  size: 18, color: CarboColors.primary),
-              const SizedBox(width: 6),
-              Text(
-                Strings.viewExtensionHistory.tr,
-                style: CarboTypography.titleSmall.copyWith(
-                  color: CarboColors.primary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}

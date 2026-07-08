@@ -14,8 +14,16 @@ if (localPropertiesFile.exists()) {
 
 def mapsApiKey = (localProperties.getProperty('MAPS_API_KEY') ?: System.getenv('MAPS_API_KEY') ?: '').trim()
 
+def keyPropertiesFile = rootProject.file('key.properties')
+def keyProperties = new Properties()
+if (keyPropertiesFile.exists()) {
+    keyPropertiesFile.withReader('UTF-8') { reader ->
+        keyProperties.load(reader)
+    }
+}
+
 android {
-    namespace = "com.next.durratalaseel"
+    namespace = "app.next.durratalaseel"
     compileSdk = 36
 
     compileOptions {
@@ -27,8 +35,17 @@ android {
         jvmTarget = '11'
     }
 
+    signingConfigs {
+        release {
+            keyAlias keyProperties['keyAlias']
+            keyPassword keyProperties['keyPassword']
+            storeFile keyProperties['storeFile'] ? file(keyProperties['storeFile']) : null
+            storePassword keyProperties['storePassword']
+        }
+    }
+
     defaultConfig {
-        applicationId = "com.next.durratalaseel"
+        applicationId = "app.next.durratalaseel"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
@@ -42,8 +59,7 @@ android {
 
     buildTypes {
         release {
-    
-            signingConfig = signingConfigs.debug
+            signingConfig = signingConfigs.release
         }
     }
     aaptOptions {

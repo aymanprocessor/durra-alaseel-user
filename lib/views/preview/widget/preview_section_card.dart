@@ -105,6 +105,7 @@ class PreviewSectionCard extends GetView<PreviewController> {
         if (pricingBreakdown != null)
           _PricingCard(
             pricingBreakdown: pricingBreakdown,
+            insuranceBreakdown: model?.data.insuranceBreakdown,
             currency: currency,
             controller: controller,
           ),
@@ -394,11 +395,13 @@ class _DetailRow extends StatelessWidget {
 
 class _PricingCard extends StatelessWidget {
   final PricingBreakdown pricingBreakdown;
+  final InsuranceBreakdown? insuranceBreakdown;
   final String currency;
   final PreviewController controller;
 
   const _PricingCard({
     required this.pricingBreakdown,
+    this.insuranceBreakdown,
     required this.currency,
     required this.controller,
   });
@@ -459,6 +462,13 @@ class _PricingCard extends StatelessWidget {
                   value: pricingBreakdown.rentalFees,
                   currency: currency,
                 ),
+                if (double.tryParse(pricingBreakdown.insuranceTotal) != null &&
+                    double.parse(pricingBreakdown.insuranceTotal) > 0)
+                  _PricingRow(
+                    label: Strings.dailyInsurance.tr,
+                    value: pricingBreakdown.insuranceTotal,
+                    currency: currency,
+                  ),
                 if (double.tryParse(pricingBreakdown.deliveryPrice) != null &&
                     double.parse(pricingBreakdown.deliveryPrice) > 0)
                   _PricingRow(
@@ -473,11 +483,17 @@ class _PricingCard extends StatelessWidget {
                     value: pricingBreakdown.charges,
                     currency: currency,
                   ),
-                _PricingRow(
+                Obx(() => _PricingRow(
                   label: Strings.tax.tr,
-                  value: pricingBreakdown.taxAmount,
+                  value: controller.taxAmountDisplay.value,
                   currency: currency,
-                ),
+                )),
+                if (insuranceBreakdown?.insuranceType == 'deductible' &&
+                    (insuranceBreakdown?.deductibleInsurance ?? 0) > 0)
+                  _DeductibleInfoRow(
+                    amount: insuranceBreakdown!.deductibleInsurance,
+                    currency: currency,
+                  ),
                 const Padding(
                   padding: EdgeInsets.fromLTRB(
                     CarboSpacing.x4,
@@ -564,6 +580,53 @@ class _PricingRow extends StatelessWidget {
             style: CarboTypography.titleSmall,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _DeductibleInfoRow extends StatelessWidget {
+  final double amount;
+  final String currency;
+
+  const _DeductibleInfoRow({
+    required this.amount,
+    required this.currency,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        CarboSpacing.x4,
+        CarboSpacing.x2,
+        CarboSpacing.x4,
+        0,
+      ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: CarboSpacing.x3,
+          vertical: CarboSpacing.x2,
+        ),
+        decoration: BoxDecoration(
+          color: CarboColors.infoBg,
+          borderRadius: CarboRadius.mdAll,
+          border: Border.all(color: CarboColors.info.withOpacity(0.35)),
+        ),
+        child: Row(
+          children: [
+            const Icon(CarboIcons.info, size: 14, color: CarboColors.info),
+            const SizedBox(width: CarboSpacing.x2),
+            Expanded(
+              child: Text(
+                '${Strings.deductibleNote.tr}: ${amount.toStringAsFixed(0)} $currency',
+                style: CarboTypography.bodySmall.copyWith(
+                  color: CarboColors.info,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

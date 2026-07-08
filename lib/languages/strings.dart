@@ -236,6 +236,7 @@ class Strings {
   static const String bookingDetails       = "appLBookingDetails";
   static const String endDate              = "appLEndDate";
   static const String paymentType          = "appLPaymentType";
+  static const String extend               = "appLExtend";
   static const String extendRental         = "appLExtendRental";
   static const String viewExtensionHistory = "appLViewExtensionHistory";
   static const String cancelBooking        = "appLCancelBooking";
@@ -257,6 +258,7 @@ class Strings {
   static const String vendorInfo           = "appLVendorInfo";
   static const String vendorName           = "appLVendorName";
   static const String branchName           = "appLBranchName";
+  static const String branchLocation       = "appLBranchLocation";
   static const String confirmExtension  = "appLConfirmExtension";
   static const String extendingByDays   = "appLExtendingByDays";
   static const String additionalDays    = "appLAdditionalDays";
@@ -264,4 +266,24 @@ class Strings {
   static const String ofDays            = "appLOfDays";
   static const String yesExtend         = "appLYesExtend";
   static const String amountToCharge    = "appLAmountToCharge";
+
+  // DateTime Validation
+  static const String pickupTimeOutsideWorkingHours = "appLPickupTimeOutsideWorkingHours";
+  static const String branchWorkingHours = "appLBranchWorkingHours";
+
+  // Wallet Screen
+  static const String myWallet              = "appLMyWallet";
+  static const String availableBalance      = "appLAvailableBalance";
+  static const String topUpWallet           = "appLTopUpWallet";
+  static const String transactionHistory    = "appLTransactionHistory";
+  static const String noTransactionsYet     = "appLNoTransactionsYet";
+  static const String transactionHistoryEmpty = "appLTransactionHistoryEmpty";
+  static const String amountSar             = "appLAmountSar";
+  static const String minimumSar            = "appLMinimumSar";
+
+  // Insurance
+  static const String selectInsuranceType   = "appLSelectInsuranceType";
+  static const String dailyInsurance        = "appLDailyInsurance";
+  static const String deductibleInsurance   = "appLDeductibleInsurance";
+  static const String deductibleNote        = "appLDeductibleNote";
 }

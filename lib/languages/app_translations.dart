@@ -239,6 +239,7 @@ class AppTranslations extends Translations {
     'appLBookingDetails':       'Booking Details',
     'appLEndDate':              'End Date',
     'appLPaymentType':          'Payment Type',
+    'appLExtend':               'Extend',
     'appLExtendRental':         'Extend Rental',
     'appLViewExtensionHistory': 'View Extension History',
     'appLCancelBooking':        'Cancel Booking',
@@ -260,6 +261,7 @@ class AppTranslations extends Translations {
     'appLVendorInfo':            'Vendor Info',
     'appLVendorName':            'Vendor Name',
     'appLBranchName':            'Branch',
+    'appLBranchLocation':         'Branch Location',
     // Extend booking sheet
     'appLConfirmExtension':  'Confirm Extension',
     'appLExtendingByDays':   'Extending by {days} days',
@@ -268,6 +270,22 @@ class AppTranslations extends Translations {
     'appLOfDays':            'of 365 days',
     'appLYesExtend':         'Yes, Extend',
     'appLAmountToCharge':    'Amount to Charge',
+    'appLPickupTimeOutsideWorkingHours': 'Pickup time is outside branch working hours',
+    'appLBranchWorkingHours': 'Branch Working Hours',
+    'appLMyWallet': 'My Wallet',
+    'appLAvailableBalance': 'Available Balance',
+    'appLTopUpWallet': 'Top Up Wallet',
+    'appLTransactionHistory': 'Transaction History',
+    'appLNoTransactionsYet': 'No transactions yet',
+    'appLTransactionHistoryEmpty': 'Your transaction history will appear here',
+    'appLAmountSar': 'Amount (SAR)',
+    'appLMinimumSar': '1 - 5000 SAR',
+
+    // Insurance
+    'appLSelectInsuranceType': 'Insurance Type',
+    'appLDailyInsurance': 'Daily Insurance',
+    'appLDeductibleInsurance': 'Deductible Insurance',
+    'appLDeductibleNote': 'Deductible (not charged now)',
   };
 
   static const Map<String, String> _arTranslations = {
@@ -501,6 +519,7 @@ class AppTranslations extends Translations {
     'appLBookingDetails':       'تفاصيل الحجز',
     'appLEndDate':              'تاريخ الانتهاء',
     'appLPaymentType':          'طريقة الدفع',
+    'appLExtend':               'تمديد',
     'appLExtendRental':         'تمديد الإيجار',
     'appLViewExtensionHistory': 'عرض سجل التمديد',
     'appLCancelBooking':        'إلغاء الحجز',
@@ -522,6 +541,7 @@ class AppTranslations extends Translations {
     'appLVendorInfo':            'معلومات المؤجر',
     'appLVendorName':            'اسم المؤجر',
     'appLBranchName':            'الفرع',
+    'appLBranchLocation':         'موقع الفرع',
     // Extend booking sheet
     'appLConfirmExtension':  'تأكيد التمديد',
     'appLExtendingByDays':   'تمديد بـ {days} أيام',
@@ -530,5 +550,21 @@ class AppTranslations extends Translations {
     'appLOfDays':            'من 365 يوم',
     'appLYesExtend':         'نعم، مدّد',
     'appLAmountToCharge':    'المبلغ المطلوب',
+    'appLPickupTimeOutsideWorkingHours': 'وقت الاستلام خارج ساعات عمل الفرع',
+    'appLBranchWorkingHours': 'ساعات عمل الفرع',
+    'appLMyWallet': 'محفظتي',
+    'appLAvailableBalance': 'الرصيد المتاح',
+    'appLTopUpWallet': 'شحن المحفظة',
+    'appLTransactionHistory': 'سجل المعاملات',
+    'appLNoTransactionsYet': 'لا توجد معاملات بعد',
+    'appLTransactionHistoryEmpty': 'سيظهر سجل معاملاتك هنا',
+    'appLAmountSar': 'المبلغ (ر.س)',
+    'appLMinimumSar': '1 - 5000 ر.س',
+
+    // Insurance
+    'appLSelectInsuranceType': 'نوع التأمين',
+    'appLDailyInsurance': 'تأمين يومي',
+    'appLDeductibleInsurance': 'تأمين تحمل',
+    'appLDeductibleNote': 'مبلغ التحمل (لا يُخصم الآن)',
   };
 }

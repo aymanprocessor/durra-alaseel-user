@@ -66,7 +66,6 @@ class SelectTypeBox extends GetView<DashboardController> {
                 controller.selectType.value = v!;
                 controller.carTypeId.value = v.carTypeId;
                 controller.alis.value = v.name;
-                print(v.carTypeId);
               },
             ),
           ),
@@ -92,7 +91,6 @@ class SelectTypeBox extends GetView<DashboardController> {
                 controller.selectedBranch.value = v;
                 controller.branchId.value = v.id;
                 controller.selectBranchName.value = v.name;
-                print('Selected Branch ID: ${v.id}');
               }
             },
           )

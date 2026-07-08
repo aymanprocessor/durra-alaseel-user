@@ -27,6 +27,12 @@ class ExtendBookingController extends GetxController {
 
   Timer? _debounce;
 
+  @override
+  void onInit() {
+    super.onInit();
+    _fetchPreview(days.value);
+  }
+
   // ── Public counter methods ────────────────────────────────────────────────────
 
   void increment() {
@@ -95,6 +101,7 @@ class ExtendBookingController extends GetxController {
       body: {
         'booking_id':     bookingId,
         'extension_days': days.value,
+        'payment_type':   'balance',
       },
       showSuccessMessage: false,
       showErrorMessage: true,

@@ -7,6 +7,25 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:587507674947:android:3fe681f36e521b931389f6",
+        "android_client_info": {
+          "package_name": "app.next.durratalaseel"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAQfmV7ciGCMX0o3eq5IeCGe_nKeCOEV7w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:587507674947:android:d3c7b66f5c87c6161389f6",
         "android_client_info": {
           "package_name": "com.next.durratalaseel"

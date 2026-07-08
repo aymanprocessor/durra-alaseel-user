@@ -21,6 +21,12 @@ class RegisterMobileScreen extends GetView<RegisterController> {
               BrandLogo(),
               HeadingTextHeader(),
               RegisterInputFields(),
+              Sizes.height.v10,
+              Obx(() => InlineErrorWidget(
+                message: controller.errorMessage.value,
+                onDismiss: () => controller.clearError(),
+              )),
+              Sizes.height.v10,
                 CustomCheckboxWidget(),
               RegisterButton(),
               AlreadyAccountWidget(),

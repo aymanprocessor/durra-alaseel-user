@@ -63,11 +63,7 @@ class AppInitializer {
         debugPrint('⚠️ Notification permissions denied');
       }
 
-      // Add test interest for debugging
-      await controller.addInterest('debug-hello');
-
       debugPrint('Push notifications initialized');
-      debugPrint('Device subscribed to interest: hello');
     } catch (e) {
       debugPrint('Failed to initialize push notifications: $e');
       // Continue app initialization even if push notifications fail
@@ -85,8 +81,7 @@ class AppInitializer {
         NotificationChannels.getAllChannels(),
         // Channel groups
         channelGroups: NotificationChannels.getAllChannelGroups(),
-        // Debug mode - set to false in production
-        debug: true,
+        debug: false,
       );
 
       if (isInitialized) {

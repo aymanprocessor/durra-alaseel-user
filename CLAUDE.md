@@ -1,3 +1,10 @@
+# OpenWolf
+
+@.wolf/OPENWOLF.md
+
+This project uses OpenWolf for context management. Read and follow .wolf/OPENWOLF.md every session. Check .wolf/cerebrum.md before generating code. Check .wolf/anatomy.md before reading files.
+
+
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
@@ -139,6 +146,24 @@ Use `developer.log()` for complex flow tracing and `log.i()` / `log.e()` from `b
 ### String Keys Added
 - `vehicleInfo`, `dailyRate`, `transactionId`, `priceBreakdown`, `charges`, `subtotal`, `bookingInfo` — added to `strings.dart` and EN/AR translations in `app_translations.dart`
 - `confirmExtension`, `extendingByDays`, `additionalDays`, `newEndDate`, `ofDays`, `yesExtend`, `amountToCharge` — added for extend booking sheet in `strings.dart` and EN/AR translations in `app_translations.dart`
+- `pickupTimeOutsideWorkingHours`, `branchWorkingHours` — added for validate-datetime warning banner in `strings.dart` and EN/AR translations
+- `myWallet`, `availableBalance`, `topUpWallet`, `transactionHistory`, `noTransactionsYet`, `transactionHistoryEmpty`, `amountSar`, `minimumSar` — added for wallet screen i18n in `strings.dart` and EN/AR translations
+
+### Wallet Screen (`lib/views/wallet/screen/wallet_screen.dart`)
+- Transaction card title: `maxLines: 2`, `fontSize: 11.sp`, `fontWeight: FontWeight.w600`
+- All strings fully translated using `Strings.xxx.tr`: `myWallet`, `availableBalance`, `topUpWallet`, `transactionHistory`, `amountSar`, `minimumSar`, `cancel`, `continuee`, `noTransactionsYet`, `transactionHistoryEmpty`
+
+### Booking Validate-DateTime (`lib/views/booking/controller/booking_controller.dart`)
+- Auto-validates pickup datetime on `POST /api/v1/user/car-booking/validate-datetime` when both date AND time are selected (300ms debounce)
+- Uses direct `http.post` (not `ApiServices`) to parse non-200 responses (e.g., branch closed returns error status)
+- `forcePickupFromBranch` getter updated: returns `true` when `dateTimeValidation.value?.isValid == false`
+- `developer.log` logging for URL, body, status code, response, parsed result
+- Model: `DateTimeValidationResult` at `lib/models/datetime_validation_result.dart`
+- Endpoint: `ApiEndpoint.validateDateTime` in `lib/base/api/endpoint/api_endpoint.dart`
+
+### Booking Delivery Toggle (`lib/views/booking/widget/booking_all_fields.dart`)
+- Three states: (1) validating → `CircularProgressIndicator`, (2) invalid → red pill badge "Delivery Not Available", (3) valid → normal `Switch`
+- Warning banner below toggle row when invalid: shows day name + hours (or just day name if branch has no hours)
 
 ### Extend Booking Bottom Sheet (`lib/views/booking_details/widget/extend_booking_bottom_sheet.dart`)
 - **Fully redesigned** with hero counter widget, animated preview card, skeleton loader, and confirm sheet — all Carbo DS tokens exclusively

@@ -13,7 +13,10 @@ part 'themes.dart';
 final ThemeData lightThemeData = ThemeData.light().copyWith(
   primaryColor: CustomColor.primary,
   dividerColor: Colors.transparent,
-  colorScheme: ColorScheme.light(tertiary: CustomColor.tertiary),
+  colorScheme: ColorScheme.light(
+    primary: CustomColor.primary,
+    tertiary: CustomColor.tertiary,
+  ),
   scaffoldBackgroundColor: CustomColor.background,
   appBarTheme: AppBarTheme(systemOverlayStyle: SystemUiOverlayStyle.light),
   textTheme: ThemeData.light().textTheme.apply(

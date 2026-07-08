@@ -8,6 +8,7 @@ import '../../../../base/utils/dimensions.dart';
 import '../../../../base/utils/responsive_layout.dart';
 import '../../../../base/utils/size.dart';
 import '../../../../base/widgets/custom_app_bar.dart';
+import '../../../../base/widgets/error_widget.dart';
 import '../../../../base/widgets/primary_button.dart';
 import '../../../../base/widgets/primary_input_widget.dart';
 import '../../../../base/widgets/text_widget.dart';

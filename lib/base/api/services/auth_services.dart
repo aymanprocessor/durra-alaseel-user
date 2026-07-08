@@ -37,6 +37,7 @@ class AuthServices {
     required String credentials,
     required String password,
     required RxBool isLoading,
+    Function(String)? onError,
   }) async {
     Map<String, dynamic> inputBody = {
       'credentials': credentials,
@@ -49,6 +50,7 @@ class AuthServices {
       method: HttpMethod.POST,
       body: inputBody,
       isBasic: true,
+      showErrorMessage: false,
       onSuccess: (value) {
         _logInModel = value!;
         var data = _logInModel.data;
@@ -95,6 +97,11 @@ class AuthServices {
           Get.toNamed(Routes.register_otp_verificationScreen);
         }
       },
+      onError: (error) {
+        if (onError != null) {
+          onError(error.toString());
+        }
+      },
     );
   }
 
@@ -135,6 +142,7 @@ class AuthServices {
     required String password,
     required String phone,
     required RxBool isLoading,
+    Function(String)? onError,
   }) async {
     Map<String, dynamic> inputBody = {
       'firstname': firstName,
@@ -151,6 +159,7 @@ class AuthServices {
       method: HttpMethod.POST,
       body: inputBody,
       isBasic: true,
+      showErrorMessage: false,
       onSuccess: (value) {
         _registerModel = value!;
         var data = _registerModel.data;
@@ -182,6 +191,11 @@ class AuthServices {
           }
         } else {
           Routes.dashboardScreen.toNamed;
+        }
+      },
+      onError: (error) {
+        if (onError != null) {
+          onError(error.toString());
         }
       },
     );

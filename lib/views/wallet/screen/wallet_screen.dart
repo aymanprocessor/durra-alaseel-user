@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import '../../../languages/strings.dart';
 import '../../../routes/routes.dart';
 import '../controller/wallet_controller.dart';
 import '../model/wallet_model.dart';
@@ -58,7 +59,7 @@ class WalletScreen extends GetView<WalletController> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Transaction History',
+                        Strings.transactionHistory.tr,
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w700,
@@ -212,7 +213,7 @@ class _HeroCard extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            'My Wallet',
+                            Strings.myWallet.tr,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 17.sp,
@@ -261,7 +262,7 @@ class _HeroCard extends StatelessWidget {
                                     color: Colors.white70, size: 12.sp),
                                 SizedBox(width: 5.w),
                                 Text(
-                                  'Available Balance',
+                                  Strings.availableBalance.tr,
                                   style: TextStyle(
                                     color: Colors.white70,
                                     fontSize: 11.sp,
@@ -356,7 +357,7 @@ class _HeroCard extends StatelessWidget {
                                         ),
                                         SizedBox(width: 10.w),
                                         Text(
-                                          'Top Up Wallet',
+                                          Strings.topUpWallet.tr,
                                           style: TextStyle(
                                             color: _kRed,
                                             fontSize: 15.sp,
@@ -405,7 +406,7 @@ class _HeroCard extends StatelessWidget {
                   ),
                   SizedBox(width: 12.w),
                   Text(
-                    'Top Up Wallet',
+                    Strings.topUpWallet.tr,
                     style: TextStyle(
                       fontSize: 17.sp,
                       fontWeight: FontWeight.w700,
@@ -424,8 +425,8 @@ class _HeroCard extends StatelessWidget {
                   color: _kText,
                 ),
                 decoration: InputDecoration(
-                  labelText: 'Amount (SAR)',
-                  hintText: 'Minimum 10 SAR',
+                  labelText: Strings.amountSar.tr,
+                  hintText: Strings.minimumSar.tr,
                   labelStyle: TextStyle(color: _kTextSub, fontSize: 13.sp),
                   hintStyle: TextStyle(color: _kTextSub, fontSize: 13.sp),
                   prefixIcon:
@@ -456,7 +457,7 @@ class _HeroCard extends StatelessWidget {
                         ),
                         child: Center(
                           child: Text(
-                            'Cancel',
+                            Strings.cancel.tr,
                             style: TextStyle(
                               color: _kTextSub,
                               fontWeight: FontWeight.w600,
@@ -473,7 +474,7 @@ class _HeroCard extends StatelessWidget {
                       onTap: () async {
                         final amount =
                             int.tryParse(amountController.text.trim());
-                        if (amount == null || amount < 10) return;
+                        if (amount == null || amount < 1 || amount > 5000) return;
                         Get.back();
                         final invoice = await ctrl.recharge(amount);
                         if (invoice != null &&
@@ -492,7 +493,7 @@ class _HeroCard extends StatelessWidget {
                         ),
                         child: Center(
                           child: Text(
-                            'Continue',
+                            Strings.continuee.tr,
                             style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w700,
@@ -594,11 +595,11 @@ class _TransactionCard extends StatelessWidget {
               children: [
                 Text(
                   transaction.description,
-                  maxLines: 1,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: _kText,
-                    fontSize: 13.sp,
+                    fontSize: 11.sp,
                     fontWeight: FontWeight.w600,
                     letterSpacing: -0.2,
                   ),
@@ -668,7 +669,7 @@ class _EmptyState extends StatelessWidget {
           ),
           SizedBox(height: 16.h),
           Text(
-            'No transactions yet',
+            Strings.noTransactionsYet.tr,
             style: TextStyle(
               color: _kText,
               fontSize: 14.sp,
@@ -677,7 +678,7 @@ class _EmptyState extends StatelessWidget {
           ),
           SizedBox(height: 6.h),
           Text(
-            'Your transaction history will appear here',
+            Strings.transactionHistoryEmpty.tr,
             style: TextStyle(color: _kTextSub, fontSize: 12.sp),
           ),
         ],

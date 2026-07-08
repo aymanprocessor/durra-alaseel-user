@@ -147,6 +147,7 @@ class PreviewController extends GetxController {
     final includeDelivery = deliveryPrice > 0;
     queryParams['include_delivery'] = includeDelivery.toString();
     queryParams['delivery_price'] = deliveryPrice.toString();
+    queryParams['insurance_type'] = bookingController.selectedInsuranceType.value;
     
     // Add pickup_location as separate fields (backend expects array format)
     if (bookingController.pickupLocation.value != null && 
@@ -219,6 +220,15 @@ class PreviewController extends GetxController {
       } else {
         pricing.deliveryPrice = '0.00';
       }
+
+      // Compute tax on rental + delivery + insurance
+      final rentalFees = double.tryParse(pricing.rentalFees) ?? 0.0;
+      final effectiveDelivery = double.tryParse(pricing.deliveryPrice) ?? 0.0;
+      final insuranceTotal = double.tryParse(pricing.insuranceTotal) ?? 0.0;
+      final taxPct = pricing.taxPercentage;
+      final computedTax = (rentalFees + effectiveDelivery) * taxPct / 100;
+      taxAmountDisplay.value = computedTax.toStringAsFixed(2);
+      totalPayable.value = rentalFees + effectiveDelivery + insuranceTotal + computedTax;
     }
   }
 
@@ -374,6 +384,7 @@ class PreviewController extends GetxController {
       'delivery_price': deliveryPrice,
       'round_pickup_date': bookingController.selectedRoundDate.value,
       'round_pickup_time': bookingController.selectedRoundTime.value,
+      'insurance_type': bookingController.selectedInsuranceType.value,
       if (tokenValue.isNotEmpty) 'token': tokenValue,
     };
     return RequestProcess().request<CommonSuccessModel>(
@@ -434,6 +445,7 @@ class PreviewController extends GetxController {
       'delivery_price': deliveryPrice,
       'round_pickup_date': bookingController.selectedRoundDate.value,
       'round_pickup_time': bookingController.selectedRoundTime.value,
+      'insurance_type': bookingController.selectedInsuranceType.value,
       if (tokenValue.isNotEmpty) 'token': tokenValue,
     };
 
@@ -608,6 +620,7 @@ class PreviewController extends GetxController {
   }
 
   RxDouble totalPayable = 0.0.obs;
+  RxString taxAmountDisplay = '0.00'.obs;
 
   RxDouble exRent = 0.0.obs;
   RxDouble percentCharge = 0.0.obs;

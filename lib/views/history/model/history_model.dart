@@ -429,6 +429,8 @@ class Branch {
   String name;
   String slug;
   String? address;
+  String phone;
+  String email;
   String latitude;
   String longitude;
   bool deliveryEnabled;
@@ -439,6 +441,8 @@ class Branch {
     required this.name,
     required this.slug,
     this.address,
+    required this.phone,
+    required this.email,
     required this.latitude,
     required this.longitude,
     required this.deliveryEnabled,
@@ -450,6 +454,8 @@ class Branch {
         name: json["name"] ?? '',
         slug: json["slug"] ?? '',
         address: json["address"],
+        phone: json["phone"] ?? '',
+        email: json["email"] ?? '',
         latitude: json["latitude"]?.toString() ?? '0',
         longitude: json["longitude"]?.toString() ?? '0',
         deliveryEnabled: json["delivery_enabled"] ?? false,
@@ -461,6 +467,8 @@ class Branch {
         "name": name,
         "slug": slug,
         "address": address,
+        "phone": phone,
+        "email": email,
         "latitude": latitude,
         "longitude": longitude,
         "delivery_enabled": deliveryEnabled,

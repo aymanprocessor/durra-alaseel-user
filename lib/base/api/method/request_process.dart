@@ -81,7 +81,14 @@ class RequestProcess extends GetxController {
         developer.log('═══════════════════════════════════════════════════════════');
       }
 
-      onSuccess(value);
+      // If API returned an error (null response), call onError instead of onSuccess
+      if (value == null) {
+        if (onError != null) {
+          onError('API request failed');
+        }
+      } else {
+        onSuccess(value);
+      }
       return value;
     } catch (e) {
       if (kDebugMode) {

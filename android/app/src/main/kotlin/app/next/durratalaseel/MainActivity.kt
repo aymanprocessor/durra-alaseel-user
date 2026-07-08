@@ -1,4 +1,4 @@
-package com.next.durratalaseel
+package app.next.durratalaseel
 
 import android.app.NotificationChannel
 import android.app.NotificationManager

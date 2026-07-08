@@ -13,16 +13,15 @@ class RegisterButton extends GetView<RegisterController> {
             title: Strings.registerNow,
             isLoading: controller.isLoading,
             onPressed: () {
-              if (controller.isFormValid.value) {
-                if (BasicServices.agreePolicy.value == 1) {
-                  if (controller.agree.value) {
-                    controller.onRegistration;
-                  } else {
-                    CustomSnackBar.error(Strings.agreeToTerms);
-                  }
-                } else {
+              if (!controller.formKey.currentState!.validate()) return;
+              if (BasicServices.agreePolicy.value == 1) {
+                if (controller.agree.value) {
                   controller.onRegistration;
+                } else {
+                  CustomSnackBar.error(Strings.agreeToTerms);
                 }
+              } else {
+                controller.onRegistration;
               }
             },
           ),

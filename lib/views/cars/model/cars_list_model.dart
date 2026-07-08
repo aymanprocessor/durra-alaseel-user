@@ -178,6 +178,8 @@ class CarItem {
   String fees;
   String price;
   String? deliveryPrice;
+  double dailyInsurance;
+  double deductibleInsurance;
   String image;
   String imageUrl;
   int status;
@@ -200,6 +202,8 @@ class CarItem {
     required this.fees,
     required this.price,
     this.deliveryPrice,
+    this.dailyInsurance = 0.0,
+    this.deductibleInsurance = 0.0,
     required this.image,
     required this.imageUrl,
     required this.status,
@@ -246,6 +250,8 @@ class CarItem {
         fees: json["fees"]?.toString() ?? '0',
         price: json["price"]?.toString() ?? '0',
         deliveryPrice: json["delivery_price"]?.toString() ?? '0',
+        dailyInsurance: (json["daily_insurance"] as num?)?.toDouble() ?? 0.0,
+        deductibleInsurance: (json["deductible_insurance"] as num?)?.toDouble() ?? 0.0,
         image: json["image"] ?? '',
         imageUrl: json["image_url"] ?? '',
         status: json["status"] ?? 0,
@@ -274,6 +280,8 @@ class CarItem {
         "fees": fees,
         "price": price,
         "delivery_price": deliveryPrice ?? '0',
+        "daily_insurance": dailyInsurance,
+        "deductible_insurance": deductibleInsurance,
         "image": image,
         "image_url": imageUrl,
         "status": status,

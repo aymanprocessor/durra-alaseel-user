@@ -1,0 +1,133 @@
+<h2>Full Design — Extend Booking Sheet</h2>
+<p class="subtitle">Complete layout with hero counter, animated preview card, and confirmation sheet</p>
+
+<div class="split">
+
+  <!-- Main bottom sheet -->
+  <div class="mockup">
+    <div class="mockup-header">① Extend Booking Sheet</div>
+    <div class="mockup-body" style="background:#F7F8F8;padding:16px;">
+      <div style="background:white;border-radius:20px 20px 0 0;padding:20px 20px 28px;font-family:sans-serif;box-shadow:0 -4px 24px rgba(0,0,0,0.08);">
+
+        <!-- Drag handle -->
+        <div style="width:40px;height:4px;background:#EEEEEE;border-radius:2px;margin:0 auto 18px;"></div>
+
+        <!-- Header row -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+          <div>
+            <div style="font-weight:700;font-size:17px;color:#1D1D1D;">Extend Rental</div>
+            <div style="font-size:11px;color:#8F9396;margin-top:2px;">Add days to your ongoing booking</div>
+          </div>
+          <div style="width:36px;height:36px;border-radius:50%;background:#F7F8F8;display:flex;align-items:center;justify-content:center;color:#8F9396;font-size:16px;">✕</div>
+        </div>
+
+        <!-- Current end date pill -->
+        <div style="background:#F7F8F8;border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;">
+          <div style="display:flex;align-items:center;gap:7px;">
+            <span style="font-size:14px;">📅</span>
+            <span style="font-size:12px;color:#8F9396;">Current End Date</span>
+          </div>
+          <span style="font-size:13px;font-weight:600;color:#1D1D1D;">2025-04-20</span>
+        </div>
+
+        <!-- Hero counter -->
+        <div style="text-align:center;padding:8px 0 20px;">
+          <div style="font-size:10px;color:#8F9396;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;">Additional Days</div>
+          <div style="display:inline-flex;align-items:center;gap:24px;">
+            <!-- Minus button -->
+            <div style="width:52px;height:52px;border-radius:50%;background:#F7F8F8;border:1.5px solid #EEEEEE;display:flex;align-items:center;justify-content:center;font-size:26px;color:#E93A3A;line-height:1;">−</div>
+            <!-- Number -->
+            <div>
+              <div style="font-size:56px;font-weight:800;color:#E93A3A;line-height:1;letter-spacing:-2px;">14</div>
+              <div style="font-size:11px;color:#8F9396;text-align:center;margin-top:3px;">days</div>
+            </div>
+            <!-- Plus button -->
+            <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#E93A3A,#B72E2E);display:flex;align-items:center;justify-content:center;font-size:26px;color:white;box-shadow:0 4px 12px rgba(233,58,58,0.35);">+</div>
+          </div>
+          <!-- Progress bar -->
+          <div style="margin:14px auto 0;width:75%;">
+            <div style="background:#EEEEEE;border-radius:4px;height:5px;overflow:hidden;">
+              <div style="background:linear-gradient(90deg,#E93A3A,#FF6B6B);width:3.8%;height:100%;border-radius:4px;"></div>
+            </div>
+            <div style="font-size:10px;color:#BCBCBC;margin-top:5px;">14 of 365 days</div>
+          </div>
+        </div>
+
+        <!-- Animated preview card (visible when days > 0 + preview loaded) -->
+        <div style="background:linear-gradient(135deg,#FFF5F5,#FFECEC);border:1px solid rgba(233,58,58,0.18);border-radius:14px;padding:14px 16px;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;">
+            <div style="width:4px;height:16px;background:#E93A3A;border-radius:2px;"></div>
+            <span style="font-size:12px;font-weight:700;color:#1D1D1D;letter-spacing:0.3px;">PRICE PREVIEW</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:7px;font-size:12px;"><span style="color:#8F9396;">New End Date</span><span style="color:#1D1D1D;font-weight:600;">2025-05-04</span></div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:7px;font-size:12px;"><span style="color:#8F9396;">Daily Rate</span><span style="color:#1D1D1D;font-weight:600;">120 SAR</span></div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:7px;font-size:12px;"><span style="color:#8F9396;">Subtotal</span><span style="color:#1D1D1D;font-weight:600;">1,680 SAR</span></div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:7px;font-size:12px;"><span style="color:#8F9396;">Tax</span><span style="color:#1D1D1D;font-weight:600;">84 SAR</span></div>
+          <div style="height:1px;background:rgba(233,58,58,0.15);margin:9px 0;"></div>
+          <!-- Total row -->
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-weight:700;font-size:14px;color:#1D1D1D;">Total</span>
+            <div style="background:#E93A3A;border-radius:20px;padding:4px 14px;">
+              <span style="font-weight:700;font-size:14px;color:white;">1,764 SAR</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Confirm button -->
+        <div style="background:linear-gradient(90deg,#E93A3A,#B72E2E);border-radius:12px;padding:15px;text-align:center;color:white;font-weight:700;font-size:15px;box-shadow:0 4px 16px rgba(233,58,58,0.3);">Confirm Extension →</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirmation sheet -->
+  <div class="mockup">
+    <div class="mockup-header">② Confirmation Alert Sheet</div>
+    <div class="mockup-body" style="background:#F7F8F8;padding:16px;">
+      <div style="background:white;border-radius:20px 20px 0 0;padding:20px 20px 32px;font-family:sans-serif;box-shadow:0 -4px 24px rgba(0,0,0,0.08);">
+
+        <!-- Drag handle -->
+        <div style="width:40px;height:4px;background:#EEEEEE;border-radius:2px;margin:0 auto 20px;"></div>
+
+        <!-- Icon + title -->
+        <div style="text-align:center;margin-bottom:20px;">
+          <div style="width:64px;height:64px;border-radius:50%;background:#FFECEC;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:28px;">📅</div>
+          <div style="font-size:18px;font-weight:700;color:#1D1D1D;margin-bottom:6px;">Confirm Extension?</div>
+          <div style="font-size:13px;color:#8F9396;line-height:1.5;">You're about to extend your booking by<br><span style="font-weight:700;color:#E93A3A;">14 days</span></div>
+        </div>
+
+        <!-- Summary card -->
+        <div style="background:#F7F8F8;border-radius:12px;padding:14px 16px;margin-bottom:20px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:13px;">
+            <span style="color:#8F9396;">New end date</span>
+            <span style="font-weight:600;color:#1D1D1D;">2025-05-04</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;">
+            <span style="color:#8F9396;">Amount to charge</span>
+            <span style="font-weight:700;color:#E93A3A;">1,764 SAR</span>
+          </div>
+        </div>
+
+        <!-- Buttons -->
+        <div style="display:flex;gap:10px;">
+          <div style="flex:1;border:1.5px solid #EEEEEE;border-radius:12px;padding:14px;text-align:center;font-weight:600;font-size:14px;color:#8F9396;">Cancel</div>
+          <div style="flex:1.4;background:linear-gradient(90deg,#E93A3A,#B72E2E);border-radius:12px;padding:14px;text-align:center;font-weight:700;font-size:14px;color:white;box-shadow:0 4px 12px rgba(233,58,58,0.3);">Yes, Extend</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="section" style="margin-top:24px;">
+  <h3>Animations & Interactions</h3>
+  <ul style="color:#8F9396;font-size:13px;line-height:2;">
+    <li>🔢 Counter number: <strong>AnimatedSwitcher</strong> with vertical slide (up for increment, down for decrement) — 200ms</li>
+    <li>📊 Progress bar width: <strong>AnimatedContainer</strong> — 300ms ease-in-out</li>
+    <li>💳 Preview card: <strong>AnimatedSize + FadeTransition</strong> — slides in from below, fades in — 350ms</li>
+    <li>⏳ Loading state: skeleton shimmer inside preview card area while fetching</li>
+    <li>🔴 Plus button: glow pulse while debounce is running (preview pending)</li>
+  </ul>
+</div>
+
+<p class="subtitle">Does this layout and confirmation sheet look right? Any changes before I write the spec?</p>

@@ -1,0 +1,137 @@
+<h2>Extend Booking — Counter Widget Style</h2>
+<p class="subtitle">3 approaches for the days counter. All use Carbo DS tokens and slide-in preview card animation.</p>
+
+<div class="cards">
+
+  <!-- Option A -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#F7F8F8;padding:20px;border-radius:8px;">
+      <div style="background:white;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,0.08);font-family:sans-serif;">
+        <!-- Drag handle -->
+        <div style="width:40px;height:4px;background:#EEEEEE;border-radius:2px;margin:0 auto 16px;"></div>
+        <!-- Header -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+          <span style="font-weight:700;font-size:16px;color:#1D1D1D;">Extend Rental</span>
+          <span style="color:#8F9396;font-size:20px;cursor:pointer;">✕</span>
+        </div>
+        <!-- Info row -->
+        <div style="background:#F7F8F8;border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;margin-bottom:16px;">
+          <span style="font-size:12px;color:#8F9396;">Current End Date</span>
+          <span style="font-size:13px;font-weight:600;color:#1D1D1D;">2025-04-20</span>
+        </div>
+        <!-- Counter widget -->
+        <div style="margin-bottom:8px;">
+          <span style="font-size:12px;color:#8F9396;font-weight:500;">Additional Days</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;background:#F7F8F8;border-radius:12px;padding:6px;">
+          <div style="width:44px;height:44px;background:white;border-radius:9px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,0.1);font-size:22px;color:#E93A3A;font-weight:300;">−</div>
+          <div style="text-align:center;">
+            <div style="font-size:32px;font-weight:700;color:#1D1D1D;line-height:1;">7</div>
+            <div style="font-size:10px;color:#8F9396;margin-top:2px;">days</div>
+          </div>
+          <div style="width:44px;height:44px;background:#E93A3A;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:22px;color:white;font-weight:300;">+</div>
+        </div>
+        <!-- Preview card (compact) -->
+        <div style="background:#FFF5F5;border:1px solid rgba(233,58,58,0.2);border-radius:12px;padding:12px 14px;margin-top:14px;font-size:12px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:#8F9396;">New End Date</span><span style="color:#1D1D1D;font-weight:600;">2025-04-27</span></div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:#8F9396;">Daily Rate</span><span style="color:#1D1D1D;font-weight:600;">120 SAR</span></div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:#8F9396;">Subtotal</span><span style="color:#1D1D1D;font-weight:600;">840 SAR</span></div>
+          <div style="height:1px;background:rgba(233,58,58,0.15);margin:8px 0;"></div>
+          <div style="display:flex;justify-content:space-between;"><span style="font-weight:700;font-size:13px;color:#1D1D1D;">Total</span><span style="font-weight:700;font-size:13px;color:#E93A3A;">882 SAR</span></div>
+        </div>
+        <!-- Button -->
+        <div style="background:linear-gradient(90deg,#E93A3A,#B72E2E);border-radius:12px;padding:14px;text-align:center;color:white;font-weight:700;font-size:14px;margin-top:14px;">Confirm Extension</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Clean Stepper</h3>
+      <p>Pill-shaped counter bar with −/+ buttons. Big centered number. Instant, minimal. Preview card slides in below when days > 0.</p>
+    </div>
+  </div>
+
+  <!-- Option B -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#F7F8F8;padding:20px;border-radius:8px;">
+      <div style="background:white;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,0.08);font-family:sans-serif;">
+        <div style="width:40px;height:4px;background:#EEEEEE;border-radius:2px;margin:0 auto 16px;"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+          <span style="font-weight:700;font-size:16px;color:#1D1D1D;">Extend Rental</span>
+          <span style="color:#8F9396;font-size:20px;">✕</span>
+        </div>
+        <!-- Quick-select chips -->
+        <div style="margin-bottom:14px;">
+          <div style="font-size:12px;color:#8F9396;font-weight:500;margin-bottom:8px;">Quick Select</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <div style="background:#FFECEC;border:1.5px solid #E93A3A;border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;color:#E93A3A;">+3</div>
+            <div style="background:#F7F8F8;border:1px solid #EEEEEE;border-radius:20px;padding:5px 14px;font-size:12px;color:#8F9396;">+7</div>
+            <div style="background:#F7F8F8;border:1px solid #EEEEEE;border-radius:20px;padding:5px 14px;font-size:12px;color:#8F9396;">+14</div>
+            <div style="background:#F7F8F8;border:1px solid #EEEEEE;border-radius:20px;padding:5px 14px;font-size:12px;color:#8F9396;">+30</div>
+          </div>
+        </div>
+        <!-- Fine-tune counter -->
+        <div style="margin-bottom:8px;font-size:12px;color:#8F9396;font-weight:500;">Or set custom days</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;border:1.5px solid #E93A3A;border-radius:12px;padding:6px 10px;">
+          <div style="width:38px;height:38px;background:#FFECEC;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;color:#E93A3A;">−</div>
+          <span style="font-size:28px;font-weight:700;color:#1D1D1D;">3</span>
+          <div style="width:38px;height:38px;background:#E93A3A;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;color:white;">+</div>
+        </div>
+        <!-- Preview card -->
+        <div style="background:#FFF5F5;border:1px solid rgba(233,58,58,0.2);border-radius:12px;padding:12px 14px;margin-top:14px;font-size:12px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span style="color:#8F9396;">New End Date</span><span style="color:#1D1D1D;font-weight:600;">2025-04-23</span></div>
+          <div style="height:1px;background:rgba(233,58,58,0.15);margin:7px 0;"></div>
+          <div style="display:flex;justify-content:space-between;"><span style="font-weight:700;font-size:13px;">Total</span><span style="font-weight:700;font-size:13px;color:#E93A3A;">378 SAR</span></div>
+        </div>
+        <div style="background:linear-gradient(90deg,#E93A3A,#B72E2E);border-radius:12px;padding:14px;text-align:center;color:white;font-weight:700;font-size:14px;margin-top:14px;">Confirm Extension</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Chips + Counter</h3>
+      <p>Quick-select preset chips (+3, +7, +14, +30) at top for common choices. Fine-tune counter below. Good for power users wanting speed.</p>
+    </div>
+  </div>
+
+  <!-- Option C -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#F7F8F8;padding:20px;border-radius:8px;">
+      <div style="background:white;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,0.08);font-family:sans-serif;">
+        <div style="width:40px;height:4px;background:#EEEEEE;border-radius:2px;margin:0 auto 16px;"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+          <span style="font-weight:700;font-size:16px;color:#1D1D1D;">Extend Rental</span>
+          <span style="color:#8F9396;font-size:20px;">✕</span>
+        </div>
+        <!-- Hero counter -->
+        <div style="text-align:center;padding:12px 0 16px;">
+          <div style="font-size:11px;color:#8F9396;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">Additional Days</div>
+          <div style="display:inline-flex;align-items:center;gap:20px;">
+            <div style="width:48px;height:48px;border-radius:50%;background:#F7F8F8;border:1.5px solid #EEEEEE;display:flex;align-items:center;justify-content:center;font-size:24px;color:#E93A3A;">−</div>
+            <div>
+              <div style="font-size:52px;font-weight:800;color:#E93A3A;line-height:1;">14</div>
+              <div style="font-size:11px;color:#8F9396;text-align:center;">days</div>
+            </div>
+            <div style="width:48px;height:48px;border-radius:50%;background:#E93A3A;display:flex;align-items:center;justify-content:center;font-size:24px;color:white;">+</div>
+          </div>
+          <!-- Progress bar -->
+          <div style="background:#EEEEEE;border-radius:4px;height:4px;margin:14px auto 0;width:80%;">
+            <div style="background:#E93A3A;width:3.8%;height:100%;border-radius:4px;"></div>
+          </div>
+          <div style="font-size:10px;color:#BCBCBC;margin-top:4px;">14 of 365 days</div>
+        </div>
+        <!-- Compact preview -->
+        <div style="background:#FFF5F5;border:1px solid rgba(233,58,58,0.2);border-radius:12px;padding:12px 14px;margin-top:4px;font-size:12px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span style="color:#8F9396;">New End Date</span><span style="font-weight:600;color:#1D1D1D;">2025-05-04</span></div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span style="color:#8F9396;">Daily Rate</span><span style="font-weight:600;">120 SAR</span></div>
+          <div style="height:1px;background:rgba(233,58,58,0.15);margin:7px 0;"></div>
+          <div style="display:flex;justify-content:space-between;"><span style="font-weight:700;font-size:13px;">Total</span><span style="font-weight:700;font-size:13px;color:#E93A3A;">1,764 SAR</span></div>
+        </div>
+        <div style="background:linear-gradient(90deg,#E93A3A,#B72E2E);border-radius:12px;padding:14px;text-align:center;color:white;font-weight:700;font-size:14px;margin-top:14px;">Confirm Extension</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Hero Counter</h3>
+      <p>Large centered number with circular ±  buttons. Progress bar shows X of 365 days. Bold, expressive, most visually creative.</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:16px;">All 3 options include: slide-in preview card, confirmation alert sheet, Carbo DS tokens, and fix for Get.back() violations. Click to select your preferred style.</p>

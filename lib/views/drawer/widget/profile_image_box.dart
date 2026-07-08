@@ -24,30 +24,40 @@ class ProfileHeaderWidget extends GetView<DashboardController> {
               radius: Dimensions.radius * 4.5,
               backgroundColor: Colors.transparent,
               child: ClipOval(
-                child: CachedNetworkImage(
-                  imageUrl: controller.userProfileImage.value,
-                  errorWidget: (context, url, error) {
-                    print('❌ Profile Image Load Error: $error');
-                    print('❌ Failed URL: $url');
-                    return Image.network(
-                      controller.userDefaultImageUrl.value,
+                child: Obx(() {
+                  final profileImageUrl = controller.userProfileImage.value;
+                  final defaultImageUrl = controller.userDefaultImageUrl.value;
+
+                  bool isValidUrl(String url) {
+                    return url.isNotEmpty &&
+                        (url.startsWith('http://') || url.startsWith('https://'));
+                  }
+
+                  if (isValidUrl(profileImageUrl)) {
+                    return CachedNetworkImage(
+                      imageUrl: profileImageUrl,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        print('❌ Default Image Also Failed: $error');
-                        return Icon(Icons.person, size: 50);
-                      },
-                    );
-                  },
-                  imageBuilder: (context, imageProvider) => Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      image: DecorationImage(
-                        image: imageProvider,
-                        fit: BoxFit.cover,
+                      errorWidget: (context, url, error) => isValidUrl(defaultImageUrl)
+                          ? Image.network(defaultImageUrl, fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => const Icon(Icons.person, size: 50))
+                          : const Icon(Icons.person, size: 50),
+                      imageBuilder: (context, imageProvider) => Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          image: DecorationImage(
+                            image: imageProvider,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                ),
+                    );
+                  } else if (isValidUrl(defaultImageUrl)) {
+                    return Image.network(defaultImageUrl, fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => const Icon(Icons.person, size: 50));
+                  } else {
+                    return const Icon(Icons.person, size: 50);
+                  }
+                }),
               ),
             ),
           ),

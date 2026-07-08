@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../../maintenance/maintenance_dialog.dart';
 import '../../maintenance/maintenance_model.dart';
+import '../../utils/api_error_handler.dart';
 import '../../utils/basic_import.dart';
 import '../../utils/local_storage.dart';
 import '../../widgets/logger.dart';
@@ -21,7 +22,6 @@ Map<String, String> basicHeaderInfo() {
 
 Future<Map<String, String>> bearerHeaderInfo() async {
   String accessToken = LocalStorage.token;
-  print('🔐 Auth Token in Request: $accessToken');
 
   return {
     HttpHeaders.acceptHeader: "application/json",
@@ -234,15 +234,18 @@ class ApiMethod {
               'unknown error hitted in status code ${jsonDecode(response.body)}');
 
           ErrorResponse res = ErrorResponse.fromJson(jsonDecode(response.body));
+          String errorMsg = res.message.error.join(', ');
+          ApiErrorHandler.setError(errorMsg);
 
           if (isMaintenance) {
           } else {
             if (showErrorMessage) {
-              CustomSnackBar.error(res.message.error.join(''));
+              CustomSnackBar.error(errorMsg);
             }
           }
         } catch (e) {
           log.e('Failed to parse error response: $e');
+          ApiErrorHandler.setError(response.body);
         }
 
         return null;

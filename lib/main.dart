@@ -5,6 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'base/maintenance/maintenance_dialog.dart';
+import 'base/services/location_service.dart';
 import 'base/utils/basic_import.dart';
 import 'initializer.dart';
 import 'languages/app_translations.dart';
@@ -14,6 +15,10 @@ import 'routes/routes.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppInitializer.init();
+  
+  // Enable mock location for testing distance sorting on emulator (Jeddah coordinates)
+  // LocationService().setMockLocation(21.5474812, 39.2046468); // فرع السبعين
+  LocationService().setMockLocation(21.56551597, 39.21182576); // الاربعين
   
   // Check if app was opened from a notification action
   final initialAction = await AwesomeNotifications().getInitialNotificationAction(

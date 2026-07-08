@@ -2,7 +2,14 @@ import 'package:carbo/base/utils/local_storage.dart';
 import 'package:carbo/views/cars/model/cars_list_model.dart';
 import 'package:carbo/backend/model/car_booking/pickup_location_model.dart';
 import 'package:carbo/models/delivery_check_result.dart';
+import 'package:carbo/models/datetime_validation_result.dart';
 import 'package:carbo/services/delivery_api_service.dart';
+import 'package:carbo/base/api/endpoint/api_endpoint.dart';
+import 'package:carbo/base/api/method/api_method.dart';
+import 'package:http/http.dart' as http;
+import 'dart:async';
+import 'dart:convert';
+import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:get/get.dart';
@@ -32,14 +39,24 @@ class BookingController extends GetxController {
   final isCheckingDelivery = false.obs;
   final selectedLocationAddress = ''.obs;
 
+  // DateTime validation state
+  final dateTimeValidation = Rxn<DateTimeValidationResult>();
+  final isValidatingDateTime = false.obs;
+  Timer? _validateDateTimeDebounce;
+
   // Pickup location management
   Rx<PickupLocation?> pickupLocation = Rx<PickupLocation?>(null);
-  RxBool isPickupFromBranch = false.obs;
+  RxBool isPickupFromBranch = true.obs;
   
   // Car data from route arguments
   late CarItem selectedCar;
   RxString carFee = '0'.obs;
   RxInt rentalDaysCount = 0.obs;
+  RxString selectedInsuranceType = 'daily'.obs;
+
+  void setInsuranceType(String type) {
+    selectedInsuranceType.value = type;
+  }
 
   bool? get deliveryAvailable {
     return selectedCar.branch?.isDeliveryAvailable;
@@ -51,7 +68,8 @@ class BookingController extends GetxController {
 
   double get deliveryPriceValue => selectedCar.deliveryPriceValue;
 
-  bool get forcePickupFromBranch => deliveryAvailable == false;
+  bool get forcePickupFromBranch =>
+      deliveryAvailable == false;
 
   bool get canConfirmBooking {
     if (!isFormValid.value) return false;
@@ -145,13 +163,20 @@ class BookingController extends GetxController {
     });
     
     // Listen to date/time/rental days changes
-    ever(selectedPickupDate, (_) => _updateFormValidity());
-    ever(selectedPickupTime, (_) => _updateFormValidity());
+    ever(selectedPickupDate, (_) {
+      _updateFormValidity();
+      _debounceValidateDateTime();
+    });
+    ever(selectedPickupTime, (_) {
+      _updateFormValidity();
+      _debounceValidateDateTime();
+    });
     rentalDaysController.addListener(_updateFormValidity);
 
+    // Default to branch pickup; set branch location
+    _setPickupToBranchLocation();
     if (forcePickupFromBranch) {
       isPickupFromBranch.value = true;
-      _setPickupToBranchLocation();
     }
     
     super.onInit();
@@ -284,8 +309,56 @@ class BookingController extends GetxController {
     }
   }
 
+  void _debounceValidateDateTime() {
+    _validateDateTimeDebounce?.cancel();
+    _validateDateTimeDebounce = Timer(const Duration(milliseconds: 300), () {
+      _validateDateTime();
+    });
+  }
+
+  Future<void> _validateDateTime() async {
+    if (selectedPickupDate.value.isEmpty || selectedPickupTime.value.isEmpty) {
+      dateTimeValidation.value = null;
+      return;
+    }
+
+    isValidatingDateTime.value = true;
+    dateTimeValidation.value = null;
+
+    try {
+      final headers = await bearerHeaderInfo();
+      final url = ApiEndpoint.validateDateTime.url();
+      final requestBody = {
+        'car_id': selectedCar.id,
+        'pickup_date': selectedPickupDate.value,
+        'pickup_time': selectedPickupTime.value,
+      };
+      developer.log('POST $url', name: 'validate_datetime');
+      developer.log('Body: $requestBody', name: 'validate_datetime');
+
+      final response = await http.post(
+        Uri.parse(url),
+        headers: headers,
+        body: jsonEncode(requestBody),
+      );
+
+      developer.log('Status: ${response.statusCode}', name: 'validate_datetime');
+      developer.log('Response: ${response.body}', name: 'validate_datetime');
+
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      final result = DateTimeValidationResult.fromJson(json);
+      developer.log('Parsed: isValid=${result.isValid}, dayName=${result.dayName}, open=${result.openTime}, close=${result.closeTime}', name: 'validate_datetime');
+      dateTimeValidation.value = result;
+    } catch (e) {
+      developer.log('DateTime validation error: $e', name: 'booking_controller');
+    } finally {
+      isValidatingDateTime.value = false;
+    }
+  }
+
   @override
   void onClose() {
+    _validateDateTimeDebounce?.cancel();
     dateController.dispose();
     timeController.dispose();
     emailController.dispose();

@@ -115,6 +115,7 @@ class Data {
   User user;
   UserBalance? userBalance;
   DeliveryInfo? deliveryInfo;
+  InsuranceBreakdown? insuranceBreakdown;
   PricingBreakdown? pricingBreakdown;
   PaymentType paymentType;
   List<PaymentGateway> paymentGateways;
@@ -127,6 +128,7 @@ class Data {
     required this.user,
     this.userBalance,
     this.deliveryInfo,
+    this.insuranceBreakdown,
     this.pricingBreakdown,
     required this.paymentType,
     required this.paymentGateways,
@@ -160,6 +162,9 @@ class Data {
         deliveryInfo: json["delivery_info"] is Map
             ? DeliveryInfo.fromJson((json["delivery_info"] as Map).cast<String, dynamic>())
             : null,
+        insuranceBreakdown: json["insurance_breakdown"] is Map
+            ? InsuranceBreakdown.fromJson((json["insurance_breakdown"] as Map).cast<String, dynamic>())
+            : null,
         pricingBreakdown: json["pricing_breakdown"] is Map
             ? PricingBreakdown.fromJson((json["pricing_breakdown"] as Map).cast<String, dynamic>())
             : null,
@@ -192,6 +197,7 @@ class Data {
     "user": user.toJson(),
     "user_balance": userBalance?.toJson(),
     "delivery_info": deliveryInfo?.toJson(),
+    "insurance_breakdown": insuranceBreakdown?.toJson(),
     "pricing_breakdown": pricingBreakdown?.toJson(),
     "payment-type": paymentType.toJson(),
     "payment_gateways": List<dynamic>.from(paymentGateways.map((x) => x.toJson())),
@@ -759,11 +765,40 @@ class DeliveryInfo {
   };
 }
 
+class InsuranceBreakdown {
+  String insuranceType;
+  double dailyInsurance;
+  double insuranceTotal;
+  double deductibleInsurance;
+
+  InsuranceBreakdown({
+    required this.insuranceType,
+    required this.dailyInsurance,
+    required this.insuranceTotal,
+    required this.deductibleInsurance,
+  });
+
+  factory InsuranceBreakdown.fromJson(Map<String, dynamic> json) => InsuranceBreakdown(
+    insuranceType: _asString(json["insurance_type"], fallback: "daily"),
+    dailyInsurance: _asDouble(json["daily_insurance"], fallback: 0.0),
+    insuranceTotal: _asDouble(json["insurance_total"], fallback: 0.0),
+    deductibleInsurance: _asDouble(json["deductible_insurance"], fallback: 0.0),
+  );
+
+  Map<String, dynamic> toJson() => {
+    "insurance_type": insuranceType,
+    "daily_insurance": dailyInsurance,
+    "insurance_total": insuranceTotal,
+    "deductible_insurance": deductibleInsurance,
+  };
+}
+
 class PricingBreakdown {
   int rentalDays;
   String rentalFees;
   String deliveryPrice;
   String charges;
+  String insuranceTotal;
   String subtotal;
   double taxPercentage;
   String taxAmount;
@@ -776,6 +811,7 @@ class PricingBreakdown {
     required this.rentalFees,
     required this.deliveryPrice,
     required this.charges,
+    required this.insuranceTotal,
     required this.subtotal,
     required this.taxPercentage,
     required this.taxAmount,
@@ -789,6 +825,7 @@ class PricingBreakdown {
     rentalFees: _asString(json["rental_fees"], fallback: "0.00"),
     deliveryPrice: _asString(json["delivery_price"], fallback: "0.00"),
     charges: _asString(json["charges"], fallback: "0.00"),
+    insuranceTotal: _asString(json["insurance_total"], fallback: "0.00"),
     subtotal: _asString(json["subtotal"], fallback: "0.00"),
     taxPercentage: _asDouble(json["tax_percentage"], fallback: 0.0),
     taxAmount: _asString(json["tax_amount"], fallback: "0.00"),
@@ -802,6 +839,7 @@ class PricingBreakdown {
     "rental_fees": rentalFees,
     "delivery_price": deliveryPrice,
     "charges": charges,
+    "insurance_total": insuranceTotal,
     "subtotal": subtotal,
     "tax_percentage": taxPercentage,
     "tax_amount": taxAmount,

@@ -12,9 +12,29 @@ class LoginTabletScreen extends GetView<LoginController> {
   }
 
   _bodyWidget(BuildContext context) {
-    return const SafeArea(
+    return SafeArea(
       child: Column(
-        children: [],
+        children: [
+          Expanded(
+            child: ListView(
+              shrinkWrap: true,
+              children: [
+                BrandLogo(),
+                const HeadingWidget(),
+                InputWidget(),
+                Sizes.height.v10,
+                Obx(() => InlineErrorWidget(
+                  message: controller.errorMessage.value,
+                  onDismiss: () => controller.clearError(),
+                )),
+                Sizes.height.v10,
+                const LogInButtonWidget(),
+                if (BasicServices.userIsRegister.value == 1)
+                  const DoNotHaveAnAccount(),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

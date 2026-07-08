@@ -81,7 +81,7 @@ class _ExtensionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cur = BasicServices.baseCurCode.value;
-    final amount = record.extraCharge;
+    final amount = record.totalCost;
     final amountStr = amount == amount.truncateToDouble()
         ? amount.toInt().toString()
         : amount.toStringAsFixed(2);
@@ -114,7 +114,7 @@ class _ExtensionCard extends StatelessWidget {
               ],
             ),
             SizedBox(height: Dimensions.verticalSize * 0.35),
-            _row('New End Date', record.newEndDate),
+            _row('New End Date', record.newReturnDate),
             SizedBox(height: Dimensions.verticalSize * 0.2),
             _row('Amount Charged', '$amountStr $cur'),
           ],

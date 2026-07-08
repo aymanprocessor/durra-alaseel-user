@@ -1,0 +1,166 @@
+{
+  "version": 1,
+  "created_at": "2026-05-11T21:20:18.042Z",
+  "lifetime": {
+    "total_tokens_estimated": 27917,
+    "total_reads": 16,
+    "total_writes": 3,
+    "total_sessions": 1,
+    "anatomy_hits": 16,
+    "anatomy_misses": 0,
+    "repeated_reads_blocked": 1,
+    "estimated_savings_vs_bare_cli": 3631
+  },
+  "sessions": [
+    {
+      "id": "session-2026-05-11-0020",
+      "started": "2026-05-11T21:20:26.957Z",
+      "ended": "2026-05-11T21:24:19.719Z",
+      "reads": [
+        {
+          "file": "C:/DATA/Dora Alaseel/Source Code/durra-alaseel-user/lib/views/auth/register/controller/register_controller.dart",
+          "tokens_estimated": 431,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "C:/DATA/Dora Alaseel/Source Code/durra-alaseel-user/lib/views/auth/register/widget/register_input_fields.dart",
+          "tokens_estimated": 420,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "C:/DATA/Dora Alaseel/Source Code/durra-alaseel-user/lib/base/api/method/api_method.dart",
+          "tokens_estimated": 5017,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "C:/DATA/Dora Alaseel/Source Code/durra-alaseel-user/lib/base/api/services/auth_services.dart",
+          "tokens_estimated": 3092,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "C:/DATA/Dora Alaseel/Source Code/durra-alaseel-user/lib/base/widgets/primary_input_widget.dart",
+          "tokens_estimated": 3395,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "C:/DATA/Dora Alaseel/Source Code/durra-alaseel-user/lib/views/auth/register/screen/register_screen.dart",
+          "tokens_estimated": 376,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "C:/DATA/Dora Alaseel/Source Code/durra-alaseel-user/lib/views/auth/register/widget/register_button.dart",
+          "tokens_estimated": 264,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "C:/DATA/Dora Alaseel/Source Code/durra-alaseel-user/lib/base/api/model/error_message_model.dart",
+          "tokens_estimated": 181,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [],
+      "totals": {
+        "input_tokens_estimated": 13176,
+        "output_tokens_estimated": 0,
+        "reads_count": 8,
+        "writes_count": 0,
+        "repeated_reads_blocked": 0,
+        "anatomy_lookups": 8
+      }
+    },
+    {
+      "id": "session-2026-05-11-0020",
+      "started": "2026-05-11T21:20:26.957Z",
+      "ended": "2026-05-11T21:30:24.758Z",
+      "reads": [
+        {
+          "file": "C:/DATA/Dora Alaseel/Source Code/durra-alaseel-user/lib/views/auth/register/controller/register_controller.dart",
+          "tokens_estimated": 431,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "C:/DATA/Dora Alaseel/Source Code/durra-alaseel-user/lib/views/auth/register/widget/register_input_fields.dart",
+          "tokens_estimated": 420,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "C:/DATA/Dora Alaseel/Source Code/durra-alaseel-user/lib/base/api/method/api_method.dart",
+          "tokens_estimated": 5017,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "C:/DATA/Dora Alaseel/Source Code/durra-alaseel-user/lib/base/api/services/auth_services.dart",
+          "tokens_estimated": 3092,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "C:/DATA/Dora Alaseel/Source Code/durra-alaseel-user/lib/base/widgets/primary_input_widget.dart",
+          "tokens_estimated": 3395,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "C:/DATA/Dora Alaseel/Source Code/durra-alaseel-user/lib/views/auth/register/screen/register_screen.dart",
+          "tokens_estimated": 376,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "C:/DATA/Dora Alaseel/Source Code/durra-alaseel-user/lib/views/auth/register/widget/register_button.dart",
+          "tokens_estimated": 264,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "C:/DATA/Dora Alaseel/Source Code/durra-alaseel-user/lib/base/api/model/error_message_model.dart",
+          "tokens_estimated": 181,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "C:/DATA/Dora Alaseel/Source Code/durra-alaseel-user/lib/views/auth/register/controller/register_controller.dart",
+          "tokens_estimated": 706,
+          "action": "create"
+        },
+        {
+          "file": "C:/DATA/Dora Alaseel/Source Code/durra-alaseel-user/lib/views/auth/register/widget/register_input_fields.dart",
+          "tokens_estimated": 579,
+          "action": "create"
+        },
+        {
+          "file": "C:/DATA/Dora Alaseel/Source Code/durra-alaseel-user/lib/views/auth/register/widget/register_button.dart",
+          "tokens_estimated": 280,
+          "action": "create"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 13176,
+        "output_tokens_estimated": 1565,
+        "reads_count": 8,
+        "writes_count": 3,
+        "repeated_reads_blocked": 1,
+        "anatomy_lookups": 8
+      }
+    }
+  ],
+  "daemon_usage": [],
+  "waste_flags": [],
+  "optimization_report": {
+    "last_generated": null,
+    "patterns": []
+  }
+}
