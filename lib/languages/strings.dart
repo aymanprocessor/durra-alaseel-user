@@ -168,7 +168,7 @@ class Strings {
   static const String filterBy = "appLFilterBy";
   static const String clearFilters = "appLClearFilters";
   static const String seats = "appLSeats";
-  
+
   // Booking - Rental Days and Location
   static const String rentalDays = "appLRentalDays";
   static const String days = "appLDays";
@@ -202,16 +202,22 @@ class Strings {
   static const String allDocumentsUploaded = "appLAllDocumentsUploaded";
   static const String pleaseUploadAllDocuments = "appLPleaseUploadAllDocuments";
   static const String progress = "appLProgress";
-  static const String nationalIdUploadedSuccessfully = "appLNationalIdUploadedSuccessfully";
-  static const String drivingLicenseUploadedSuccessfully = "appLDrivingLicenseUploadedSuccessfully";
-  static const String nationalIdDeletedSuccessfully = "appLNationalIdDeletedSuccessfully";
-  static const String drivingLicenseDeletedSuccessfully = "appLDrivingLicenseDeletedSuccessfully";
+  static const String nationalIdUploadedSuccessfully =
+      "appLNationalIdUploadedSuccessfully";
+  static const String drivingLicenseUploadedSuccessfully =
+      "appLDrivingLicenseUploadedSuccessfully";
+  static const String nationalIdDeletedSuccessfully =
+      "appLNationalIdDeletedSuccessfully";
+  static const String drivingLicenseDeletedSuccessfully =
+      "appLDrivingLicenseDeletedSuccessfully";
   static const String confirmUpload = "appLConfirmUpload";
   static const String confirmDelete = "appLConfirmDelete";
   static const String uploadNationalIdQuestion = "appLUploadNationalIdQuestion";
-  static const String uploadDrivingLicenseQuestion = "appLUploadDrivingLicenseQuestion";
+  static const String uploadDrivingLicenseQuestion =
+      "appLUploadDrivingLicenseQuestion";
   static const String deleteNationalIdQuestion = "appLDeleteNationalIdQuestion";
-  static const String deleteDrivingLicenseQuestion = "appLDeleteDrivingLicenseQuestion";
+  static const String deleteDrivingLicenseQuestion =
+      "appLDeleteDrivingLicenseQuestion";
   static const String pleaseSelectImage = "appLPleaseSelectImage";
   static const String errorPickingImage = "appLErrorPickingImage";
   static const String errorCapturingImage = "appLErrorCapturingImage";
@@ -226,64 +232,87 @@ class Strings {
   static const String deliveryUnknown = "appLDeliveryUnknown";
 
   // Booking Form
-  static const String deliveryLocation     = "appLDeliveryLocation";
-  static const String rentalDetails        = "appLRentalDetails";
-  static const String additionalNotes      = "appLAdditionalNotes";
-  static const String checkingDelivery     = "appLCheckingDelivery";
-  static const String withinDeliveryRange  = "appLWithinDeliveryRange";
+  static const String deliveryLocation = "appLDeliveryLocation";
+  static const String rentalDetails = "appLRentalDetails";
+  static const String additionalNotes = "appLAdditionalNotes";
+  static const String checkingDelivery = "appLCheckingDelivery";
+  static const String withinDeliveryRange = "appLWithinDeliveryRange";
 
   // Booking Details Screen
-  static const String bookingDetails       = "appLBookingDetails";
-  static const String endDate              = "appLEndDate";
-  static const String paymentType          = "appLPaymentType";
-  static const String extend               = "appLExtend";
-  static const String extendRental         = "appLExtendRental";
+  static const String bookingDetails = "appLBookingDetails";
+  static const String endDate = "appLEndDate";
+  static const String paymentType = "appLPaymentType";
+  static const String extend = "appLExtend";
+  static const String extendRental = "appLExtendRental";
   static const String viewExtensionHistory = "appLViewExtensionHistory";
-  static const String cancelBooking        = "appLCancelBooking";
+  static const String cancelBooking = "appLCancelBooking";
   static const String cancelBookingConfirm = "appLCancelBookingConfirm";
-  static const String yesCancel            = "appLYesCancel";
-  static const String keepBooking          = "appLKeepBooking";
-  static const String deliveryToLocation   = "appLDeliveryToLocation";
-  static const String branchPickup         = "appLBranchPickup";
-  static const String myBooking            = "appLMyBooking";
-  static const String vehicleInfo          = "appLVehicleInfo";
-  static const String dailyRate            = "appLDailyRate";
-  static const String transactionId        = "appLTransactionId";
-  static const String priceBreakdown       = "appLPriceBreakdown";
-  static const String charges              = "appLCharges";
-  static const String subtotal             = "appLSubtotal";
-  static const String bookingInfo          = "appLBookingInfo";
-  static const String bookingId               = "appLBookingId";
-  static const String openInMap            = "appLOpenInMap";
-  static const String vendorInfo           = "appLVendorInfo";
-  static const String vendorName           = "appLVendorName";
-  static const String branchName           = "appLBranchName";
-  static const String branchLocation       = "appLBranchLocation";
-  static const String confirmExtension  = "appLConfirmExtension";
-  static const String extendingByDays   = "appLExtendingByDays";
-  static const String additionalDays    = "appLAdditionalDays";
-  static const String newEndDate        = "appLNewEndDate";
-  static const String ofDays            = "appLOfDays";
-  static const String yesExtend         = "appLYesExtend";
-  static const String amountToCharge    = "appLAmountToCharge";
+  static const String yesCancel = "appLYesCancel";
+  static const String keepBooking = "appLKeepBooking";
+  static const String deliveryToLocation = "appLDeliveryToLocation";
+  static const String branchPickup = "appLBranchPickup";
+  static const String myBooking = "appLMyBooking";
+  static const String vehicleInfo = "appLVehicleInfo";
+  static const String dailyRate = "appLDailyRate";
+  static const String transactionId = "appLTransactionId";
+  static const String priceBreakdown = "appLPriceBreakdown";
+  static const String charges = "appLCharges";
+  static const String subtotal = "appLSubtotal";
+  static const String bookingInfo = "appLBookingInfo";
+  static const String bookingId = "appLBookingId";
+  static const String openInMap = "appLOpenInMap";
+  static const String vendorInfo = "appLVendorInfo";
+  static const String vendorName = "appLVendorName";
+  static const String branchName = "appLBranchName";
+  static const String branchLocation = "appLBranchLocation";
+  static const String confirmExtension = "appLConfirmExtension";
+  static const String extendingByDays = "appLExtendingByDays";
+  static const String additionalDays = "appLAdditionalDays";
+  static const String newEndDate = "appLNewEndDate";
+  static const String ofDays = "appLOfDays";
+  static const String yesExtend = "appLYesExtend";
+  static const String amountToCharge = "appLAmountToCharge";
 
   // DateTime Validation
-  static const String pickupTimeOutsideWorkingHours = "appLPickupTimeOutsideWorkingHours";
+  static const String pickupTimeOutsideWorkingHours =
+      "appLPickupTimeOutsideWorkingHours";
   static const String branchWorkingHours = "appLBranchWorkingHours";
 
   // Wallet Screen
-  static const String myWallet              = "appLMyWallet";
-  static const String availableBalance      = "appLAvailableBalance";
-  static const String topUpWallet           = "appLTopUpWallet";
-  static const String transactionHistory    = "appLTransactionHistory";
-  static const String noTransactionsYet     = "appLNoTransactionsYet";
+  static const String myWallet = "appLMyWallet";
+  static const String availableBalance = "appLAvailableBalance";
+  static const String topUpWallet = "appLTopUpWallet";
+  static const String transactionHistory = "appLTransactionHistory";
+  static const String noTransactionsYet = "appLNoTransactionsYet";
   static const String transactionHistoryEmpty = "appLTransactionHistoryEmpty";
-  static const String amountSar             = "appLAmountSar";
-  static const String minimumSar            = "appLMinimumSar";
+  static const String amountSar = "appLAmountSar";
+  static const String minimumSar = "appLMinimumSar";
 
   // Insurance
-  static const String selectInsuranceType   = "appLSelectInsuranceType";
-  static const String dailyInsurance        = "appLDailyInsurance";
-  static const String deductibleInsurance   = "appLDeductibleInsurance";
-  static const String deductibleNote        = "appLDeductibleNote";
+  static const String selectInsuranceType = "appLSelectInsuranceType";
+  static const String dailyInsurance = "appLDailyInsurance";
+  static const String deductibleInsurance = "appLDeductibleInsurance";
+  static const String deductibleNote = "appLDeductibleNote";
+
+  // Auth Validation & Errors
+  static const String invalidCredentials = "appLInvalidCredentials";
+  static const String invalidEmail = "appLInvalidEmail";
+  static const String invalidPhone = "appLInvalidPhone";
+  static const String shortPassword = "appLShortPassword";
+
+  // Pricing Preview (server-side)
+  static const String calculating = "appLCalculating";
+  static const String enterRentalDetails = "appLEnterRentalDetails";
+  static const String inCaseOfAccident = "appLInCaseOfAccident";
+
+  static const String day = "appLDay";
+  static const String twoDays = "appLTwoDays";
+  static const String daysPlural = "appLDaysPlural";
+  static const String dayAccusative = "appLDayAccusative";
+
+  static const String refresh = "appLRefresh";
+
+  static const String rejectionReason = 'appLRejectionReason';
+  static const String cancelReason = 'appLCancelReason';
+  static const String cancelled = 'appLCancelled';
 }

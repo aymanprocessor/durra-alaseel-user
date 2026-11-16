@@ -19,15 +19,16 @@ class LoginTabletScreen extends GetView<LoginController> {
             child: ListView(
               shrinkWrap: true,
               children: [
+                // ---> ADD LANGUAGE TOGGLE HERE <---
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: _buildLanguageToggle(),
+                ),
+                Sizes.height.v10,
+
                 BrandLogo(),
                 const HeadingWidget(),
                 InputWidget(),
-                Sizes.height.v10,
-                Obx(() => InlineErrorWidget(
-                  message: controller.errorMessage.value,
-                  onDismiss: () => controller.clearError(),
-                )),
-                Sizes.height.v10,
                 const LogInButtonWidget(),
                 if (BasicServices.userIsRegister.value == 1)
                   const DoNotHaveAnAccount(),
@@ -37,5 +38,39 @@ class LoginTabletScreen extends GetView<LoginController> {
         ],
       ),
     );
+  }
+
+  Widget _buildLanguageToggle() {
+    return Obx(() {
+      final isEnglish = LocaleService.to.currentLanguageCode == 'en';
+      return InkWell(
+        onTap: () {
+          LocaleService.to.changeLanguage(isEnglish ? 'ar' : 'en');
+        },
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey.withOpacity(0.5)),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.language, size: 18, color: Colors.grey[700]),
+              const SizedBox(width: 6),
+              Text(
+                isEnglish ? 'العربية' : 'English',
+                style: TextStyle(
+                  color: Colors.grey[700],
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    });
   }
 }

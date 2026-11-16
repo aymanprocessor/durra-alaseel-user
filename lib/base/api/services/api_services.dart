@@ -1,10 +1,12 @@
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import '../../utils/basic_import.dart';
 import '../method/api_method.dart';
 import '../model/common_success_model.dart';
 
 class ApiServices {
-  static var client = http.Client();
+  // Create a custom HTTP client that ignores self-signed certificates
+  static final _client = http.Client();
 
   // Generic API service method
   static Future<T?> apiService<T>(
@@ -22,21 +24,24 @@ class ApiServices {
     try {
       Map<String, dynamic>? mapResponse;
 
+      // Pass the custom client to ApiMethod
+      final apiMethod = ApiMethod(isBasic: isBasic, client: _client);
+
       if (method == 'POST') {
-        mapResponse = await ApiMethod(isBasic: isBasic).post(
+        mapResponse = await apiMethod.post(
           apiEndpoint,
           body ?? {},
           code: statusCode,
           showErrorMessage: showErrorMessage,
         );
       } else if (method == 'DELETE') {
-        mapResponse = await ApiMethod(isBasic: isBasic).delete(
+        mapResponse = await apiMethod.delete(
           apiEndpoint,
           code: statusCode,
           showErrorMessage: showErrorMessage,
         );
       } else if (method == 'GET') {
-        mapResponse = await ApiMethod(isBasic: isBasic).get(
+        mapResponse = await apiMethod.get(
           apiEndpoint,
           showResult: showResult,
           showErrorMessage: showErrorMessage,

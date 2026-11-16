@@ -39,6 +39,13 @@ class _BookingDetailsBody extends StatelessWidget {
     required this.controller,
   });
 
+  bool _shouldShowRejectionReason() {
+    final isRejectedOrCancelled = booking.status == 4 || booking.status == 5;
+    final hasReason = booking.rejectionReason != null &&
+        booking.rejectionReason.toString().isNotEmpty;
+    return isRejectedOrCancelled && hasReason;
+  }
+
   @override
   Widget build(BuildContext context) {
     return CustomScrollView(
@@ -67,6 +74,13 @@ class _BookingDetailsBody extends StatelessWidget {
                 const SizedBox(height: CarboSpacing.x3),
                 _NoteCard(message: booking.message),
               ],
+              if (_shouldShowRejectionReason()) ...[
+                const SizedBox(height: CarboSpacing.x3),
+                _RejectionReasonCard(
+                  reason: booking.rejectionReason?.toString() ?? '',
+                  isCancelled: booking.status == 5,
+                ),
+              ],
               const SizedBox(height: CarboSpacing.x5),
               Obx(() => controller.canExtend
                   ? _ExtendRentalButton(controller: controller)
@@ -82,6 +96,68 @@ class _BookingDetailsBody extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// REJECTION / CANCEL REASON CARD
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _RejectionReasonCard extends StatelessWidget {
+  final String reason;
+  final bool isCancelled;
+
+  const _RejectionReasonCard({
+    required this.reason,
+    required this.isCancelled,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isCancelled ? CarboColors.warning : CarboColors.error;
+    final title = isCancelled
+        ? Strings.cancelReason.tr
+        : Strings.rejectionReason.tr;
+    final icon = isCancelled
+        ? Icons.cancel_outlined
+        : Icons.block_outlined;
+
+    return Container(
+      padding: const EdgeInsets.all(CarboSpacing.x3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: CarboRadius.lgAll,
+        border: Border.all(color: color.withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: color, size: 16),
+          const SizedBox(width: CarboSpacing.x2),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: CarboTypography.labelMedium.copyWith(
+                    color: color,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  reason,
+                  style: CarboTypography.bodySmall.copyWith(
+                    color: color,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -149,7 +225,6 @@ class _HeroHeader extends StatelessWidget {
       ),
     );
   }
-
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -281,6 +356,10 @@ class _StatusBadge extends StatelessWidget {
       bg = CarboColors.successBg;
       fg = CarboColors.success;
       label = Strings.complete;
+    } else if (status == 5) {
+      bg = CarboColors.warningBg;
+      fg = CarboColors.warning;
+      label = Strings.cancelled;
     } else {
       bg = CarboColors.errorBg;
       fg = CarboColors.error;
@@ -678,7 +757,8 @@ class _DeliveryDetailRow extends StatelessWidget {
 
   void _openInMap(String address) async {
     final encoded = Uri.encodeComponent(address);
-    final url = Uri.parse('https://www.google.com/maps/search/?api=1&query=$encoded');
+    final url = Uri.parse(
+        'https://www.google.com/maps/search/?api=1&query=$encoded');
     try {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     } catch (_) {}
@@ -703,11 +783,18 @@ class _PriceBreakdownCard extends StatelessWidget {
     final subtotal = _formatNum(booking.subtotal);
     final total = _formatNum(booking.totalAmount);
     final double dailyFee = _toDouble(booking.cars.fees);
-    final int rentalDays = booking.rentalDays > 0 ? booking.rentalDays : (dailyFee > 0 ? (_toDouble(booking.amount) / dailyFee).round() : 0);
+    final int rentalDays = booking.rentalDays > 0
+        ? booking.rentalDays
+        : (dailyFee > 0
+            ? (_toDouble(booking.amount) / dailyFee).round()
+            : 0);
     final String dailyFeeFormatted = _formatNum(booking.cars.fees);
-    final String rentalLabel = rentalDays > 0 ? '$rentalDays ${Strings.days.tr} x $dailyFeeFormatted $curCode' : Strings.rentalFees.tr;
+    final String rentalLabel = rentalDays > 0
+        ? '$rentalDays ${Strings.days.tr} x $dailyFeeFormatted $curCode'
+        : Strings.rentalFees.tr;
     final int extDays = booking.totalExtensionDays;
-    final String extLabel = '${Strings.extend.tr} $extDays ${Strings.days.tr} x $dailyFeeFormatted $curCode';
+    final String extLabel =
+        '${Strings.extend.tr} $extDays ${Strings.days.tr} x $dailyFeeFormatted $curCode';
     final String extAmount = _formatNum(extDays * dailyFee);
 
     return Container(
@@ -817,7 +904,8 @@ class _PriceBreakdownCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: CarboColors.surface,
               borderRadius: CarboRadius.mdAll,
-              border: Border.all(color: CarboColors.primary.withOpacity(0.2)),
+              border:
+                  Border.all(color: CarboColors.primary.withOpacity(0.2)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -991,7 +1079,8 @@ class _BranchLocationRow extends StatelessWidget {
   }
 
   void _openInMap() async {
-    final geoUri = Uri.parse('geo:$latitude,$longitude?q=$latitude,$longitude($address)');
+    final geoUri =
+        Uri.parse('geo:$latitude,$longitude?q=$latitude,$longitude($address)');
     final webUri = Uri.parse(
         'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude');
     try {
@@ -1277,5 +1366,3 @@ class _CancelConfirmSheet extends StatelessWidget {
     );
   }
 }
-
-

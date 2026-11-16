@@ -52,5 +52,12 @@
   "appLCancel": "إلغاء",
   "appLUpload": "تحميل",
   "appLLicense": "الرخصة",
-  "appLIdentity": "الهوية"
+  "appLIdentity": "الهوية",
+  "appLInvalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيح. يرجى المحاولة مرة أخرى.",
+  "appLInvalidEmail": "أدخل عنوان بريد إلكتروني صحيح",
+  "appLInvalidPhone": "أدخل رقم هاتف صحيح",
+  "appLShortPassword": "يجب أن تكون كلمة المرور 6 أحرف على الأقل",
+  "appLRefresh": "تحديث",
+  "rejection_reason": "سبب الرفض",
+"cancel_reason": "سبب الإلغاء"
 }

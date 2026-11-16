@@ -1,4 +1,55 @@
 {
   "version": 1,
-  "bugs": []
+  "bugs": [
+    {
+      "id": "16KB_PAGE_SIZE_GOOGLE_PLAY",
+      "title": "Google Play Console: 16 KB page size alignment not supported",
+      "status": "FIXED",
+      "severity": "CRITICAL",
+      "root_cause": "Missing android.mPageSize64K=true flag in gradle.properties; Firebase 21.1.0 doesn't include 16 KB optimizations",
+      "fixed_date": "2026-07-09",
+      "files_changed": [
+        "android/gradle.properties",
+        "android/build.gradle",
+        "android/app/build.gradle",
+        "android/app/proguard-rules.pro (NEW)"
+      ],
+      "changes": [
+        "Added android.mPageSize64K=true flag",
+        "Updated Google Services Gradle plugin: 4.3.8 → 4.4.1",
+        "Updated Firebase Messaging: 21.1.0 → 24.0.0",
+        "Updated Pusher Push Notifications: 1.9.0 → 1.10.0",
+        "Enabled R8 minification and resource shrinking in release buildType",
+        "Created comprehensive proguard-rules.pro with keep rules for Firebase, Pusher, ML Kit, Google Play Services"
+      ],
+      "build_result": "SUCCESS - 67.1 MB AAB created",
+      "native_libs_found": [
+        "libflutter.so (arm64-v8a: 11.1MB, armeabi-v7a: 8.1MB, x86_64: 12.3MB)",
+        "libapp.so (arm64-v8a: 9.1MB, armeabi-v7a: 10.1MB, x86_64: 9.4MB)",
+        "libmlkit_google_ocr_pipeline.so (arm64-v8a: 10MB, armeabi-v7a: 6.2MB, x86_64: 11MB)"
+      ],
+      "google_play_ready": true,
+      "recommendations": [
+        "Upload AAB to Google Play Console",
+        "Test on Android 13+ device",
+        "Monitor crashlytics post-deployment"
+      ]
+    },
+    {
+      "id": "bug-002",
+      "timestamp": "2026-10-14T00:53:00+03:00",
+      "error_message": "Backtick in markdown code span was interpreted as a PowerShell escape, inserting a backspace in CLAUDE.md.",
+      "file": "CLAUDE.md",
+      "root_cause": "PowerShell double-quoted string interpolation interpreted the markdown opening backtick followed by b as a backspace escape.",
+      "fix": "Replaced the backspace with a literal markdown code-span backtick and verified the resulting diff.",
+      "tags": [
+        "documentation",
+        "powershell",
+        "encoding"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-10-14T00:53:00+03:00"
+    }
+  ]
 }

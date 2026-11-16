@@ -1,6 +1,6 @@
 class ApiConfig {
-  static const String mainDomain = "https://durraalaseel.nextoneplus.com";
-  // static const String mainDomain = "http://192.168.1.211:8001";
+  static const String mainDomain = "https://dora-rent.com";
+  // static const String mainDomain = "https://192.168.1.211";
   static const String baseUrl = "$mainDomain/api/v1";
   static const String languageUrl = "$baseUrl/settings/languages";
 
@@ -17,7 +17,7 @@ enum ApiEndpoint {
   forgotPasswordVerifyCode('/password/forgot/verify/code'),
   resendForgotOtpCode('/password/forgot/resend/code'),
   resetPassword('/password/forgot/reset'),
-  register('/register'),
+  register('/register'), 
   emailOtpVerify('/authorize/mail/verify/code'),
   resendEmailOtp('/authorize/mail/resend/code'),
   kycInfo('/user/kyc-input-fields'),

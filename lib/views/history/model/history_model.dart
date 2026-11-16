@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class HistoryModel {
   Message message;
   Data data;
@@ -323,8 +325,11 @@ class Cars {
         carTypeId: json["car_type_id"] ?? 0,
         carModelId: json["car_model_id"] ?? 0,
         slug: json["slug"] ?? '',
-        carTitle: json["car_title"] ?? {},
-        carModel: json["car_model"],
+        carTitle: json["car_title"] is Map
+            ? Map<String, dynamic>.from(json["car_title"])
+            : (json["car_title"] is String && json["car_title"].toString().isNotEmpty
+                ? Map<String, dynamic>.from(jsonDecode(json["car_title"] as String))
+                : <String, dynamic>{}),        carModel: json["car_model"],
         carNumber: json["car_number"],
         carType: json["car_type"] ?? '',
         seat: json["seat"] ?? 0,

@@ -39,8 +39,8 @@ class PreviewController extends GetxController {
   RxString selectType = "".obs;
   List<String> listImagePath = [];
   List<String> listFieldName = [];
-  Map<String, File> imageFileMap = {}; // Store File objects to prevent path issues
-
+  Map<String, File> imageFileMap =
+      {}; // Store File objects to prevent path issues
 
   var identifier = "".obs;
   final TextEditingController cardNumberController = TextEditingController();
@@ -69,7 +69,7 @@ class PreviewController extends GetxController {
     }
     return null;
   }
-  
+
   File? getImageFile(String fieldName) {
     return imageFileMap[fieldName];
   }
@@ -129,13 +129,11 @@ class PreviewController extends GetxController {
     final bookingController = Get.find<BookingController>();
     String carId = bookingController.selectedCar.id.toString();
     String rentalDays = bookingController.rentalDaysController.text;
-    
-    // Build query params as Map<String, String>
-    // Note: token is sent via Authorization Bearer header, not query param
-    Map<String, String> queryParams = {
+
+    // Build body as Map<String, dynamic> for POST request
+    // Backend expects JSON body, not query params
+    Map<String, dynamic> bodyParams = {
       'car_id': carId,
-      // Some backend implementations require car_type for pricing rules.
-      // Provide it when available to avoid server-side null errors.
       if ((bookingController.selectedCar.carType?.id ?? 0) > 0)
         'car_type': bookingController.selectedCar.carType!.id.toString(),
       'rental_days': rentalDays,
@@ -145,29 +143,36 @@ class PreviewController extends GetxController {
 
     final deliveryPrice = _deliveryPriceForBooking(bookingController);
     final includeDelivery = deliveryPrice > 0;
-    queryParams['include_delivery'] = includeDelivery.toString();
-    queryParams['delivery_price'] = deliveryPrice.toString();
-    queryParams['insurance_type'] = bookingController.selectedInsuranceType.value;
-    
-    // Add pickup_location as separate fields (backend expects array format)
-    if (bookingController.pickupLocation.value != null && 
+    bodyParams['include_delivery'] = includeDelivery;
+    bodyParams['delivery_price'] = deliveryPrice;
+    bodyParams['insurance_type'] =
+        bookingController.selectedInsuranceType.value;
+
+    // Send pickup_location as nested object (Laravel JSON POST convention)
+    // consistent with how bookingProcessAuto/cashBookedProcess send it
+    if (bookingController.pickupLocation.value != null &&
         bookingController.pickupLocation.value!.isValid) {
-      queryParams['pickup_location[latitude]'] = bookingController.pickupLocation.value!.latitude.toString();
-      queryParams['pickup_location[longitude]'] = bookingController.pickupLocation.value!.longitude.toString();
-      queryParams['pickup_location[address]'] = bookingController.pickupLocation.value!.address;
+      bodyParams['pickup_location'] = {
+        'latitude': bookingController.pickupLocation.value!.latitude,
+        'longitude': bookingController.pickupLocation.value!.longitude,
+        'address': bookingController.pickupLocation.value!.address,
+      };
     } else {
       // Temporary fake location for testing (Riyadh coordinates)
-      queryParams['pickup_location[latitude]'] = '24.7136';
-      queryParams['pickup_location[longitude]'] = '46.6753';
-      queryParams['pickup_location[address]'] = 'Riyadh, Saudi Arabia';
+      bodyParams['pickup_location'] = {
+        'latitude': 24.7136,
+        'longitude': 46.6753,
+        'address': 'Riyadh, Saudi Arabia',
+      };
     }
-    
+
     try {
       return await RequestProcess().request<BookingPreviewModel>(
-        queryParams: queryParams,
+        body: bodyParams,
         fromJson: BookingPreviewModel.fromJson,
         apiEndpoint: ApiEndpoint.getBookingPreview,
         isLoading: _isLoading,
+        method: HttpMethod.POST,
         showErrorMessage: false,
         onSuccess: (value) {
           _bookingPreviewModel = value;
@@ -176,7 +181,9 @@ class PreviewController extends GetxController {
           }
           paymentGatewayList
             ..clear()
-            ..addAll(_bookingPreviewModel?.data.paymentGateways ?? <PaymentGateway>[]);
+            ..addAll(
+              _bookingPreviewModel?.data.paymentGateways ?? <PaymentGateway>[],
+            );
         },
       );
     } finally {
@@ -184,7 +191,7 @@ class PreviewController extends GetxController {
     }
   }
 
-  void _getPreviewALlData() {
+   void _getPreviewALlData() {
     final model = _bookingPreviewModel;
     if (model == null) return;
 
@@ -196,39 +203,26 @@ class PreviewController extends GetxController {
     cashBalance.value = model.data.paymentType.cash;
     onlinePayment.value = model.data.paymentType.onlinePayment;
 
-    // Update totalPayable from pricing_breakdown
     final bookingController = Get.find<BookingController>();
     final pricing = model.data.pricingBreakdown;
-    final totalString = pricing?.total;
-    if (totalString != null) {
-      totalPayable.value = double.tryParse(totalString) ?? 0.0;
-    }
 
-    // Cache tax percentage for booking screen estimate
-    if (pricing != null && pricing.taxPercentage > 0) {
-      BasicServices.taxPercentage.value = pricing.taxPercentage;
-    }
-
-    final deliveryPrice = _deliveryPriceForBooking(bookingController);
     if (pricing != null) {
-      final previewDeliveryPrice = double.tryParse(pricing.deliveryPrice) ?? 0.0;
+      // Cache tax percentage for booking screen estimate
+      if (pricing.taxPercentage > 0) {
+        BasicServices.taxPercentage.value = pricing.taxPercentage;
+      }
+
+      // Update delivery price display from frontend state
+      final deliveryPrice = _deliveryPriceForBooking(bookingController);
       if (deliveryPrice > 0) {
         pricing.deliveryPrice = deliveryPrice.toStringAsFixed(2);
-        if (previewDeliveryPrice == 0) {
-          totalPayable.value += deliveryPrice;
-        }
       } else {
         pricing.deliveryPrice = '0.00';
       }
 
-      // Compute tax on rental + delivery + insurance
-      final rentalFees = double.tryParse(pricing.rentalFees) ?? 0.0;
-      final effectiveDelivery = double.tryParse(pricing.deliveryPrice) ?? 0.0;
-      final insuranceTotal = double.tryParse(pricing.insuranceTotal) ?? 0.0;
-      final taxPct = pricing.taxPercentage;
-      final computedTax = (rentalFees + effectiveDelivery) * taxPct / 100;
-      taxAmountDisplay.value = computedTax.toStringAsFixed(2);
-      totalPayable.value = rentalFees + effectiveDelivery + insuranceTotal + computedTax;
+      // Use server values directly — no client-side calculation
+      taxAmountDisplay.value = pricing.taxAmount;
+      totalPayable.value = double.tryParse(pricing.total) ?? 0.0;
     }
   }
 
@@ -259,22 +253,24 @@ class PreviewController extends GetxController {
   Future<BookingConfirmModel?> bookingProcessAuto() async {
     final bookingController = Get.find<BookingController>();
     final previewModel = _bookingPreviewModel;
-    
+
     // Use car data from preview API first, fallback to BookingController's selected car
-    String carSlugValue = slug.value.isNotEmpty 
-        ? slug.value 
+    String carSlugValue = slug.value.isNotEmpty
+        ? slug.value
         : bookingController.getCarSlug();
-    String carIdValue = Id.value.isNotEmpty 
-        ? Id.value 
+    String carIdValue = Id.value.isNotEmpty
+        ? Id.value
         : bookingController.selectedCar.id.toString();
 
     final pickupLocation = bookingController.pickupLocation.value;
-    final pickupLocationJson = (pickupLocation != null && pickupLocation.isValid)
+    final pickupLocationJson =
+        (pickupLocation != null && pickupLocation.isValid)
         ? pickupLocation.toJson()
         : <String, dynamic>{};
 
     final branchName = previewModel?.data.car?.branch?.name;
-    final locationDisplay = bookingController.isPickupFromBranch.value &&
+    final locationDisplay =
+        bookingController.isPickupFromBranch.value &&
             branchName != null &&
             branchName.trim().isNotEmpty
         ? branchName.trim()
@@ -291,8 +287,9 @@ class PreviewController extends GetxController {
 
     // Optional manual-only field (kept empty unless user provides it elsewhere)
     final String? transactionId = null;
-    
-    final rentalDays = int.tryParse(bookingController.rentalDaysController.text) ?? 1;
+
+    final rentalDays =
+        int.tryParse(bookingController.rentalDaysController.text) ?? 1;
     final carId = int.tryParse(carIdValue) ?? bookingController.selectedCar.id;
 
     Map<String, dynamic> inputBody = {
@@ -326,35 +323,36 @@ class PreviewController extends GetxController {
       onSuccess: (value) {
         _bookingConfirmModel = value!;
         identifier.value = _bookingConfirmModel.data.identifier;
-        if(alias.value.contains('authorize')){
+        if (alias.value.contains('authorize')) {
           Get.to(AuthorizeGatewayScreen());
-        }else{
+        } else {
           Get.to(() => WebPaymentScreen());
         }
       },
     );
-
   }
 
   Future<CommonSuccessModel?> cashBookedProcess() async {
     final bookingController = Get.find<BookingController>();
     final previewModel = _bookingPreviewModel;
-    
+
     // Use car data from preview API first, fallback to BookingController's selected car
-    String carSlugValue = slug.value.isNotEmpty 
-        ? slug.value 
+    String carSlugValue = slug.value.isNotEmpty
+        ? slug.value
         : bookingController.getCarSlug();
-    String carIdValue = Id.value.isNotEmpty 
-        ? Id.value 
+    String carIdValue = Id.value.isNotEmpty
+        ? Id.value
         : bookingController.selectedCar.id.toString();
 
     final pickupLocation = bookingController.pickupLocation.value;
-    final pickupLocationJson = (pickupLocation != null && pickupLocation.isValid)
+    final pickupLocationJson =
+        (pickupLocation != null && pickupLocation.isValid)
         ? pickupLocation.toJson()
         : <String, dynamic>{};
 
     final branchName = previewModel?.data.car?.branch?.name;
-    final locationDisplay = bookingController.isPickupFromBranch.value &&
+    final locationDisplay =
+        bookingController.isPickupFromBranch.value &&
             branchName != null &&
             branchName.trim().isNotEmpty
         ? branchName.trim()
@@ -365,9 +363,10 @@ class PreviewController extends GetxController {
 
     final tokenValue = (previewModel?.data.token ?? '').trim();
 
-    final rentalDays = int.tryParse(bookingController.rentalDaysController.text) ?? 1;
+    final rentalDays =
+        int.tryParse(bookingController.rentalDaysController.text) ?? 1;
     final carId = int.tryParse(carIdValue) ?? bookingController.selectedCar.id;
-    
+
     Map<String, dynamic> inputBody = {
       'car_id': carId,
       'car_slug': carSlugValue,
@@ -412,12 +411,14 @@ class PreviewController extends GetxController {
         : bookingController.selectedCar.id.toString();
 
     final pickupLocation = bookingController.pickupLocation.value;
-    final pickupLocationJson = (pickupLocation != null && pickupLocation.isValid)
+    final pickupLocationJson =
+        (pickupLocation != null && pickupLocation.isValid)
         ? pickupLocation.toJson()
         : <String, dynamic>{};
 
     final branchName = previewModel?.data.car?.branch?.name;
-    final locationDisplay = bookingController.isPickupFromBranch.value &&
+    final locationDisplay =
+        bookingController.isPickupFromBranch.value &&
             branchName != null &&
             branchName.trim().isNotEmpty
         ? branchName.trim()
@@ -426,7 +427,8 @@ class PreviewController extends GetxController {
     final deliveryPrice = _deliveryPriceForBooking(bookingController);
     final includeDelivery = deliveryPrice > 0;
     final tokenValue = (previewModel?.data.token ?? '').trim();
-    final rentalDays = int.tryParse(bookingController.rentalDaysController.text) ?? 1;
+    final rentalDays =
+        int.tryParse(bookingController.rentalDaysController.text) ?? 1;
     final carId = int.tryParse(carIdValue) ?? bookingController.selectedCar.id;
 
     final Map<String, dynamic> inputBody = {
@@ -485,9 +487,7 @@ class PreviewController extends GetxController {
       isLoading: _isBookingLoading,
       showSuccessMessage: false,
       showResult: true,
-      queryParams: {
-        'alias': alias.value,
-      },
+      queryParams: {'alias': alias.value},
       onSuccess: (value) {
         _manualInputModel = value!;
         var data = _manualInputModel.data.inputFields;
@@ -513,22 +513,24 @@ class PreviewController extends GetxController {
   Future<CommonSuccessModel?> bookingManualProcess() async {
     final bookingController = Get.find<BookingController>();
     final previewModel = _bookingPreviewModel;
-    
+
     // Use car data from preview API first, fallback to BookingController's selected car
-    String carSlugValue = slug.value.isNotEmpty 
-        ? slug.value 
+    String carSlugValue = slug.value.isNotEmpty
+        ? slug.value
         : bookingController.getCarSlug();
-    String carIdValue = Id.value.isNotEmpty 
-        ? Id.value 
+    String carIdValue = Id.value.isNotEmpty
+        ? Id.value
         : bookingController.selectedCar.id.toString();
-    
+
     final pickupLocation = bookingController.pickupLocation.value;
-    final pickupLocationJson = (pickupLocation != null && pickupLocation.isValid)
+    final pickupLocationJson =
+        (pickupLocation != null && pickupLocation.isValid)
         ? jsonEncode(pickupLocation.toJson())
         : '';
 
     final branchName = previewModel?.data.car?.branch?.name;
-    final locationDisplay = bookingController.isPickupFromBranch.value &&
+    final locationDisplay =
+        bookingController.isPickupFromBranch.value &&
             branchName != null &&
             branchName.trim().isNotEmpty
         ? branchName.trim()
@@ -544,9 +546,10 @@ class PreviewController extends GetxController {
     final isManualGateway = gatewayType.toLowerCase().contains('manual');
     final String? transactionId = null;
 
-    final rentalDays = int.tryParse(bookingController.rentalDaysController.text) ?? 1;
+    final rentalDays =
+        int.tryParse(bookingController.rentalDaysController.text) ?? 1;
     final carId = int.tryParse(carIdValue) ?? bookingController.selectedCar.id;
-    
+
     Map<String, dynamic> inputBody = {
       'car_id': carId,
       'car_slug': carSlugValue,
@@ -613,10 +616,7 @@ class PreviewController extends GetxController {
       type: Strings.payment,
     );
 
-    Get.to(
-      () => CongratulationsScreen(),
-      arguments: congratulation,
-    );
+    Get.to(() => CongratulationsScreen(), arguments: congratulation);
   }
 
   RxDouble totalPayable = 0.0.obs;
@@ -646,20 +646,20 @@ class PreviewController extends GetxController {
   late CommonSuccessModel _authorizeModel;
   CommonSuccessModel get authorizeModel => _authorizeModel;
 
-  Future<CommonSuccessModel?> authorizeSubmitProcess()async{
-    Map<String , dynamic> inputBody ={
+  Future<CommonSuccessModel?> authorizeSubmitProcess() async {
+    Map<String, dynamic> inputBody = {
       "identifier": identifier.value,
       "card_number": cardNumberController.text,
       "date": cardExpiryController.text,
-      "code": cardCVCController.text
+      "code": cardCVCController.text,
     };
     return RequestProcess().request(
-      fromJson: CommonSuccessModel.fromJson, 
-      apiEndpoint: ApiEndpoint.authorizeSubmit, 
+      fromJson: CommonSuccessModel.fromJson,
+      apiEndpoint: ApiEndpoint.authorizeSubmit,
       body: inputBody,
       method: HttpMethod.POST,
-      isLoading: _isAuthorizeLoading, 
-      onSuccess: (value){
+      isLoading: _isAuthorizeLoading,
+      onSuccess: (value) {
         _authorizeModel = value!;
         Congratulation congratulation = Congratulation(
           details: Strings.paymentSuccessful,
@@ -667,10 +667,8 @@ class PreviewController extends GetxController {
           buttonText: Strings.backToHome,
           type: Strings.payment,
         );
-        Get.offAll(
-              () => CongratulationsScreen(),
-          arguments: congratulation,
-        );
-      });
+        Get.offAll(() => CongratulationsScreen(), arguments: congratulation);
+      },
+    );
   }
 }

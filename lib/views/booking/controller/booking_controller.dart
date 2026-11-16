@@ -23,9 +23,7 @@ class BookingController extends GetxController {
   final noteController = TextEditingController();
   final mobileController = TextEditingController();
   final rentalDaysController = TextEditingController();
-  
-  // Removed: distanceController, destinationController, locationController
-  
+
   RxBool isFormValid = false.obs;
   RxString selectedRoundDate = ''.obs;
   RxString selectedRoundTime = ''.obs;
@@ -47,13 +45,22 @@ class BookingController extends GetxController {
   // Pickup location management
   Rx<PickupLocation?> pickupLocation = Rx<PickupLocation?>(null);
   RxBool isPickupFromBranch = true.obs;
-  
+
   // Car data from route arguments
   late CarItem selectedCar;
   RxString carFee = '0'.obs;
   RxInt rentalDaysCount = 0.obs;
   RxString selectedInsuranceType = 'daily'.obs;
 
+  // ── Server-side pricing state ────────────────────────────────────────────
+  final serverPricing = Rxn<Map<String, dynamic>>();
+  final serverInsurance = Rxn<Map<String, dynamic>>();
+  final pricingLoading = false.obs;
+  final pricingError = ''.obs;
+  Timer? _pricingDebounce;
+    Timer? _validateDebounce;  
+
+  int _pricingRequestId = 0;  
   void setInsuranceType(String type) {
     selectedInsuranceType.value = type;
   }
@@ -135,11 +142,13 @@ class BookingController extends GetxController {
     // Reset delivery state for the newly loaded car
     deliveryCheckResult.value = null;
     selectedDeliveryLocation.value = null;
-    
+    serverPricing.value = null;
+    serverInsurance.value = null;
+
     // Auto-populate email and phone from LocalStorage (hidden fields)
     emailController.text = LocalStorage.email;
     mobileController.text = LocalStorage.number;
-    
+
     // Listen to pickup location changes for form validation
     ever(pickupLocation, (_) => _updateFormValidity());
     ever(isPickupFromBranch, (_) {
@@ -160,53 +169,51 @@ class BookingController extends GetxController {
         selectedLocationAddress.value = '';
       }
       _updateFormValidity();
+      _onPricingInputsChanged();
     });
-    
-    // Listen to date/time/rental days changes
+ // Rental days / date / time → validate first, then pricing
     ever(selectedPickupDate, (_) {
       _updateFormValidity();
-      _debounceValidateDateTime();
+      _onFieldChanged();
     });
     ever(selectedPickupTime, (_) {
       _updateFormValidity();
-      _debounceValidateDateTime();
+      _onFieldChanged();
     });
-    rentalDaysController.addListener(_updateFormValidity);
+    // Insurance type → no validation needed, go straight to pricing
+    ever(selectedInsuranceType, (_) => _onPricingInputsChanged());
+    rentalDaysController.addListener(() {
+      _updateFormValidity();
+      _onFieldChanged();
+    });
 
     // Default to branch pickup; set branch location
     _setPickupToBranchLocation();
     if (forcePickupFromBranch) {
       isPickupFromBranch.value = true;
     }
-    
+
     super.onInit();
   }
 
   void _updateFormValidity() {
-    // Form is valid if all required fields are filled:
-    // 1. Pickup location (from branch or custom)
-    // 2. Rental days (min 1 day)
-    // 3. Pickup date
-    // 4. Pickup time
-    
-    bool hasValidPickupLocation = isPickupFromBranch.value || 
+    bool hasValidPickupLocation = isPickupFromBranch.value ||
         (pickupLocation.value != null && pickupLocation.value!.isValid);
-    
+
     rentalDaysCount.value = int.tryParse(rentalDaysController.text) ?? 0;
     bool hasValidRentalDays = rentalDaysCount.value > 0;
-    
+
     bool hasPickupDate = selectedPickupDate.value.isNotEmpty;
     bool hasPickupTime = selectedPickupTime.value.isNotEmpty;
-    
-    isFormValid.value = hasValidPickupLocation && 
-                        hasValidRentalDays && 
-                        hasPickupDate && 
+
+    isFormValid.value = hasValidPickupLocation &&
+                        hasValidRentalDays &&
+                        hasPickupDate &&
                         hasPickupTime;
   }
-  
+
   /// Set pickup location to branch location from car data
   void _setPickupToBranchLocation() {
-    // Use branch name from car data - this is from the cars list API
     final branchName = selectedCar.branch?.name;
     final branchAddress = branchName != null && branchName.isNotEmpty
         ? '$branchName Branch'
@@ -218,7 +225,7 @@ class BookingController extends GetxController {
       address: branchAddress,
     );
   }
-  
+
   /// Get branch location as LatLng for map centering
   LatLng? getBranchLocation() {
     final branch = selectedCar.branch;
@@ -227,7 +234,7 @@ class BookingController extends GetxController {
     }
     return const LatLng(24.7136, 46.6753);
   }
-  
+
   /// Set pickup location from map picker
   void setPickupLocation(PickupLocation location) {
     if (forcePickupFromBranch) {
@@ -246,14 +253,12 @@ class BookingController extends GetxController {
     isCheckingDelivery.value = true;
     deliveryCheckResult.value = null;
 
-    // Set placeholder address immediately
     pickupLocation.value = PickupLocation(
       latitude: location.latitude,
       longitude: location.longitude,
       address: '${location.latitude.toStringAsFixed(5)}, ${location.longitude.toStringAsFixed(5)}',
     );
 
-    // Run reverse geocoding + delivery check concurrently
     await Future.wait([
       _resolveAddress(location),
       _validateDeliveryLocation(location),
@@ -309,12 +314,12 @@ class BookingController extends GetxController {
     }
   }
 
-  void _debounceValidateDateTime() {
-    _validateDateTimeDebounce?.cancel();
-    _validateDateTimeDebounce = Timer(const Duration(milliseconds: 300), () {
-      _validateDateTime();
-    });
-  }
+  // void _debounceValidateDateTime() {
+  //   _validateDateTimeDebounce?.cancel();
+  //   _validateDateTimeDebounce = Timer(const Duration(milliseconds: 300), () {
+  //     _validateDateTime();
+  //   });
+  // }
 
   Future<void> _validateDateTime() async {
     if (selectedPickupDate.value.isEmpty || selectedPickupTime.value.isEmpty) {
@@ -356,9 +361,197 @@ class BookingController extends GetxController {
     }
   }
 
+  // ── Server-side pricing ──────────────────────────────────────────────────
+
+   void _onFieldChanged() {
+    _validateDebounce?.cancel();
+    _pricingDebounce?.cancel();
+
+    final hasDate = selectedPickupDate.value.isNotEmpty;
+    final hasTime = selectedPickupTime.value.isNotEmpty;
+
+    if (hasDate && hasTime) {
+      // Date and time are both present — validate then fetch pricing
+      _validateDebounce = Timer(const Duration(milliseconds: 300), () {
+        _validateDateTimeThenPricing();
+      });
+    } else {
+      // Missing date or time — clear pricing, no shimmer
+      serverPricing.value = null;
+      serverInsurance.value = null;
+      pricingLoading.value = false;
+      pricingError.value = '';
+    }
+  }
+
+
+     /// Validate datetime, then ALWAYS proceed to pricing.
+  /// The validation result is used for delivery toggle UI only.
+  /// The pricing endpoint re-validates on the server side.
+  Future<void> _validateDateTimeThenPricing() async {
+    if (selectedPickupDate.value.isEmpty || selectedPickupTime.value.isEmpty) {
+      serverPricing.value = null;
+      serverInsurance.value = null;
+      pricingLoading.value = false;
+      return;
+    }
+
+    isValidatingDateTime.value = true;
+    dateTimeValidation.value = null;
+
+    try {
+      final headers = await bearerHeaderInfo();
+      final url = ApiEndpoint.validateDateTime.url();
+      final requestBody = {
+        'car_id': selectedCar.id,
+        'pickup_date': selectedPickupDate.value,
+        'pickup_time': selectedPickupTime.value,
+      };
+
+      developer.log('Validating datetime: $requestBody', name: 'pricing_flow');
+
+      final response = await http.post(
+        Uri.parse(url),
+        headers: headers,
+        body: jsonEncode(requestBody),
+      );
+
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      final result = DateTimeValidationResult.fromJson(json);
+      dateTimeValidation.value = result;
+
+      developer.log(
+        'Validation done: isValid=${result.isValid}, '
+        'day=${result.dayName}, open=${result.openTime}',
+        name: 'pricing_flow',
+      );
+
+      // ALWAYS proceed to pricing — server re-validates anyway.
+      // isValid only controls the delivery toggle UI.
+      _onPricingInputsChanged();
+    } catch (e) {
+      developer.log('Validation error: $e', name: 'pricing_flow');
+      // Even on error, still try pricing as fallback
+      _onPricingInputsChanged();
+    } finally {
+      isValidatingDateTime.value = false;
+    }
+  }
+
+  /// Called ONLY after validation passes, or when a non-datetime
+  /// field changes (insurance type, delivery toggle).
+  /// Sets loading immediately and debounces the actual API call.
+  void _onPricingInputsChanged() {
+    _pricingDebounce?.cancel();
+    pricingLoading.value = true;
+    pricingError.value = '';
+    _pricingDebounce = Timer(const Duration(milliseconds: 600), () {
+      _fetchPricingPreview();
+    });
+  }
+
+  /// Call the backend preview endpoint to get authoritative pricing.
+  /// Only fires when all required fields are present.
+    Future<void> _fetchPricingPreview() async {
+    final requestId = ++_pricingRequestId;
+    final days = rentalDaysCount.value;
+    final pickupDate = selectedPickupDate.value;
+    final pickupTime = selectedPickupTime.value;
+
+    // Don't call API if required fields are missing
+    if (days <= 0 || pickupDate.isEmpty || pickupTime.isEmpty) {
+      if (requestId == _pricingRequestId) {
+        serverPricing.value = null;
+        serverInsurance.value = null;
+        pricingLoading.value = false;
+      }
+      return;
+    }
+
+    // Already true from _onPricingInputsChanged, but keep for direct calls
+    pricingLoading.value = true;
+    pricingError.value = '';
+
+    try {
+      final headers = await bearerHeaderInfo();
+      final url = '${ApiEndpoint.getBookingPreview.url()}?pricing_only=1';
+      final body = <String, dynamic>{
+        'car_id': selectedCar.id,
+        'rental_days': days,
+        'insurance_type': selectedInsuranceType.value,
+        'pickup_date': pickupDate,
+        'pickup_time': pickupTime,
+        'include_delivery': !isPickupFromBranch.value,
+      };
+
+      if (!isPickupFromBranch.value && pickupLocation.value != null) {
+        body['pickup_location'] = {
+          'latitude': pickupLocation.value!.latitude,
+          'longitude': pickupLocation.value!.longitude,
+          'address': pickupLocation.value!.address,
+        };
+      }
+
+      developer.log('POST $url', name: 'pricing_preview');
+      developer.log('Body: $body', name: 'pricing_preview');
+
+      final response = await http.post(
+        Uri.parse(url),
+        headers: headers,
+        body: jsonEncode(body),
+      );
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      developer.log('Raw response keys: ${json.keys.toList()}', name: 'pricing_preview');
+
+      // If a newer request was dispatched while this one was in-flight,
+      // discard this stale response entirely.
+      if (requestId != _pricingRequestId) return;
+
+      Map<String, dynamic>? data;
+      if (json['data'] != null && json['data'] is Map) {
+        data = Map<String, dynamic>.from(json['data'] as Map);
+      } else if (json['pricing_breakdown'] != null) {
+        data = json;
+      }
+
+      if (data != null && data['pricing_breakdown'] != null) {
+        serverPricing.value = data['pricing_breakdown'] is Map
+            ? Map<String, dynamic>.from(data['pricing_breakdown'] as Map)
+            : null;
+        serverInsurance.value = data['insurance_breakdown'] is Map
+            ? Map<String, dynamic>.from(data['insurance_breakdown'] as Map)
+            : null;
+        pricingError.value = '';
+        developer.log(
+          'Pricing OK: rental_fees=${serverPricing.value?['rental_fees']}, '
+          'base_price=${serverPricing.value?['base_price']}, '
+          'total=${serverPricing.value?['total']}',
+          name: 'pricing_preview',
+        );
+      } else {
+        developer.log('Pricing parse failed. Raw: ${response.body.substring(0, response.body.length > 500 ? 500 : response.body.length)}', name: 'pricing_preview');
+        pricingError.value = 'Unexpected server response';
+      }
+    } catch (e) {
+      if (requestId != _pricingRequestId) return;
+      pricingError.value = e.toString();
+      developer.log('Pricing exception: $e', name: 'pricing_preview');
+    } finally {
+      if (requestId == _pricingRequestId) {
+        pricingLoading.value = false;
+      }
+    }
+  }
+    /// Public retry method for error state UI
+  void retryPricing() {
+    _fetchPricingPreview();
+  }
+
   @override
   void onClose() {
+        _validateDebounce?.cancel();  
     _validateDateTimeDebounce?.cancel();
+    _pricingDebounce?.cancel();
     dateController.dispose();
     timeController.dispose();
     emailController.dispose();
@@ -367,7 +560,4 @@ class BookingController extends GetxController {
     rentalDaysController.dispose();
     super.onClose();
   }
-
-  // Remove old fee calculation based on distance
-  // Fees are now calculated on backend based on rental_days
 }

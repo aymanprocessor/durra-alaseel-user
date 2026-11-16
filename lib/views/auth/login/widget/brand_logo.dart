@@ -15,7 +15,7 @@ class BrandLogo extends StatelessWidget {
           imageUrl: BasicServices.appBasicLogoWhite.value,
           placeholder: (context, url) => const Text(''),
           errorWidget: (context, url, error) => const Text(''),
-          height: MediaQuery.of(context).size.height * 0.15,
+          height: MediaQuery.of(context).size.height * 0.20,
         ),
       ),
     );

@@ -175,6 +175,13 @@ Use `developer.log()` for complex flow tracing and `log.i()` / `log.e()` from `b
 - **Confirm sheet**: `_ExtendConfirmSheet` via `showModalBottomSheet` — `CarboColors.primaryLight` header, summary, Cancel + "Yes, Extend" buttons
 - **`VoidCallback onClose`**: sheet passes `() => Navigator.of(context).pop()` to `controller.confirmExtension(onClose)` — controller never stores `BuildContext`, no `Get.back()`
 
+### 16 KB Memory Page Size (Google Play requirement)
+- Root cause of Play rejection was `libmlkit_google_ocr_pipeline.so` (4KB ELF-aligned) bundled by ML Kit text-recognition `16.0.0`
+- Fixed by bumping all four `com.google.mlkit:text-recognition-*` deps to `16.0.1` in `android/app/build.gradle` — do NOT downgrade them
+- Toolchain already compliant: AGP 8.9.1 (≥8.5.1), Gradle 8.11.1, Flutter 3.38 engine (64KB-aligned libflutter.so/libapp.so); 32-bit armeabi-v7a libs are not checked by Play
+- Verify after build: check ELF `p_align >= 0x4000` for all arm64-v8a/x86_64 `.so` entries in the AAB (Play Console → App Bundle Explorer shows "Supports 16 KB")
+- Local release bundle `build/app/outputs/bundle/release/app-release.aab` verified on 2026-10-14: all arm64-v8a and x86_64 ELF LOAD segments are aligned at 16 KB or greater. This confirms that bundle only; publish/upload it and confirm the Play Console status to update production compliance.
+
 ## Execution Rules
 
 - Modify only the requested code — no cleanup, refactoring, or improvements beyond scope

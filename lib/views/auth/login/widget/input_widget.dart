@@ -7,27 +7,33 @@ class InputWidget extends GetView<LoginController> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        PrimaryInputWidget(
-          controller: controller.emailAddressController,
-          label: Strings.emailAddress,
-          hintText: Strings.emailAddress,
-          textInputType: TextInputType.emailAddress,
-          showBorderSide: true,
-        ),
-        Sizes.height.betweenInputBox,
-        PrimaryInputWidget(
-          controller: controller.passwordController,
-          label: Strings.password,
-          hintText: Strings.password,
-          isPasswordField: true,
-          textInputType: TextInputType.text,
-        ),
-        _isRememberMeWidget(context),
-        Sizes.height.v30,
-      ],
+    return Form( // ---> WRAPPED IN FORM <---
+      key: controller.formKey,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Obx(() => PrimaryInputWidget(
+            controller: controller.emailAddressController,
+            label: Strings.emailAddress,
+            hintText: Strings.emailAddress,
+            textInputType: TextInputType.emailAddress,
+            showBorderSide: true,
+            apiErrorText: controller.emailError.value.isEmpty ? null : controller.emailError.value,
+            validatorFunction: controller.validateEmail, // ---> ADDED VALIDATOR <---
+          )),
+          Sizes.height.betweenInputBox,
+          Obx(() => PrimaryInputWidget(
+            controller: controller.passwordController,
+            label: Strings.password,
+            hintText: Strings.password,
+            isPasswordField: true,
+            textInputType: TextInputType.text,
+            apiErrorText: controller.passwordError.value.isEmpty ? null : controller.passwordError.value,
+          )),
+          _isRememberMeWidget(context),
+          Sizes.height.v30,
+        ],
+      ),
     );
   }
 

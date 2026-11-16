@@ -52,5 +52,12 @@
   "appLCancel": "Cancel",
   "appLUpload": "Upload",
   "appLLicense": "License",
-  "appLIdentity": "Identity"
+  "appLIdentity": "Identity",
+  "appLInvalidCredentials": "Invalid email or password. Please try again.",
+  "appLInvalidEmail": "Enter a valid email address",
+  "appLInvalidPhone": "Enter a valid phone number",
+  "appLShortPassword": "The password must be at least 6 characters",
+  "appLRefresh": "Refresh",
+  "rejection_reason": "Rejection Reason",
+"cancel_reason": "Cancellation Reason"
 }

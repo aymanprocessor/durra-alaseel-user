@@ -38,11 +38,6 @@ class OthersWidgets extends StatelessWidget {
           ()=> Get.toNamed(Routes.settingScreen)
         ),
         _itemCard(
-          Icons.bolt_outlined,
-          Strings.pusherChannels,
-          () => Get.toNamed(Routes.pusherChannelsScreen),
-        ),
-        _itemCard(
           Icons.headphones,
           Strings.contactUs,
           () => Get.to(() => WebViewScreen(title: Strings.contactUs)),

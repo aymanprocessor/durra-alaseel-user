@@ -1,5 +1,4 @@
 
-
 ```
 durra-alaseel-user
 ├─ .claude
@@ -142,6 +141,7 @@ durra-alaseel-user
 │  │  ├─ build.gradle
 │  │  ├─ carbo-release.jks
 │  │  ├─ google-services.json
+│  │  ├─ proguard-rules.pro
 │  │  └─ src
 │  │     ├─ debug
 │  │     │  └─ AndroidManifest.xml
@@ -197,6 +197,7 @@ durra-alaseel-user
 │  ├─ key.properties
 │  ├─ local.properties
 │  └─ settings.gradle
+├─ ANDROID_GOOGLE_PLAY_FIX_SUMMARY.md
 ├─ assets
 │  ├─ background
 │  │  ├─ ani.json
@@ -221,6 +222,7 @@ durra-alaseel-user
 │     ├─ ios_launcher.jpg.old1
 │     └─ ios_launcher.png
 ├─ BOOKING_PREVIEW_RESPONSE_SCHEMA.json
+├─ build_context.ps1
 ├─ CLAUDE.md
 ├─ constants.txt
 ├─ devtools_options.yaml
@@ -257,6 +259,7 @@ durra-alaseel-user
 │  └─ VENDOR_BOOKING_API_DOCS.md
 ├─ firebase.json
 ├─ flutter_launcher_icons.yaml
+├─ input.txt
 ├─ ios
 │  ├─ Flutter
 │  │  ├─ AppFrameworkInfo.plist
@@ -375,6 +378,7 @@ durra-alaseel-user
 │  │  │  ├─ themes.dart
 │  │  │  └─ token.dart
 │  │  ├─ utils
+│  │  │  ├─ api_error_handler.dart
 │  │  │  ├─ basic_import.dart
 │  │  │  ├─ custom_style.dart
 │  │  │  ├─ dimensions.dart
@@ -385,6 +389,7 @@ durra-alaseel-user
 │  │  │  └─ size.dart
 │  │  └─ widgets
 │  │     ├─ back_button.dart
+│  │     ├─ counter_input.dart
 │  │     ├─ country_drop_down.dart
 │  │     ├─ custom_app_bar.dart
 │  │     ├─ custom_date_picker.dart
@@ -396,6 +401,7 @@ durra-alaseel-user
 │  │     ├─ double_side_text_widget.dart
 │  │     ├─ dynamic_image_widget.dart
 │  │     ├─ empty_data_widget.dart
+│  │     ├─ error_widget.dart
 │  │     ├─ image_picker_sheet.dart
 │  │     ├─ image_picker_widget.dart
 │  │     ├─ image_widget.dart

@@ -10,6 +10,7 @@ import '../../utils/basic_import.dart';
 import '../../utils/local_storage.dart';
 import '../../widgets/logger.dart';
 import '../model/error_message_model.dart';
+import '../../../routes/routes.dart';
 
 final log = logger(ApiMethod);
 
@@ -31,9 +32,30 @@ Future<Map<String, String>> bearerHeaderInfo() async {
 }
 
 class ApiMethod {
-  ApiMethod({required this.isBasic});
+  ApiMethod({required this.isBasic, this.client});
 
   bool isBasic;
+  http.Client? client;
+
+  // Guard to prevent multiple simultaneous unauth redirects
+  static bool _isHandlingUnauth = false;
+
+  /// Returns true if the error was an unauth error (handled here).
+  /// Returns false if it was something else (caller should show generic toast).
+  bool _handleUnauthError(String errorMsg) {
+    if (isBasic || _isHandlingUnauth) return false;
+
+    final lowerMsg = errorMsg.toLowerCase();
+    if (lowerMsg.contains('unauthenticated') ||
+        lowerMsg.contains('access denied')) {
+      _isHandlingUnauth = true;
+      CustomSnackBar.error(errorMsg);
+      LocalStorage.save(token: '', isLoggedIn: false);
+      Get.offAllNamed(Routes.loginScreen);
+      return true;
+    }
+    return false;
+  }
 
   // Get method
   Future<Map<String, dynamic>?> get(
@@ -44,13 +66,17 @@ class ApiMethod {
     bool showErrorMessage = true,
   }) async {
     if (kDebugMode) {
-      log.i('|📍📍📍|----------------- [[ GET ]] method details start -----------------|📍📍📍|');
+      log.i(
+        '|📍📍📍|----------------- [[ GET ]] method details start -----------------|📍📍📍|',
+      );
       log.i(url);
-      log.i('|📍📍📍|----------------- [[ GET ]] method details ended -----------------|📍📍📍|');
+      log.i(
+        '|📍📍📍|----------------- [[ GET ]] method details ended -----------------|📍📍📍|',
+      );
     }
 
     Future<http.Response> doGet() async {
-      return http
+      return (client ?? http.Client())
           .get(
             Uri.parse(url),
             headers: isBasic ? basicHeaderInfo() : await bearerHeaderInfo(),
@@ -62,10 +88,14 @@ class ApiMethod {
       final response = await doGet();
 
       if (kDebugMode) {
-        log.i('|📒📒📒|-----------------[[ GET ]] method response start -----------------|📒📒📒|');
+        log.i(
+          '|📒📒📒|-----------------[[ GET ]] method response start -----------------|📒📒📒|',
+        );
         log.i('Status: ${response.statusCode}');
         log.i(response.body.toString());
-        log.i('|📒📒📒|-----------------[[ GET ]] method response end -----------------|📒📒📒|');
+        log.i(
+          '|📒📒📒|-----------------[[ GET ]] method response end -----------------|📒📒📒|',
+        );
       }
 
       bool isMaintenance = response.statusCode == 503;
@@ -84,7 +114,7 @@ class ApiMethod {
               // at least one non-quote character between the two quotes so that
               // legitimate empty-string values "" are never touched)
               .replaceAll(RegExp(r'"(\s+)"'), '","');
-          
+
           return jsonDecode(sanitizedBody);
         } catch (e) {
           log.e('🐞🐞🐞 JSON Decode Error 🐞🐞🐞');
@@ -100,13 +130,16 @@ class ApiMethod {
 
         try {
           log.e(
-              'unknown error hitted in status code${jsonDecode(response.body)}');
+            'unknown error hitted in status code${jsonDecode(response.body)}',
+          );
 
           ErrorResponse res = ErrorResponse.fromJson(jsonDecode(response.body));
+          String errorMsg = res.message.error.join(', ');
+          ApiErrorHandler.setError(errorMsg);
           if (isMaintenance) {
           } else {
-            if (showErrorMessage) {
-              CustomSnackBar.error(res.message.error.join(''));
+            if (!_handleUnauthError(errorMsg) && showErrorMessage) {
+              CustomSnackBar.error(errorMsg);
             }
           }
         } catch (e) {
@@ -140,7 +173,9 @@ class ApiMethod {
 
       // Transient server/proxy resets sometimes happen mid-response.
       // Retry once to reduce flakiness for idempotent GET requests.
-      if (err.toString().toLowerCase().contains('connection closed while receiving data')) {
+      if (err.toString().toLowerCase().contains(
+        'connection closed while receiving data',
+      )) {
         try {
           await Future<void>.delayed(const Duration(milliseconds: 300));
           final retryResponse = await doGet();
@@ -190,13 +225,17 @@ class ApiMethod {
   }) async {
     try {
       if (kDebugMode) {
-        log.i('|📍📍📍|-----------------[[ POST ]] method details start -----------------|📍📍📍|');
+        log.i(
+          '|📍📍📍|-----------------[[ POST ]] method details start -----------------|📍📍📍|',
+        );
         log.i(url);
         log.i(body);
-        log.i('|📍📍📍|-----------------[[ POST ]] method details end ------------|📍📍📍|');
+        log.i(
+          '|📍📍📍|-----------------[[ POST ]] method details end ------------|📍📍📍|',
+        );
       }
 
-      final response = await http
+      final response = await (client ?? http.Client())
           .post(
             Uri.parse(url),
             body: jsonEncode(body),
@@ -205,10 +244,14 @@ class ApiMethod {
           .timeout(Duration(seconds: duration));
 
       if (kDebugMode) {
-        log.i('|📒📒📒|-----------------[[ POST ]] method response start ------------------|📒📒📒|');
+        log.i(
+          '|📒📒📒|-----------------[[ POST ]] method response start ------------------|📒📒📒|',
+        );
         log.i('Status: ${response.statusCode}');
         log.i(response.body.toString());
-        log.i('|📒📒📒|-----------------[[ POST ]] method response end --------------------|📒📒📒|');
+        log.i(
+          '|📒📒📒|-----------------[[ POST ]] method response end --------------------|📒📒📒|',
+        );
       }
       bool isMaintenance = response.statusCode == 503;
 
@@ -231,7 +274,8 @@ class ApiMethod {
 
         try {
           log.e(
-              'unknown error hitted in status code ${jsonDecode(response.body)}');
+            'unknown error hitted in status code ${jsonDecode(response.body)}',
+          );
 
           ErrorResponse res = ErrorResponse.fromJson(jsonDecode(response.body));
           String errorMsg = res.message.error.join(', ');
@@ -239,7 +283,7 @@ class ApiMethod {
 
           if (isMaintenance) {
           } else {
-            if (showErrorMessage) {
+            if (!_handleUnauthError(errorMsg) && showErrorMessage) {
               CustomSnackBar.error(errorMsg);
             }
           }
@@ -295,13 +339,17 @@ class ApiMethod {
     bool showErrorMessage = true,
   }) async {
     if (kDebugMode) {
-      log.i('|📍📍📍|----------------- [[ DELETE ]] method details start -----------------|📍📍📍|');
+      log.i(
+        '|📍📍📍|----------------- [[ DELETE ]] method details start -----------------|📍📍📍|',
+      );
       log.i(url);
-      log.i('|📍📍📍|----------------- [[ DELETE ]] method details ended -----------------|📍📍📍|');
+      log.i(
+        '|📍📍📍|----------------- [[ DELETE ]] method details ended -----------------|📍📍📍|',
+      );
     }
 
     try {
-      final response = await http
+      final response = await (client ?? http.Client())
           .delete(
             Uri.parse(url),
             headers: isBasic ? basicHeaderInfo() : await bearerHeaderInfo(),
@@ -309,10 +357,14 @@ class ApiMethod {
           .timeout(Duration(seconds: duration));
 
       if (kDebugMode) {
-        log.i('|📒📒📒|-----------------[[ DELETE ]] method response start -----------------|📒📒📒|');
+        log.i(
+          '|📒📒📒|-----------------[[ DELETE ]] method response start -----------------|📒📒📒|',
+        );
         log.i('Status: ${response.statusCode}');
         log.i(response.body.toString());
-        log.i('|📒📒📒|-----------------[[ DELETE ]] method response end -----------------|📒📒📒|');
+        log.i(
+          '|📒📒📒|-----------------[[ DELETE ]] method response end -----------------|📒📒📒|',
+        );
       }
 
       bool isMaintenance = response.statusCode == 503;
@@ -336,13 +388,16 @@ class ApiMethod {
 
         try {
           log.e(
-              'unknown error hitted in status code${jsonDecode(response.body)}');
+            'unknown error hitted in status code${jsonDecode(response.body)}',
+          );
 
           ErrorResponse res = ErrorResponse.fromJson(jsonDecode(response.body));
+          String errorMsg = res.message.error.join(', ');
+          ApiErrorHandler.setError(errorMsg);
           if (isMaintenance) {
           } else {
-            if (showErrorMessage) {
-              CustomSnackBar.error(res.message.error.join(''));
+            if (!_handleUnauthError(errorMsg) && showErrorMessage) {
+              CustomSnackBar.error(errorMsg);
             }
           }
         } catch (e) {
@@ -388,34 +443,42 @@ class ApiMethod {
 
   // Post Method
   Future<Map<String, dynamic>?> multipart(
-      String url, Map<String, String> body, String filepath, String filedName,
-      {int code = 200, bool showResult = false}) async {
+    String url,
+    Map<String, String> body,
+    String filepath,
+    String filedName, {
+    int code = 200,
+    bool showResult = false,
+  }) async {
     try {
       if (kDebugMode) {
-        log.i('|📍📍📍|-----------------[[ Multipart ]] method details start -----------------|📍📍📍|');
+        log.i(
+          '|📍📍📍|-----------------[[ Multipart ]] method details start -----------------|📍📍📍|',
+        );
         log.i(url);
         log.i(body);
         log.i(filepath);
-        log.i('|📍📍📍|-----------------[[ Multipart ]] method details end ------------|📍📍📍|');
+        log.i(
+          '|📍📍📍|-----------------[[ Multipart ]] method details end ------------|📍📍📍|',
+        );
       }
 
-      final request = http.MultipartRequest(
-        'POST',
-        Uri.parse(url),
-      )
+      final request = http.MultipartRequest('POST', Uri.parse(url))
         ..fields.addAll(body)
-        ..headers.addAll(
-          isBasic ? basicHeaderInfo() : await bearerHeaderInfo(),
-        )
+        ..headers.addAll(isBasic ? basicHeaderInfo() : await bearerHeaderInfo())
         ..files.add(await http.MultipartFile.fromPath(filedName, filepath));
       var response = await request.send();
       var jsonData = await http.Response.fromStream(response);
 
       if (kDebugMode) {
-        log.i('|📒📒📒|-----------------[[ Multipart ]] method response start ----------------|📒📒📒|');
+        log.i(
+          '|📒📒📒|-----------------[[ Multipart ]] method response start ----------------|📒📒📒|',
+        );
         log.i('Status: ${response.statusCode} ${response.reasonPhrase}');
         log.i(jsonData.body.toString());
-        log.i('|📒📒📒|-----------------[[ Multipart ]] method response end --------------------|📒📒📒|');
+        log.i(
+          '|📒📒📒|-----------------[[ Multipart ]] method response end --------------------|📒📒📒|',
+        );
       }
       bool isMaintenance = response.statusCode == 503;
 
@@ -436,11 +499,15 @@ class ApiMethod {
 
         try {
           log.e(
-              'unknown error hitted in status code ${jsonDecode(jsonData.body)}');
+            'unknown error hitted in status code ${jsonDecode(jsonData.body)}',
+          );
 
           ErrorResponse res = ErrorResponse.fromJson(jsonDecode(jsonData.body));
+          String errorMsg = res.message.error.join(', ');
 
-          if (!isMaintenance) CustomSnackBar.error(res.message.error.toString());
+          if (!isMaintenance && !_handleUnauthError(errorMsg)) {
+            CustomSnackBar.error(errorMsg);
+          }
         } catch (e) {
           log.e('Failed to parse error response: $e');
         }
@@ -493,17 +560,18 @@ class ApiMethod {
   }) async {
     try {
       if (kDebugMode) {
-        log.i('|📍📍📍|-----------------[[ Multipart ]] method details start -----------------|📍📍📍|');
+        log.i(
+          '|📍📍📍|-----------------[[ Multipart ]] method details start -----------------|📍📍📍|',
+        );
         log.i(url);
         log.i(body);
         log.i(pathList);
         log.i(fieldList);
-        log.i('|📍📍📍|-----------------[[ Multipart ]] method details end ------------|📍📍📍|');
+        log.i(
+          '|📍📍📍|-----------------[[ Multipart ]] method details end ------------|📍📍📍|',
+        );
       }
-      final request = http.MultipartRequest(
-        'POST',
-        Uri.parse(url),
-      )
+      final request = http.MultipartRequest('POST', Uri.parse(url))
         ..fields.addAll(body)
         ..headers.addAll(
           isBasic ? basicHeaderInfo() : await bearerHeaderInfo(),
@@ -515,19 +583,26 @@ class ApiMethod {
           final file = File(pathList[i]);
           final fileSize = await file.length();
           final fileName = pathList[i].split('/').last;
-          log.i('File ${i + 1}: field=${fieldList[i]} name=$fileName size=${(fileSize / 1024).toStringAsFixed(2)}KB');
+          log.i(
+            'File ${i + 1}: field=${fieldList[i]} name=$fileName size=${(fileSize / 1024).toStringAsFixed(2)}KB',
+          );
         }
-        request.files
-            .add(await http.MultipartFile.fromPath(fieldList[i], pathList[i]));
+        request.files.add(
+          await http.MultipartFile.fromPath(fieldList[i], pathList[i]),
+        );
       }
       var response = await request.send();
       var jsonData = await http.Response.fromStream(response);
 
       if (kDebugMode) {
-        log.i('|📒📒📒|-----------------[[ Multipart ]] method response start-----------------|📒📒📒|');
+        log.i(
+          '|📒📒📒|-----------------[[ Multipart ]] method response start-----------------|📒📒📒|',
+        );
         log.i('Status: ${response.statusCode} ${response.reasonPhrase}');
         log.i(jsonData.body);
-        log.i('|📒📒📒|-----------------[[ Multipart ]] method response end-----------------|📒📒📒|');
+        log.i(
+          '|📒📒📒|-----------------[[ Multipart ]] method response end-----------------|📒📒📒|',
+        );
       }
       bool isMaintenance = response.statusCode == 503;
       _maintenanceCheck(isMaintenance, jsonData);
@@ -547,11 +622,15 @@ class ApiMethod {
 
         try {
           log.e(
-              'unknown error hitted in status code ${jsonDecode(jsonData.body)}');
+            'unknown error hitted in status code ${jsonDecode(jsonData.body)}',
+          );
 
           ErrorResponse res = ErrorResponse.fromJson(jsonDecode(jsonData.body));
+          String errorMsg = res.message.error.join(', ');
 
-          if (!isMaintenance) CustomSnackBar.error(res.message.error.toString());
+          if (!isMaintenance && !_handleUnauthError(errorMsg)) {
+            CustomSnackBar.error(errorMsg);
+          }
         } catch (e) {
           log.e('Failed to parse error response: $e');
         }
@@ -597,8 +676,9 @@ class ApiMethod {
     final controller = Get.put(SystemMaintenanceController());
     if (isMaintenance) {
       controller.maintenanceStatus.value = true;
-      MaintenanceModel maintenanceModel =
-          MaintenanceModel.fromJson(jsonDecode(jsonData));
+      MaintenanceModel maintenanceModel = MaintenanceModel.fromJson(
+        jsonDecode(jsonData),
+      );
       MaintenanceDialog().show(maintenanceModel: maintenanceModel);
     } else {
       controller.maintenanceStatus.value = false;

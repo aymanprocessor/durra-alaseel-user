@@ -1,0 +1,6 @@
+lib/views/cars/screen/cars_list_screen.dart
+lib/views/cars/controller/cars_controller.dart
+lib/base/widgets/empty_data_widget.dart
+lib/languages/en.json
+lib/languages/ar.json
+lib/languages/strings.dart

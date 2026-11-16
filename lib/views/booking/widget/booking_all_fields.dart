@@ -5,36 +5,104 @@ class BookingAllFields extends GetView<BookingController> {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() => Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _rentalDetailsCard(context),
-        const SizedBox(height: CarboSpacing.x4),
-        _insuranceTypeCard(context),
-        const SizedBox(height: CarboSpacing.x4),
-        _deliveryToggleCard(context),
-        const SizedBox(height: CarboSpacing.x4),
-        AnimatedSwitcher(
-          duration: CarboDuration.normal,
-          transitionBuilder: (child, animation) => FadeTransition(
-            opacity: animation,
-            child: SizeTransition(
-              sizeFactor: animation,
-              axisAlignment: -1,
-              child: child,
+    return Obx(() {
+      controller.selectedInsuranceType.value;
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _rentalDetailsCard(context),
+          const SizedBox(height: CarboSpacing.x4),
+          _insuranceTypeCard(context),
+          const SizedBox(height: CarboSpacing.x4),
+
+          Obx(() => _deductibleNotice()),
+          const SizedBox(height: CarboSpacing.x4),
+          _deliveryToggleCard(context),
+          const SizedBox(height: CarboSpacing.x4),
+          AnimatedSwitcher(
+            duration: CarboDuration.normal,
+            transitionBuilder: (child, animation) => FadeTransition(
+              opacity: animation,
+              child: SizeTransition(
+                sizeFactor: animation,
+                axisAlignment: -1,
+                child: child,
+              ),
+            ),
+            child: !controller.isPickupFromBranch.value
+                ? _deliveryLocationCard(context)
+                : const SizedBox.shrink(key: ValueKey('no_delivery')),
+          ),
+          if (!controller.isPickupFromBranch.value)
+            const SizedBox(height: CarboSpacing.x4),
+          _rentalCalculationCard(context),
+          const SizedBox(height: CarboSpacing.x4),
+          _notesCard(context),
+        ],
+      );
+    });
+  }
+
+  Widget _deductibleNotice() {
+    if (controller.selectedInsuranceType.value != 'deductible') {
+      return SizedBox.shrink();
+    }
+
+    final deductible = controller.selectedCar.deductibleInsurance;
+    final curCode = BasicServices.baseCurCode.value.isNotEmpty
+        ? BasicServices.baseCurCode.value
+        : 'SAR';
+
+    if (deductible <= 0) return SizedBox.shrink();
+
+    final amountText = '${deductible.toStringAsFixed(0)} $curCode';
+    final messageText = Strings.inCaseOfAccident.tr.replaceAll(
+      '{amount}',
+      amountText,
+    );
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(
+        horizontal: CarboSpacing.x3,
+        vertical: CarboSpacing.x3,
+      ),
+      decoration: BoxDecoration(
+        color: CarboColors.infoBg,
+        borderRadius: CarboRadius.mdAll,
+        border: Border.all(color: CarboColors.info, width: 1),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            margin: const EdgeInsets.only(right: CarboSpacing.x2),
+            decoration: BoxDecoration(
+              color: CarboColors.infoBg,
+              borderRadius: CarboRadius.smAll,
+            ),
+            child: const Icon(
+              Icons.info_outline_rounded,
+              size: 18,
+              color: CarboColors.info,
             ),
           ),
-          child: !controller.isPickupFromBranch.value
-              ? _deliveryLocationCard(context)
-              : const SizedBox.shrink(key: ValueKey('no_delivery')),
-        ),
-        if (!controller.isPickupFromBranch.value)
-          const SizedBox(height: CarboSpacing.x4),
-        _rentalCalculationCard(context),
-        const SizedBox(height: CarboSpacing.x4),
-        _notesCard(context),
-      ],
-    ));
+          SizedBox(width: CarboSpacing.x2),
+          Expanded(
+            child: Text(
+              messageText,
+              style: CarboTypography.bodyMedium.copyWith(
+                color: CarboColors.info,
+                height: 1.5,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   // ── Shared card container ──────────────────────────────────────────────────
@@ -69,7 +137,9 @@ class BookingAllFields extends GetView<BookingController> {
           const SizedBox(width: CarboSpacing.x2),
           Text(
             label,
-            style: CarboTypography.titleMedium.copyWith(fontWeight: FontWeight.w600),
+            style: CarboTypography.titleMedium.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
@@ -98,13 +168,19 @@ class BookingAllFields extends GetView<BookingController> {
                   color: CarboColors.primaryLight,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.local_shipping_outlined, size: 16, color: CarboColors.primary),
+                child: Icon(
+                  Icons.local_shipping_outlined,
+                  size: 16,
+                  color: CarboColors.primary,
+                ),
               ),
               const SizedBox(width: CarboSpacing.x2),
               Expanded(
                 child: Text(
                   Strings.delivery.tr,
-                  style: CarboTypography.titleMedium.copyWith(fontWeight: FontWeight.w600),
+                  style: CarboTypography.titleMedium.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
               if (isValidating)
@@ -160,20 +236,20 @@ class BookingAllFields extends GetView<BookingController> {
                 vertical: CarboSpacing.x2,
               ),
               decoration: BoxDecoration(
-                color: CarboColors.warningBg,
+                color: CarboColors.infoBg,
                 borderRadius: CarboRadius.mdAll,
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.schedule, size: 16, color: CarboColors.warning),
+                  const Icon(Icons.schedule, size: 16, color: CarboColors.info),
                   const SizedBox(width: CarboSpacing.x2),
                   Expanded(
                     child: Text(
                       validation.openTime.isNotEmpty
                           ? '${Strings.pickupTimeOutsideWorkingHours.tr}\n${validation.dayName}: ${validation.openTime} - ${validation.closeTime}'
                           : '${Strings.pickupTimeOutsideWorkingHours.tr}\n${validation.dayName}',
-                      style: CarboTypography.labelSmall.copyWith(
-                        color: CarboColors.warning,
+                      style: CarboTypography.labelMedium.copyWith(
+                        color: CarboColors.info,
                       ),
                     ),
                   ),
@@ -194,10 +270,7 @@ class BookingAllFields extends GetView<BookingController> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _sectionHeader(
-              Icons.map_outlined,
-              Strings.deliveryLocation.tr,
-            ),
+            _sectionHeader(Icons.map_outlined, Strings.deliveryLocation.tr),
             _mapPickerRow(context),
           ],
         ),
@@ -210,9 +283,9 @@ class BookingAllFields extends GetView<BookingController> {
     final addressText = controller.selectedLocationAddress.value.isNotEmpty
         ? controller.selectedLocationAddress.value
         : (hasLocation
-            ? '${controller.selectedDeliveryLocation.value!.latitude.toStringAsFixed(5)}, '
-                '${controller.selectedDeliveryLocation.value!.longitude.toStringAsFixed(5)}'
-            : Strings.selectLocationOnMap.tr);
+              ? '${controller.selectedDeliveryLocation.value!.latitude.toStringAsFixed(5)}, '
+                    '${controller.selectedDeliveryLocation.value!.longitude.toStringAsFixed(5)}'
+              : Strings.selectLocationOnMap.tr);
     final labelText = hasLocation
         ? Strings.changePickupLocation.tr
         : Strings.selectLocationOnMap.tr;
@@ -241,10 +314,16 @@ class BookingAllFields extends GetView<BookingController> {
               height: 36,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: hasLocation ? CarboColors.primaryLight : CarboColors.background,
+                color: hasLocation
+                    ? CarboColors.primaryLight
+                    : CarboColors.background,
                 borderRadius: CarboRadius.smAll,
               ),
-              child: const Icon(Icons.location_on, size: 20, color: CarboColors.primary),
+              child: const Icon(
+                Icons.location_on,
+                size: 20,
+                color: CarboColors.primary,
+              ),
             ),
             const SizedBox(width: CarboSpacing.x3),
             Expanded(
@@ -253,8 +332,9 @@ class BookingAllFields extends GetView<BookingController> {
                 children: [
                   Text(
                     hasLocation ? Strings.selectedLocation.tr : labelText,
-                    style: CarboTypography.labelMedium
-                        .copyWith(color: CarboColors.textSecondary),
+                    style: CarboTypography.labelMedium.copyWith(
+                      color: CarboColors.textSecondary,
+                    ),
                   ),
                   if (hasLocation) ...[
                     const SizedBox(height: 2),
@@ -286,7 +366,7 @@ class BookingAllFields extends GetView<BookingController> {
   }
 
   // ── Section 3: Rental Details ──────────────────────────────────────────────
-  Widget _rentalDetailsCard(BuildContext context) {
+    Widget _rentalDetailsCard(BuildContext context) {
     return _sectionCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -295,12 +375,18 @@ class BookingAllFields extends GetView<BookingController> {
             Icons.calendar_month_outlined,
             Strings.rentalDetails.tr,
           ),
-          PrimaryInputWidget(
+          CounterInput(
             controller: controller.rentalDaysController,
-            label: Strings.rentalDays,
-            hintText: Strings.enterRentalDays,
-            textInputType: TextInputType.number,
-            showBorderSide: true,
+            label: Strings.rentalDays.tr,
+            hintText: Strings.enterRentalDays.tr,
+            suffixBuilder: (count) {
+              if (count == 1) return Strings.day.tr;
+              if (count == 2) return Strings.twoDays.tr;
+              if (count <= 10) return Strings.daysPlural.tr;
+              return Strings.dayAccusative.tr;
+            },
+            min: 1,
+            max: 90,
           ),
           const SizedBox(height: CarboSpacing.x3),
           Row(
@@ -328,55 +414,182 @@ class BookingAllFields extends GetView<BookingController> {
     );
   }
 
-  // ── Section 4: Rental Calculation ─────────────────────────────────────────
-  Widget _rentalCalculationCard(BuildContext context) {
+  // ── Section 4: Rental Calculation (server-side only) ────────────────────
+     Widget _rentalCalculationCard(BuildContext context) {
     return Obx(() {
+      final pricing = controller.serverPricing.value;
+      final isLoading = controller.pricingLoading.value;
+      final error = controller.pricingError.value;
       final curCode = BasicServices.baseCurCode.value;
-      final dailyPrice = double.tryParse(controller.carFee.value) ?? 0.0;
-      final days = controller.rentalDaysCount.value;
-      final rentalFee = dailyPrice * days;
-      final isDeliveryOn = !controller.isPickupFromBranch.value;
-      final deliveryFee = isDeliveryOn ? controller.deliveryPriceValue : 0.0;
-      final isDaily = controller.selectedInsuranceType.value == 'daily';
-      final insuranceFee = isDaily ? (controller.selectedCar.dailyInsurance * days) : 0.0;
-      final taxPct = BasicServices.taxPercentage.value;
-      final taxAmount = (rentalFee + deliveryFee + insuranceFee) * taxPct / 100;
-      final estimatedTotal = rentalFee + deliveryFee + insuranceFee + taxAmount;
+
+      // ── Error State (only when not loading) ─────────────────────────
+      if (!isLoading && error.isNotEmpty && pricing == null) {
+        return _sectionCard(
+          child: Column(
+            children: [
+              _sectionHeader(
+                Icons.receipt_long_outlined,
+                Strings.totalAmount.tr,
+              ),
+              const SizedBox(height: CarboSpacing.x5),
+              Container(
+                width: 60,
+                height: 60,
+                decoration: const BoxDecoration(
+                  color: CarboColors.errorBg,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.wifi_off_rounded,
+                  size: 28,
+                  color: CarboColors.error,
+                ),
+              ),
+              const SizedBox(height: CarboSpacing.x3),
+              Text(
+                Strings.somethingWentWrong.tr,
+                style: CarboTypography.titleSmall.copyWith(
+                  color: CarboColors.textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: CarboSpacing.x2),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: CarboSpacing.x6,
+                ),
+                child: Text(
+                  error.length > 80 ? '${error.substring(0, 80)}...' : error,
+                  style: CarboTypography.bodySmall.copyWith(
+                    color: CarboColors.textSecondary,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: CarboSpacing.x4),
+              GestureDetector(
+                onTap: () => controller.retryPricing(),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: CarboSpacing.x5,
+                    vertical: CarboSpacing.x2 + 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: CarboColors.errorBg,
+                    borderRadius: CarboRadius.fullAll,
+                    border: Border.all(
+                      color: CarboColors.error.withOpacity(0.3),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.refresh_rounded,
+                        size: 16,
+                        color: CarboColors.error,
+                      ),
+                      const SizedBox(width: CarboSpacing.x2),
+                      Text(
+                        Strings.resend.tr,
+                        style: CarboTypography.labelMedium.copyWith(
+                          color: CarboColors.error,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+
+      // ── Empty / Waiting State (only when not loading) ────────────────
+      if (!isLoading && pricing == null) {
+        return _sectionCard(
+          child: Column(
+            children: [
+              _sectionHeader(
+                Icons.receipt_long_outlined,
+                Strings.totalAmount.tr,
+              ),
+              const SizedBox(height: CarboSpacing.x5),
+              _emptyStateIllustration(),
+              const SizedBox(height: CarboSpacing.x4),
+              Text(
+                Strings.enterRentalDetails.tr,
+                style: CarboTypography.bodyMedium.copyWith(
+                  color: CarboColors.textSecondary,
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: CarboSpacing.x4),
+              _emptyHintPills(),
+            ],
+          ),
+        );
+      }
+
+      // ── Data Card (always built if pricing exists) ───────────────────
       final taxLabel = BasicServices.taxName.value.isNotEmpty
           ? BasicServices.taxName.value
           : Strings.tax.tr;
+      final insurance = controller.serverInsurance.value;
 
-      return _sectionCard(
+      final days =
+          (pricing?['rental_days'] as num?)?.toInt() ??
+          controller.rentalDaysCount.value;
+      final basePrice = (pricing?['base_price'] as num?)?.toDouble() ?? 0.0;
+      final rentalFees = (pricing?['rental_fees'] as num?)?.toDouble() ?? 0.0;
+      final deliveryPrice =
+          (pricing?['delivery_price'] as num?)?.toDouble() ?? 0.0;
+      final insuranceTotal =
+          (insurance?['insurance_total'] as num?)?.toDouble() ?? 0.0;
+      final taxAmount = (pricing?['tax_amount'] as num?)?.toDouble() ?? 0.0;
+      final total = (pricing?['total'] as num?)?.toDouble() ?? 0.0;
+      final taxPct = (pricing?['tax_percentage'] as num?)?.toDouble() ?? 15.0;
+
+      Widget dataCard = _sectionCard(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _sectionHeader(Icons.receipt_long_outlined, Strings.totalAmount.tr),
-            _calcRow(Strings.pricePerDay.tr, '$dailyPrice $curCode'),
-            _calcDivider(),
+            _sectionHeader(
+              Icons.receipt_long_outlined,
+              Strings.totalAmount.tr,
+            ),
             _calcRow(Strings.rentalDays.tr, '$days'),
             _calcDivider(),
             _calcRow(
+              Strings.pricePerDay.tr,
+              '${basePrice.toStringAsFixed(2)} $curCode',
+            ),
+            _calcDivider(),
+            _calcRow(
               Strings.rentalFees.tr,
-              '${rentalFee.toStringAsFixed(2)} $curCode',
+              '${rentalFees.toStringAsFixed(2)} $curCode',
               highlight: true,
             ),
-            if (isDeliveryOn) ...[
+            if (deliveryPrice > 0) ...[
               _calcDivider(),
               _calcRow(
                 Strings.delivery.tr,
-                '${deliveryFee.toStringAsFixed(2)} $curCode',
+                '${deliveryPrice.toStringAsFixed(2)} $curCode',
               ),
             ],
-            if (insuranceFee > 0) ...[
+            if (insuranceTotal > 0) ...[
               _calcDivider(),
               _calcRow(
                 Strings.dailyInsurance.tr,
-                '${insuranceFee.toStringAsFixed(2)} $curCode',
+                '${insuranceTotal.toStringAsFixed(2)} $curCode',
               ),
             ],
             _calcDivider(),
             _calcRow(
-              taxLabel,
+              '$taxLabel (${taxPct.toStringAsFixed(0)}%)',
               '${taxAmount.toStringAsFixed(2)} $curCode',
             ),
             const SizedBox(height: CarboSpacing.x3),
@@ -389,61 +602,274 @@ class BookingAllFields extends GetView<BookingController> {
                 color: CarboColors.primaryLight,
                 borderRadius: CarboRadius.mdAll,
               ),
-              child: Column(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        Strings.totalAmount.tr,
-                        style: CarboTypography.titleMedium.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: CarboColors.primary,
-                        ),
-                      ),
-                      Text(
-                        '${estimatedTotal.toStringAsFixed(2)} $curCode',
-                        style: CarboTypography.titleMedium.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: CarboColors.primary,
-                        ),
-                      ),
-                    ],
+                  Text(
+                    Strings.totalAmount.tr,
+                    style: CarboTypography.titleMedium.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: CarboColors.primary,
+                    ),
                   ),
-                  if (insuranceFee > 0) ...[
-                    const SizedBox(height: CarboSpacing.x2),
-                    Divider(
-                      height: 1,
-                      color: CarboColors.primary.withOpacity(0.2),
+                  Text(
+                    '${total.toStringAsFixed(2)} $curCode',
+                    style: CarboTypography.titleMedium.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: CarboColors.primary,
                     ),
-                    const SizedBox(height: CarboSpacing.x2),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          Strings.dailyInsurance.tr,
-                          style: CarboTypography.bodySmall.copyWith(
-                            fontWeight: FontWeight.w500,
-                            color: CarboColors.primary,
-                          ),
-                        ),
-                        Text(
-                          '${insuranceFee.toStringAsFixed(2)} $curCode',
-                          style: CarboTypography.bodySmall.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: CarboColors.primary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                  ),
                 ],
               ),
             ),
           ],
         ),
       );
+
+      // ── Shimmer skeleton (built to match the data card shape) ────────
+      Widget shimmerCard = _sectionCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _sectionHeader(
+              Icons.receipt_long_outlined,
+              Strings.totalAmount.tr,
+            ),
+            const SizedBox(height: CarboSpacing.x2),
+            _shimmerRow(),
+            _shimmerDivider(),
+            _shimmerRow(widthFraction: 0.3),
+            _shimmerDivider(),
+            _shimmerRow(widthFraction: 0.45, highlight: true),
+            _shimmerDivider(),
+            _shimmerRow(widthFraction: 0.25),
+            _shimmerDivider(),
+            _shimmerRow(widthFraction: 0.2),
+            const SizedBox(height: CarboSpacing.x3),
+            _shimmerTotalBox(),
+          ],
+        ),
+      );
+
+      // ── Cross-fade: shimmer → data ──────────────────────────────────
+      // When loading, show shimmer on top (fades in).
+      // When done, show data on top (shimmer fades out).
+      // If no data yet, only shimmer is visible (data is a transparent skeleton).
+      return AnimatedSwitcher(
+        duration: const Duration(milliseconds: 250),
+        switchInCurve: Curves.easeOut,
+        switchOutCurve: Curves.easeIn,
+        child: isLoading
+            ? KeyedSubtree(key: const ValueKey('shimmer'), child: shimmerCard)
+            : KeyedSubtree(key: const ValueKey('data'), child: dataCard),
+      );
     });
+  }
+  // ── Empty State Components ───────────────────────────────────────────────
+
+  Widget _emptyStateIllustration() {
+    return Center(
+      child: Container(
+        width: 88,
+        height: 88,
+        decoration: BoxDecoration(
+          color: CarboColors.background,
+          shape: BoxShape.circle,
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            // Receipt body
+            Container(
+              width: 40,
+              height: 50,
+              decoration: BoxDecoration(
+                color: CarboColors.border,
+                borderRadius: BorderRadius.circular(6),
+              ),
+            ),
+            // Receipt top notch
+            Positioned(
+              top: 14,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Container(
+                  width: 28,
+                  height: 3,
+                  decoration: BoxDecoration(
+                    color: CarboColors.background,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+            ),
+            // Lines
+            Positioned(
+              top: 22,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 22,
+                      height: 2.5,
+                      decoration: BoxDecoration(
+                        color: CarboColors.background,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Container(
+                      width: 18,
+                      height: 2.5,
+                      decoration: BoxDecoration(
+                        color: CarboColors.background,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Container(
+                      width: 24,
+                      height: 2.5,
+                      decoration: BoxDecoration(
+                        color: CarboColors.background,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            // Dashed bottom
+            Positioned(
+              bottom: 16,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(
+                    4,
+                    (_) => Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 1.5),
+                      child: Container(
+                        width: 3,
+                        height: 3,
+                        decoration: const BoxDecoration(
+                          color: CarboColors.background,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _emptyHintPills() {
+    return Wrap(
+      spacing: CarboSpacing.x2,
+      runSpacing: CarboSpacing.x2,
+      alignment: WrapAlignment.center,
+      children: [
+        _hintPill(Icons.calendar_today_outlined, Strings.rentalDays.tr),
+        _hintPill(Icons.schedule_outlined, Strings.PickUpTime.tr),
+        _hintPill(Icons.event_outlined, Strings.PickUpdate.tr),
+      ],
+    );
+  }
+
+  Widget _hintPill(IconData icon, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: CarboSpacing.x3,
+        vertical: CarboSpacing.x1 + 2,
+      ),
+      decoration: BoxDecoration(
+        color: CarboColors.background,
+        borderRadius: CarboRadius.fullAll,
+        border: Border.all(color: CarboColors.border, width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: CarboColors.textSecondary),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: CarboTypography.labelSmall.copyWith(
+              color: CarboColors.textSecondary,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Shimmer Loading Components ───────────────────────────────────────────
+
+  Widget _shimmerRow({double widthFraction = 0.55, bool highlight = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: CarboSpacing.x2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          _shimmerBox(widthFraction: 0.4),
+          _shimmerBox(widthFraction: widthFraction, highlight: highlight),
+        ],
+      ),
+    );
+  }
+
+  Widget _shimmerDivider() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: SizedBox(
+        height: 1,
+        width: double.infinity,
+        child: _ShimmerBox(height: 1),
+      ),
+    );
+  }
+
+  Widget _shimmerTotalBox() {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: CarboSpacing.x3,
+        vertical: CarboSpacing.x3,
+      ),
+      decoration: BoxDecoration(
+        color: CarboColors.background,
+        borderRadius: CarboRadius.mdAll,
+      ),
+      child: Row(
+        children: [
+          Expanded(flex: 35, child: _ShimmerBox(height: 18)),
+          const SizedBox(width: CarboSpacing.x4),
+          Expanded(flex: 30, child: _ShimmerBox(height: 18)),
+        ],
+      ),
+    );
+  }
+
+  Widget _shimmerBox({
+    required double widthFraction,
+    double height = 14,
+    bool highlight = false,
+  }) {
+    return Expanded(
+      flex: (widthFraction * 100).round().clamp(1, 100),
+      child: _ShimmerBox(height: height, highlight: highlight),
+    );
   }
 
   Widget _calcRow(String label, String value, {bool highlight = false}) {
@@ -461,7 +887,9 @@ class BookingAllFields extends GetView<BookingController> {
           Text(
             value,
             style: CarboTypography.bodyMedium.copyWith(
-              color: highlight ? CarboColors.textPrimary : CarboColors.textSecondary,
+              color: highlight
+                  ? CarboColors.textPrimary
+                  : CarboColors.textSecondary,
               fontWeight: highlight ? FontWeight.w600 : FontWeight.w400,
             ),
           ),
@@ -470,24 +898,16 @@ class BookingAllFields extends GetView<BookingController> {
     );
   }
 
-  Widget _calcDivider() => const Divider(height: 1, thickness: 0.5, color: CarboColors.border);
+  Widget _calcDivider() =>
+      const Divider(height: 1, thickness: 0.5, color: CarboColors.border);
 
   // ── Section: Insurance Type ───────────────────────────────────────────────
   Widget _insuranceTypeCard(BuildContext context) {
-    final curCode = BasicServices.baseCurCode.value.isNotEmpty
-        ? BasicServices.baseCurCode.value
-        : 'SAR';
-    final dailyRate = controller.selectedCar.dailyInsurance;
-    final deductible = controller.selectedCar.deductibleInsurance;
-
     return _sectionCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _sectionHeader(
-            Icons.shield_outlined,
-            Strings.selectInsuranceType.tr,
-          ),
+          _sectionHeader(Icons.shield_outlined, Strings.selectInsuranceType.tr),
           Obx(() {
             final selected = controller.selectedInsuranceType.value;
             return Column(
@@ -495,9 +915,6 @@ class BookingAllFields extends GetView<BookingController> {
                 _insuranceTile(
                   icon: Icons.verified_user_outlined,
                   title: Strings.dailyInsurance.tr,
-                  subtitle: dailyRate > 0
-                      ? '${dailyRate.toStringAsFixed(2)} $curCode / ${Strings.days.tr}'
-                      : Strings.dailyInsurance.tr,
                   value: 'daily',
                   selected: selected,
                 ),
@@ -505,9 +922,6 @@ class BookingAllFields extends GetView<BookingController> {
                 _insuranceTile(
                   icon: Icons.account_balance_wallet_outlined,
                   title: Strings.deductibleInsurance.tr,
-                  subtitle: deductible > 0
-                      ? '${Strings.deductibleNote.tr}: ${deductible.toStringAsFixed(0)} $curCode'
-                      : Strings.deductibleInsurance.tr,
                   value: 'deductible',
                   selected: selected,
                 ),
@@ -522,7 +936,6 @@ class BookingAllFields extends GetView<BookingController> {
   Widget _insuranceTile({
     required IconData icon,
     required String title,
-    required String subtitle,
     required String value,
     required String selected,
   }) {
@@ -564,15 +977,10 @@ class BookingAllFields extends GetView<BookingController> {
                   Text(
                     title,
                     style: CarboTypography.titleSmall.copyWith(
-                      color: isSelected ? CarboColors.primary : CarboColors.textPrimary,
+                      color: isSelected
+                          ? CarboColors.primary
+                          : const Color.fromARGB(255, 19, 19, 19),
                       fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: CarboTypography.bodySmall.copyWith(
-                      color: isSelected ? CarboColors.primary : CarboColors.textSecondary,
                     ),
                   ),
                 ],
@@ -606,10 +1014,7 @@ class BookingAllFields extends GetView<BookingController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _sectionHeader(
-            Icons.notes_outlined,
-            Strings.additionalNotes.tr,
-          ),
+          _sectionHeader(Icons.notes_outlined, Strings.additionalNotes.tr),
           PrimaryInputWidget(
             skipEnterText: true,
             optionalText: Strings.Optional,
@@ -622,6 +1027,85 @@ class BookingAllFields extends GetView<BookingController> {
           ),
         ],
       ),
+    );
+  }
+}
+
+// ── Shimmer Animation Widget ──────────────────────────────────────────────
+
+class _ShimmerBox extends StatefulWidget {
+  final double height;
+  final bool highlight;
+
+  const _ShimmerBox({required this.height, this.highlight = false});
+
+  @override
+  State<_ShimmerBox> createState() => _ShimmerBoxState();
+}
+
+class _ShimmerBoxState extends State<_ShimmerBox>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    )..repeat();
+    _animation = Tween<double>(
+      begin: -1.5,
+      end: 2.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        return AnimatedBuilder(
+          animation: _animation,
+          builder: (context, child) {
+            final pos = _animation.value;
+            return Container(
+              height: widget.height,
+              width: width,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(widget.height / 2),
+                gradient: LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: widget.highlight
+                      ? [
+                          CarboColors.primaryLight,
+                          CarboColors.primary.withOpacity(0.15),
+                          CarboColors.primaryLight,
+                        ]
+                      : [
+                          CarboColors.border,
+                          CarboColors.background,
+                          CarboColors.border,
+                        ],
+                  stops: [
+                    (pos).clamp(0.0, 1.0),
+                    (pos + 0.4).clamp(0.0, 1.0),
+                    (pos + 0.8).clamp(0.0, 1.0),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

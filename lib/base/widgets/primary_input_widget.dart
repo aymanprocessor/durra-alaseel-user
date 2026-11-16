@@ -51,6 +51,9 @@ class PrimaryInputWidget extends StatefulWidget {
   final EdgeInsets? suffixIconPadding;
   final BorderStyle borderStyle;
   final String? Function(String?)? validatorFunction;
+  
+  // ---> ADDED THIS PARAMETER <---
+  final String? apiErrorText;
 
   const PrimaryInputWidget({
     super.key,
@@ -86,6 +89,7 @@ class PrimaryInputWidget extends StatefulWidget {
     this.customShapeDecoration,
     this.onChanged,
     this.suffixIconPadding,
+    this.apiErrorText, // ---> ADDED THIS <---
   });
 
   @override
@@ -139,6 +143,10 @@ class _PrimaryInputWidgetState extends State<PrimaryInputWidget> {
       isDense: true,
       contentPadding: _setPadding(),
       suffixIcon: _setSuffixIcon(),
+      
+      // ---> ADDED THESE TWO LINES <---
+      errorText: widget.apiErrorText,
+      errorStyle: const TextStyle(fontSize: 12, height: 1.2),
     );
   }
 

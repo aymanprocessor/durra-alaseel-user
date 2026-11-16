@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:carbo/views/dashboard/controller/dashboard_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -13,6 +15,8 @@ import 'languages/locale_service.dart';
 import 'routes/routes.dart';
 
 void main() async {
+    HttpOverrides.global = MyHttpOverrides();
+
   WidgetsFlutterBinding.ensureInitialized();
   await AppInitializer.init();
   
@@ -36,7 +40,13 @@ void main() async {
   
   runApp(MyApp(initialNotificationAction: initialAction));
 }
-
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+  }
+}
 class MyApp extends StatelessWidget {
   // Global navigator key for navigating from static methods
   static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();

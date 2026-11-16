@@ -297,7 +297,11 @@ class CarsListScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptyState(BuildContext context) {
+   Widget _buildEmptyState(BuildContext context) {
+    final hasFilters = controller.selectedCarTypeId.value != null ||
+        controller.selectedCarModelId.value != null ||
+        controller.selectedBranchId.value != null;
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -315,14 +319,37 @@ class CarsListScreen extends StatelessWidget {
               color: Colors.grey[600],
             ),
           ),
-          SizedBox(height: 16.h),
-          if (controller.selectedCarTypeId.value != null ||
-              controller.selectedCarModelId.value != null ||
-              controller.selectedBranchId.value != null)
+          SizedBox(height: 24.h),
+          // Refresh Button
+          SizedBox(
+            height: 44.h,
+            child: ElevatedButton.icon(
+              onPressed: () => controller.refreshCars(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: CustomColor.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                padding: EdgeInsets.symmetric(horizontal: 24.w),
+              ),
+              icon: Icon(Icons.refresh_rounded, size: 20.sp),
+              label: Text(
+                Strings.refresh.tr,
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+          if (hasFilters) ...[
+            SizedBox(height: 12.h),
             TextButton(
               onPressed: controller.clearFilters,
               child: Text(Strings.clearFilters.tr),
             ),
+          ],
         ],
       ),
     );

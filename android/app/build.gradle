@@ -60,6 +60,9 @@ android {
     buildTypes {
         release {
             signingConfig = signingConfigs.release
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
     aaptOptions {
@@ -67,13 +70,17 @@ android {
     }
 }
 dependencies {
-    // Add language package you need to use
-    implementation 'com.google.mlkit:text-recognition-chinese:16.0.0'
-    implementation 'com.google.mlkit:text-recognition-devanagari:16.0.0'
-    implementation 'com.google.mlkit:text-recognition-japanese:16.0.0'
-    implementation 'com.google.mlkit:text-recognition-korean:16.0.0'
-    implementation 'com.google.firebase:firebase-messaging:21.1.0'
-    implementation 'com.pusher:push-notifications-android:1.9.0'
+    // ML Kit text recognition language packages (16.0.1+ ships 16 KB-aligned native libs)
+    implementation 'com.google.mlkit:text-recognition-chinese:16.0.1'
+    implementation 'com.google.mlkit:text-recognition-devanagari:16.0.1'
+    implementation 'com.google.mlkit:text-recognition-japanese:16.0.1'
+    implementation 'com.google.mlkit:text-recognition-korean:16.0.1'
+    
+    // Firebase Messaging (upgraded from 21.1.0 for 16 KB page size support)
+    implementation 'com.google.firebase:firebase-messaging:24.0.0'
+    
+    // Pusher Push Notifications (upgraded from 1.9.0 for better compatibility)
+    implementation 'com.pusher:push-notifications-android:1.10.0'
 }
 
 flutter {

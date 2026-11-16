@@ -248,7 +248,7 @@ class CarItem {
         seat: json["seat"] ?? 0,
         year: json["year"] ?? 0,
         fees: json["fees"]?.toString() ?? '0',
-        price: json["price"]?.toString() ?? '0',
+        price: json["price_per_day"]?.toString() ?? '0',
         deliveryPrice: json["delivery_price"]?.toString() ?? '0',
         dailyInsurance: (json["daily_insurance"] as num?)?.toDouble() ?? 0.0,
         deductibleInsurance: (json["deductible_insurance"] as num?)?.toDouble() ?? 0.0,
